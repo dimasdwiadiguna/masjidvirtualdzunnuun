@@ -1,1 +1,140 @@
-# masjidvirtualdzunnuun
+# Web App Komunitas Dzun Nuun
+
+Mini web app mobile-first untuk Masjid Fathul Ummah: patungan per season, daftar acara dan tiket, serta Kabar Aksi.
+
+Bagian 1 sampai 4 untuk yang memasang app. Bagian 5 ditulis untuk pengurus yang tidak berlatar teknis.
+
+---
+
+## 1. Yang perlu disiapkan
+
+- Akun [Vercel](https://vercel.com) (paket gratis cukup)
+- Akun [Supabase](https://supabase.com) (paket gratis cukup)
+- Node.js 20 atau lebih baru kalau ingin menjalankan di komputer sendiri
+
+## 2. Menyiapkan Supabase
+
+1. Buat project baru di Supabase, pilih region Singapore supaya dekat dengan Indonesia.
+2. Buka **SQL Editor**, tempel seluruh isi `supabase/schema.sql`, jalankan.
+3. Masih di SQL Editor, tempel seluruh isi `supabase/seed.sql`, jalankan. Ini membuat Season 1 dan satu baris pengaturan berisi nilai contoh.
+4. Buka **Project Settings, API**, catat dua nilai ini:
+   - Project URL, misalnya `https://abcdefgh.supabase.co`
+   - `service_role` key (bukan `anon` key)
+
+Catatan keamanan: `service_role` key membuka seluruh database. Simpan hanya di env var Vercel, jangan ditempel di chat, jangan dimasukkan ke repo.
+
+## 3. Variabel lingkungan
+
+| Nama | Wajib | Isi |
+|---|---|---|
+| `ADMIN_PASSWORD` | ya | Password bersama untuk seluruh pengurus. Pakai kalimat panjang, minimal 16 karakter. |
+| `NEXT_PUBLIC_SUPABASE_URL` | ya | Project URL dari Supabase. |
+| `SUPABASE_SERVICE_ROLE_KEY` | ya | `service_role` key dari Supabase. Hanya dibaca di server. |
+| `NEXT_PUBLIC_SITE_URL` | ya | Alamat publik app, misalnya `https://dzunnuun.vercel.app`. Dipakai untuk gambar pratinjau tautan WhatsApp. |
+| `ADMIN_SESSION_SECRET` | tidak | Teks acak panjang untuk menandatangani cookie sesi. Kalau kosong, `ADMIN_PASSWORD` yang dipakai. Isi kalau Anda ingin bisa mengganti password tanpa memutus sesi yang sedang berjalan. |
+
+Contohnya ada di `.env.example`.
+
+## 4. Deploy ke Vercel
+
+1. Push repo ini ke GitHub.
+2. Di Vercel, **Add New, Project**, pilih repo ini. Framework terdeteksi otomatis sebagai Next.js, biarkan pengaturan build apa adanya.
+3. Buka **Settings, Environment Variables**, isi kelima variabel di tabel atas untuk environment Production dan Preview.
+4. Klik **Deploy**.
+5. Setelah live, buka `https://alamat-anda/admin`, masuk dengan `ADMIN_PASSWORD`, lalu isi halaman **Pengaturan**. Selama nomor WhatsApp masih berisi nilai contoh, halaman ringkasan admin menampilkan peringatan merah dan tombol konfirmasi donasi belum bisa dipakai jamaah.
+
+Menjalankan di komputer sendiri:
+
+```bash
+npm install
+npm run dev          # memakai Supabase, butuh env var di atas
+npm run dev:lokal    # pratinjau tanpa Supabase, data disimpan di folder .data
+```
+
+`npm run dev:lokal` memakai penyimpanan file lokal. Berguna untuk mencoba tampilan, tidak untuk dipakai jamaah.
+
+---
+
+## 5. Panduan pengurus
+
+Bagian ini untuk pengurus yang memegang app sehari-hari. Tidak perlu paham kode.
+
+### Masuk ke panel pengurus
+
+Buka alamat app, gulir ke paling bawah, tekan **Masuk pengurus**. Atau langsung ke `alamat-app/admin`. Passwordnya satu, dipakai bersama. Sesi bertahan 12 jam, setelah itu diminta masuk lagi.
+
+### Memverifikasi donasi
+
+Ini pekerjaan harian yang paling penting. Angka di halaman publik hanya naik dari donasi yang Anda verifikasi, jadi angka itu selalu angka yang benar-benar sudah masuk rekening.
+
+1. Buka menu **Donasi**. Bawaannya menampilkan yang berstatus **Menunggu**.
+2. Cocokkan dengan mutasi rekening atau QRIS. Setiap donasi punya nominal yang unik sampai angka terakhir, misalnya `Rp 150.137`. Angka belakang itu yang membedakan satu donatur dengan donatur lain di nominal yang sama.
+3. Kalau nominalnya cocok dengan uang yang masuk, tekan **Verifikasi**. Akan muncul kotak konfirmasi berisi nama dan jumlah paketnya. Tekan **Ya, dana sudah masuk** hanya kalau Anda sudah benar-benar melihat uangnya masuk.
+4. Kolom catatan boleh diisi, misalnya `masuk 12.40 lewat QRIS`. Catatan ini hanya untuk sesama pengurus, kecuali kalau Anda menolak donasi.
+5. Kalau transfernya tidak ketemu, tekan **Tolak** dan tulis catatan singkat. Donatur akan melihat catatan itu di halaman statusnya, jadi tulis dengan bahasa yang enak dibaca, misalnya `belum ada transfer masuk dengan nominal ini sampai hari Rabu`.
+6. Perlu bertanya ke donatur? Tekan **Buka WhatsApp donatur**. Pesannya sudah terisi nama, kode, dan nominal.
+
+Yang berubah setelah verifikasi:
+
+- Angka rupiah di beranda dan halaman season naik
+- Halaman donatur berubah jadi ucapan terima kasih dan menampilkan berapa jamaah yang dirangkul lewat dia
+- Baris kabar terbaru muncul di halaman donatur itu
+
+Kalau salah verifikasi, buka lagi donasi tersebut dan tekan **Tolak**. Angkanya akan turun kembali.
+
+### Menulis Kabar Aksi
+
+Kabar Aksi adalah alasan orang membuka app ini lagi. Satu kabar pendek yang rutin lebih baik daripada satu laporan panjang setahun sekali.
+
+1. Buka menu **Kabar**, lalu isi form **Tulis kabar baru**.
+2. **Hari ke berapa** sudah terisi otomatis, dihitung dari tanggal mulai season aktif. Boleh diubah, boleh dikosongkan.
+3. **Judul** sebaiknya pendek dan konkret. Contoh yang bagus: `Air minum untuk jamaah Subuh`. Contoh yang lemah: `Update kegiatan`.
+4. **Isi kabar** cukup dua sampai empat kalimat. Beberapa aturan yang membuat kabar terasa jujur:
+   - Tulis angka yang benar-benar terjadi. `Dari 15 orang di hari pertama, sekarang 40 orang` lebih kuat daripada `alhamdulillah ramai sekali`.
+   - Kalau angkanya belum ada, tulis kalimat tanpa angka. Jangan mengarang jumlah.
+   - Sebut satu orang atau satu kejadian nyata, bukan kata `banyak`.
+   - Tidak perlu ajakan bertingkat dan emoji berderet.
+5. **Foto** satu saja, maksimal 3 MB. Foto dari kamera HP biasanya perlu dikecilkan dulu lewat aplikasi galeri.
+6. Biarkan **Tampilkan di halaman publik** tercentang, lalu tekan **Terbitkan kabar**.
+
+Pengunjung yang pernah membuka halaman Kabar akan melihat angka kecil di menu Kabar saat ada kabar baru yang belum dia baca.
+
+### Membuat acara dan menerima pendaftar
+
+1. Menu **Acara**, isi judul, waktu mulai, lokasi, dan keterangan. Semua waktu dibaca sebagai waktu Jakarta.
+2. Acara gratis: biarkan kotak **Acara berbayar** tidak tercentang. Pendaftar langsung mendapat tiket.
+3. Acara berbayar: centang kotaknya dan isi harga per orang. Pendaftar mendapat nominal unik dan tombol konfirmasi WhatsApp, sama seperti alur donasi. Konfirmasi pembayarannya di menu **Pendaftar**.
+4. **Kuota** boleh dikosongkan kalau tanpa batas. Kalau diisi, tombol daftar menutup sendiri begitu penuh, dan pengunjung melihat tulisan `Kuota penuh`.
+5. Centang **Terbitkan acara ini** supaya muncul di halaman publik. Tanpa itu, acara hanya terlihat oleh pengurus.
+6. Menu **Pendaftar** menampilkan daftar per acara, tombol **Ekspor CSV** untuk dibuka di Excel, dan tombol WhatsApp per orang.
+
+### Check-in saat hari H
+
+Menu **Check-in** punya dua cara yang sama sahnya:
+
+- **Ketik kode tiket**, misalnya `DZN-9F2M`. Cara ini selalu jalan di HP apa pun.
+- **Pindai QR** lewat kamera. Sebagian HP, termasuk iPhone, belum mendukung pemindaian bawaan peramban. Kalau begitu, pakai cara ketik kode.
+
+Hasilnya muncul besar: nama, jumlah orang, dan status. Kalau tiket sudah pernah dipakai, muncul peringatan berikut waktu check-in sebelumnya, bukan tanda merah menakutkan.
+
+### Mengganti QRIS, nomor WhatsApp, dan link sosial
+
+Semua di menu **Pengaturan**. Satu QRIS dan satu nomor WhatsApp dipakai untuk semua keperluan. Kalau link Saluran WhatsApp dikosongkan, tombolnya tidak ditampilkan di halaman mana pun, bukan ditampilkan sebagai tombol mati.
+
+### Menutup season dan mengisi laporan
+
+1. Menu **Season**, tekan **Ubah** pada season yang selesai.
+2. Isi **Ringkasan penggunaan dana** dengan rincian yang benar-benar terpakai.
+3. Hilangkan centang **Jadikan season aktif** kalau sudah ada season baru yang aktif.
+
+Season yang tidak aktif otomatis pindah ke halaman **Arsip** berikut total yang terkumpul dan ringkasan penggunaannya.
+
+---
+
+## 6. Catatan teknis singkat
+
+- Progress season dihitung dari `SUM(total_amount)` donasi berstatus `verified`. Donasi `pending` tidak pernah ikut dihitung.
+- Tidak ada endpoint publik yang mengembalikan daftar donatur atau pendaftar. Halaman `/donasi/[kode]` dan `/tiket/[kode]` hanya mengembalikan satu baris sesuai kode.
+- Nomor WhatsApp tidak pernah tampil utuh di halaman publik, hanya tersamar seperti `0812••••789`.
+- RLS menyala di semua tabel tanpa policy publik. Seluruh baca dan tulis lewat route server yang memakai service role key.
+- Dokumen pendukung: `DESIGN.md` (arah visual), `PLAN.md` (urutan kerja dan asumsi), `DECISIONS.md` (semua keputusan berikut alasannya), `DELIVERY-GATE.md` (laporan pemeriksaan akhir).
