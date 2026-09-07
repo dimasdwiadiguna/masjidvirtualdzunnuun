@@ -1,8 +1,19 @@
 import type { NextConfig } from "next";
 
-const supabaseHost = process.env.NEXT_PUBLIC_SUPABASE_URL
-  ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname
-  : null;
+// Env var yang ada tetapi kosong atau salah bentuk tidak boleh menggagalkan
+// build. Kalau alamatnya tidak terbaca, optimasi gambar jarak jauh dimatikan
+// dan sisanya tetap jalan.
+function hostSupabase(): string | null {
+  const nilai = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  if (!nilai) return null;
+  try {
+    return new URL(nilai).hostname;
+  } catch {
+    return null;
+  }
+}
+
+const supabaseHost = hostSupabase();
 
 const nextConfig: NextConfig = {
   images: {

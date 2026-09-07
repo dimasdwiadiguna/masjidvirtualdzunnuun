@@ -178,6 +178,7 @@ Diminta BRIEF §13.
 | Cumulative Layout Shift | 0 di enam halaman, 0.061 di halaman season. Batas "baik" menurut Core Web Vitals adalah 0.1. Dicapai setelah ukuran logo dipasang pasti (D-42) dan keadaan memuat diberi tinggi minimal (D-44). |
 | Metadata pratinjau tautan | Judul, deskripsi, dan `og:image` diperiksa benar-benar berada di dalam `<head>` pada HTML mentah, bukan menyusul di akhir dokumen (D-45). |
 | Kunci rahasia di bundle klien | Build dijalankan dengan nilai rahasia penanda, lalu `grep` pada `.next/static/` dan seluruh `.next/`: tidak ditemukan sama sekali. |
+| Build dengan env var kosong atau salah bentuk | Diuji empat keadaan: `NEXT_PUBLIC_SITE_URL` kosong, berisi spasi, tanpa protokol, dan tidak ada sama sekali. Semuanya berhasil dibangun (D-47). |
 | `tsc --noEmit` | Bersih. |
 | `next lint` | Bersih, tanpa peringatan. |
 | Teks Inggris yang terlihat pengguna | Tidak ada. Seluruh antarmuka Bahasa Indonesia. |
