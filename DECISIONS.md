@@ -258,6 +258,32 @@ Konsekuensi: `NEXT_PUBLIC_SITE_URL` sekarang opsional. Isi manual hanya kalau ap
 
 ---
 
+### D-48 Footer tidak boleh mematikan seluruh situs
+
+Gejala: setelah deploy berhasil, seluruh halaman publik menampilkan "Application error: a server-side exception has occurred" tanpa keterangan apa pun.
+
+Sebabnya rancangan saya sendiri. Footer membaca pengaturan dari database, dan footer dirender lewat layout. Galat yang terjadi di dalam layout tidak bisa ditangkap error boundary halaman di segmen yang sama, jadi satu kegagalan database menjatuhkan seluruh situs ke halaman galat bawaan Next yang tidak menjelaskan apa-apa.
+
+Perbaikannya tiga lapis:
+
+1. Footer menjaga bacaannya sendiri. Kalau database gagal dijawab dalam 5 detik atau melempar galat, footer tetap tampil dengan nilai bawaan dan tanpa tautan sosial. Kerangka situs selalu utuh, dan galat isi halaman ditangani error boundary halaman yang pesannya jelas.
+2. Ada `global-error.tsx` sebagai jaring terakhir, berbahasa Indonesia, dengan tombol muat ulang dan penunjuk ke halaman diagnosa.
+3. Setiap panggilan database yang berada di jalur render halaman diberi batas waktu, supaya sambungan yang menggantung tidak membuat pengunjung menatap layar kosong sampai Vercel memutusnya.
+
+### D-49 Driver lokal tidak lagi dipakai diam-diam di produksi
+
+Sebelumnya, kalau kredensial Supabase tidak lengkap, app jatuh ke driver berkas lokal tanpa memberi tahu siapa pun. Di Vercel itu berbahaya: filesystem-nya hanya bisa dibaca, jadi app akan gagal dengan pesan yang menyesatkan, dan kalaupun berhasil menulis, datanya hilang setiap deploy.
+
+Sekarang driver lokal hanya dipakai kalau diminta lewat `DATA_DRIVER=local`, atau saat menjalankan app di komputer sendiri tanpa kredensial. Di produksi, kredensial yang kurang menghasilkan satu pesan yang jelas dan bisa ditindaklanjuti.
+
+### D-50 Halaman diagnosa untuk pengurus
+
+`/admin/diagnosa` memeriksa sumber data, variabel Supabase, alamat publik app, keenam tabel, dan bucket penyimpanan gambar, lalu melaporkan hasilnya satu per satu.
+
+Alasan: React di produksi menyembunyikan pesan galat asli dari peramban demi keamanan, jadi pengurus hanya melihat kode digest yang tidak bisa dipakai apa-apa. Halaman ini menjalankan pemeriksaannya di server, berbarengan, masing-masing dibatasi 8 detik, dan menerjemahkan penyebab yang sering muncul menjadi langkah yang bisa dikerjakan: alamat project salah, kunci yang dipakai bukan service role, tabel belum dibuat, atau project sedang dijeda. Halamannya ada di balik `/admin` sehingga rincian database tidak terbuka untuk umum.
+
+---
+
 ## I. Yang sengaja tidak dibuat
 
 Sesuai BRIEF §12: tidak ada payment gateway, tidak ada akun pengguna, tidak ada sistem role, tidak ada notifikasi push atau email, tidak ada dashboard analitik, tidak ada dark mode, tidak ada i18n, tidak ada animasi scroll, tidak ada chatbot, dan tidak ada leaderboard donatur.

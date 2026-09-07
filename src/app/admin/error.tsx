@@ -19,6 +19,9 @@ export default function GalatAdmin({ error, reset }: { error: Error; reset: () =
         <button type="button" onClick={reset} className="tombol-utama">
           Coba lagi
         </button>
+        <Link href="/admin/diagnosa" className="tombol-kedua">
+          Buka halaman diagnosa
+        </Link>
         <Link href="/admin" className="tombol-kedua">
           Kembali ke ringkasan
         </Link>

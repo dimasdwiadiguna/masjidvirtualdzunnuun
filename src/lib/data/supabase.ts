@@ -1,5 +1,6 @@
 import "server-only";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { SEED_SETTINGS } from "./seed";
 import type {
   DataDriver,
   DonationFilter,
@@ -46,8 +47,10 @@ export function createSupabaseDriver(): DataDriver {
     async getSettings(): Promise<Settings> {
       const { data, error } = await sb.from("settings").select("*").limit(1).maybeSingle();
       lempar("Gagal membaca pengaturan", error);
-      if (!data) throw new Error("Baris settings belum ada. Jalankan supabase/seed.sql lebih dulu.");
-      return data as Settings;
+      // Baris settings bisa saja belum dibuat kalau seed.sql belum dijalankan.
+      // Itu bukan alasan untuk mematikan seluruh halaman: nilai bawaan dipakai,
+      // dan halaman diagnosa pengurus yang memberi tahu apa yang kurang.
+      return (data as Settings) ?? SEED_SETTINGS;
     },
     async saveSettings(patch) {
       const kini = await this.getSettings();
@@ -344,4 +347,15 @@ export function createSupabaseDriver(): DataDriver {
       return data.publicUrl;
     },
   };
+}
+
+/** Dipakai halaman diagnosa pengurus untuk memastikan bucket gambar sudah ada. */
+export async function periksaBucketMedia(): Promise<{ ada: boolean; pesan: string }> {
+  try {
+    const { error } = await klien().storage.from(BUCKET).list("", { limit: 1 });
+    if (error) return { ada: false, pesan: error.message };
+    return { ada: true, pesan: `Bucket "${BUCKET}" bisa dibaca.` };
+  } catch (galat) {
+    return { ada: false, pesan: galat instanceof Error ? galat.message : "Gagal memeriksa bucket." };
+  }
 }
