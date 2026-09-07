@@ -30,7 +30,7 @@ Catatan keamanan: `service_role` key membuka seluruh database. Simpan hanya di e
 | `ADMIN_PASSWORD` | ya | Password bersama untuk seluruh pengurus. Pakai kalimat panjang, minimal 16 karakter. |
 | `NEXT_PUBLIC_SUPABASE_URL` | ya | Project URL dari Supabase. |
 | `SUPABASE_SERVICE_ROLE_KEY` | ya | `service_role` key dari Supabase. Hanya dibaca di server. |
-| `NEXT_PUBLIC_SITE_URL` | ya | Alamat publik app, misalnya `https://dzunnuun.vercel.app`. Dipakai untuk gambar pratinjau tautan WhatsApp. |
+| `NEXT_PUBLIC_SITE_URL` | tidak | Alamat publik app, misalnya `https://dzunnuun.vercel.app`. Dipakai untuk gambar pratinjau tautan WhatsApp. Kalau dikosongkan, alamat produksi dari Vercel yang dipakai. Isi manual kalau app sudah punya domain sendiri. Boleh ditulis tanpa `https://`. |
 | `ADMIN_SESSION_SECRET` | tidak | Teks acak panjang untuk menandatangani cookie sesi. Kalau kosong, `ADMIN_PASSWORD` yang dipakai. Isi kalau Anda ingin bisa mengganti password tanpa memutus sesi yang sedang berjalan. |
 
 Contohnya ada di `.env.example`.
@@ -39,7 +39,7 @@ Contohnya ada di `.env.example`.
 
 1. Push repo ini ke GitHub.
 2. Di Vercel, **Add New, Project**, pilih repo ini. Framework terdeteksi otomatis sebagai Next.js, biarkan pengaturan build apa adanya.
-3. Buka **Settings, Environment Variables**, isi kelima variabel di tabel atas untuk environment Production dan Preview.
+3. Buka **Settings, Environment Variables**, isi variabel di tabel atas untuk environment Production dan Preview. Yang wajib hanya `ADMIN_PASSWORD`, `NEXT_PUBLIC_SUPABASE_URL`, dan `SUPABASE_SERVICE_ROLE_KEY`. Variabel yang dibuat tetapi dibiarkan kosong diperlakukan sebagai tidak diisi, jadi tidak menggagalkan build.
 4. Klik **Deploy**.
 5. Setelah live, buka `https://alamat-anda/admin`, masuk dengan `ADMIN_PASSWORD`, lalu isi halaman **Pengaturan**. Selama nomor WhatsApp masih berisi nilai contoh, halaman ringkasan admin menampilkan peringatan merah dan tombol konfirmasi donasi belum bisa dipakai jamaah.
 

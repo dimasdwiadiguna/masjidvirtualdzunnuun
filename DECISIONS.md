@@ -246,6 +246,18 @@ Sesuai BRIEF §5. Tombol membuka dialog berisi nama, nominal, dan jumlah paket, 
 
 ---
 
+### D-47 Env var kosong tidak boleh menggagalkan build
+
+Gejala: deploy pertama di Vercel gagal dengan `Failed to collect configuration for /_not-found` dan `TypeError: Invalid URL, input: ''`. Sebabnya `NEXT_PUBLIC_SITE_URL` dibuat di Vercel tetapi nilainya kosong. Kode lama memakai `??` yang hanya menangkap nilai yang benar-benar tidak ada, bukan string kosong, sehingga `new URL("")` dijalankan dan seluruh build berhenti.
+
+Perbaikannya di `src/lib/situs.ts`: nilai dirapikan lebih dulu, string kosong dianggap tidak diisi, alamat tanpa `https://` dilengkapi sendiri, dan kalau tetap tidak terbaca app memakai alamat produksi dari Vercel (`VERCEL_PROJECT_PRODUCTION_URL`, lalu `VERCEL_URL`). Penjagaan yang sama dipasang untuk `NEXT_PUBLIC_SUPABASE_URL` di `next.config.ts`.
+
+Diuji dengan empat keadaan: nilai kosong, nilai berisi spasi, alamat tanpa protokol, dan tanpa `NEXT_PUBLIC_SITE_URL` sama sekali. Keempatnya berhasil dibangun, dan alamat pada gambar pratinjau tautan tetap benar.
+
+Konsekuensi: `NEXT_PUBLIC_SITE_URL` sekarang opsional. Isi manual hanya kalau app sudah punya domain sendiri.
+
+---
+
 ## I. Yang sengaja tidak dibuat
 
 Sesuai BRIEF §12: tidak ada payment gateway, tidak ada akun pengguna, tidak ada sistem role, tidak ada notifikasi push atau email, tidak ada dashboard analitik, tidak ada dark mode, tidak ada i18n, tidak ada animasi scroll, tidak ada chatbot, dan tidak ada leaderboard donatur.

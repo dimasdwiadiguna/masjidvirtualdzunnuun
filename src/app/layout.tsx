@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geologica, Raleway } from "next/font/google";
+import { alamatSitus } from "@/lib/situs";
 import "./globals.css";
 
 const geologica = Geologica({
@@ -21,7 +22,7 @@ const raleway = Raleway({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+  metadataBase: new URL(alamatSitus()),
   title: {
     default: "Dzun Nuun, komunitas pemuda Masjid Fathul Ummah",
     template: "%s | Dzun Nuun",
