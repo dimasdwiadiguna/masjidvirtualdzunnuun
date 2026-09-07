@@ -1,0 +1,347 @@
+import "server-only";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import type {
+  DataDriver,
+  DonationFilter,
+  DonationInput,
+  EventInput,
+  RegistrationInput,
+  SeasonInput,
+  SponsorInput,
+  UpdateInput,
+} from "./index";
+import type {
+  Donation,
+  EventCapacityInfo,
+  EventItem,
+  Registration,
+  Season,
+  SeasonProgress,
+  Settings,
+  Sponsor,
+  Update,
+} from "./types";
+
+const BUCKET = "media";
+
+/**
+ * Service role key hanya hidup di modul server ini. Tidak ada import dari
+ * komponen klien, dan tidak ada NEXT_PUBLIC_ pada nama variabelnya.
+ */
+function klien(): SupabaseClient {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) throw new Error("Kredensial Supabase belum lengkap di env var server");
+  return createClient(url, key, { auth: { persistSession: false } });
+}
+
+function lempar(pesan: string, error: { message: string } | null): void {
+  if (error) throw new Error(`${pesan}: ${error.message}`);
+}
+
+export function createSupabaseDriver(): DataDriver {
+  const sb = klien();
+
+  return {
+    async getSettings(): Promise<Settings> {
+      const { data, error } = await sb.from("settings").select("*").limit(1).maybeSingle();
+      lempar("Gagal membaca pengaturan", error);
+      if (!data) throw new Error("Baris settings belum ada. Jalankan supabase/seed.sql lebih dulu.");
+      return data as Settings;
+    },
+    async saveSettings(patch) {
+      const kini = await this.getSettings();
+      const { data, error } = await sb
+        .from("settings")
+        .update(patch)
+        .eq("id", kini.id)
+        .select("*")
+        .single();
+      lempar("Gagal menyimpan pengaturan", error);
+      return data as Settings;
+    },
+
+    async listSeasons() {
+      const { data, error } = await sb.from("seasons").select("*").order("start_date", { ascending: false });
+      lempar("Gagal membaca daftar season", error);
+      return (data ?? []) as Season[];
+    },
+    async getActiveSeason() {
+      const { data, error } = await sb.from("seasons").select("*").eq("is_active", true).maybeSingle();
+      lempar("Gagal membaca season aktif", error);
+      return (data as Season) ?? null;
+    },
+    async getSeasonBySlug(slug) {
+      const { data, error } = await sb.from("seasons").select("*").eq("slug", slug).maybeSingle();
+      lempar("Gagal membaca season", error);
+      return (data as Season) ?? null;
+    },
+    async getSeasonById(id) {
+      const { data, error } = await sb.from("seasons").select("*").eq("id", id).maybeSingle();
+      lempar("Gagal membaca season", error);
+      return (data as Season) ?? null;
+    },
+    async saveSeason(input: SeasonInput) {
+      const { id, ...isi } = input;
+      if (id) {
+        if (isi.is_active) {
+          const { error: reset } = await sb.from("seasons").update({ is_active: false }).neq("id", id);
+          lempar("Gagal menonaktifkan season lain", reset);
+        }
+        const { data, error } = await sb.from("seasons").update(isi).eq("id", id).select("*").single();
+        lempar("Gagal menyimpan season", error);
+        return data as Season;
+      }
+      if (isi.is_active) {
+        const { error: reset } = await sb.from("seasons").update({ is_active: false }).eq("is_active", true);
+        lempar("Gagal menonaktifkan season lain", reset);
+      }
+      const { data, error } = await sb.from("seasons").insert(isi).select("*").single();
+      lempar("Gagal membuat season", error);
+      return data as Season;
+    },
+    async setActiveSeason(id) {
+      const { error: reset } = await sb.from("seasons").update({ is_active: false }).neq("id", id);
+      lempar("Gagal menonaktifkan season lain", reset);
+      const { error } = await sb.from("seasons").update({ is_active: true }).eq("id", id);
+      lempar("Gagal mengaktifkan season", error);
+    },
+    async seasonProgress(seasonId): Promise<SeasonProgress> {
+      const { data, error } = await sb
+        .from("donations")
+        .select("total_amount, package_count")
+        .eq("season_id", seasonId)
+        .eq("status", "verified");
+      lempar("Gagal menghitung progress", error);
+      const baris = (data ?? []) as { total_amount: number; package_count: number }[];
+      return {
+        collected: baris.reduce((t, d) => t + d.total_amount, 0),
+        packages: baris.reduce((t, d) => t + d.package_count, 0),
+        donors: baris.length,
+      };
+    },
+
+    async listDonations(filter: DonationFilter = {}) {
+      let q = sb.from("donations").select("*").order("created_at", { ascending: false });
+      if (filter.status && filter.status !== "semua") q = q.eq("status", filter.status);
+      const cari = filter.cari?.trim();
+      if (cari) {
+        const digit = cari.replace(/\D/g, "");
+        const bagian = [`donor_name.ilike.%${cari}%`, `code.ilike.%${cari}%`];
+        if (digit) bagian.push(`total_amount.eq.${digit}`);
+        q = q.or(bagian.join(","));
+      }
+      const { data, error } = await q;
+      lempar("Gagal membaca donasi", error);
+      return (data ?? []) as Donation[];
+    },
+    async getDonationByCode(code) {
+      const { data, error } = await sb
+        .from("donations")
+        .select("*")
+        .eq("code", code.toUpperCase())
+        .maybeSingle();
+      lempar("Gagal membaca donasi", error);
+      return (data as Donation) ?? null;
+    },
+    async pendingDonationTotals(seasonId) {
+      const { data, error } = await sb
+        .from("donations")
+        .select("total_amount")
+        .eq("season_id", seasonId)
+        .eq("status", "pending");
+      lempar("Gagal membaca nominal pending", error);
+      return ((data ?? []) as { total_amount: number }[]).map((d) => d.total_amount);
+    },
+    async codeExists(code) {
+      const [donasi, tiket] = await Promise.all([
+        sb.from("donations").select("id").eq("code", code).maybeSingle(),
+        sb.from("registrations").select("id").eq("code", code).maybeSingle(),
+      ]);
+      return Boolean(donasi.data) || Boolean(tiket.data);
+    },
+    async createDonation(input: DonationInput) {
+      const { data, error } = await sb
+        .from("donations")
+        .insert({ ...input, status: input.status ?? "pending" })
+        .select("*")
+        .single();
+      lempar("Gagal menyimpan donasi", error);
+      return data as Donation;
+    },
+    async setDonationStatus(id, status, adminNote) {
+      const { data, error } = await sb
+        .from("donations")
+        .update({
+          status,
+          admin_note: adminNote,
+          verified_at: status === "verified" ? new Date().toISOString() : null,
+        })
+        .eq("id", id)
+        .select("*")
+        .single();
+      lempar("Gagal memperbarui donasi", error);
+      return (data as Donation) ?? null;
+    },
+
+    async listEvents(opts = {}) {
+      let q = sb.from("events").select("*").order("starts_at", { ascending: true });
+      if (opts.hanyaTerbit) q = q.eq("is_published", true);
+      const { data, error } = await q;
+      lempar("Gagal membaca acara", error);
+      return (data ?? []) as EventItem[];
+    },
+    async getEventBySlug(slug) {
+      const { data, error } = await sb.from("events").select("*").eq("slug", slug).maybeSingle();
+      lempar("Gagal membaca acara", error);
+      return (data as EventItem) ?? null;
+    },
+    async getEventById(id) {
+      const { data, error } = await sb.from("events").select("*").eq("id", id).maybeSingle();
+      lempar("Gagal membaca acara", error);
+      return (data as EventItem) ?? null;
+    },
+    async saveEvent(input: EventInput) {
+      const { id, ...isi } = input;
+      if (id) {
+        const { data, error } = await sb.from("events").update(isi).eq("id", id).select("*").single();
+        lempar("Gagal menyimpan acara", error);
+        return data as EventItem;
+      }
+      const { data, error } = await sb.from("events").insert(isi).select("*").single();
+      lempar("Gagal membuat acara", error);
+      return data as EventItem;
+    },
+    async deleteEvent(id) {
+      const { error } = await sb.from("events").delete().eq("id", id);
+      lempar("Gagal menghapus acara", error);
+    },
+    async eventCapacity(eventId, capacity): Promise<EventCapacityInfo> {
+      const { data, error } = await sb
+        .from("registrations")
+        .select("quantity, status")
+        .eq("event_id", eventId)
+        .neq("status", "cancelled");
+      lempar("Gagal menghitung kuota", error);
+      const taken = ((data ?? []) as { quantity: number }[]).reduce((t, r) => t + r.quantity, 0);
+      return { taken, remaining: capacity === null ? null : Math.max(0, capacity - taken) };
+    },
+
+    async listRegistrations(eventId) {
+      let q = sb.from("registrations").select("*").order("created_at", { ascending: false });
+      if (eventId) q = q.eq("event_id", eventId);
+      const { data, error } = await q;
+      lempar("Gagal membaca pendaftar", error);
+      return (data ?? []) as Registration[];
+    },
+    async getRegistrationByCode(code) {
+      const { data, error } = await sb
+        .from("registrations")
+        .select("*")
+        .eq("code", code.toUpperCase())
+        .maybeSingle();
+      lempar("Gagal membaca tiket", error);
+      return (data as Registration) ?? null;
+    },
+    async pendingRegistrationTotals(eventId) {
+      const { data, error } = await sb
+        .from("registrations")
+        .select("total_amount")
+        .eq("event_id", eventId)
+        .eq("status", "pending");
+      lempar("Gagal membaca nominal pending", error);
+      return ((data ?? []) as { total_amount: number }[]).map((r) => r.total_amount);
+    },
+    async createRegistration(input: RegistrationInput) {
+      const { data, error } = await sb.from("registrations").insert(input).select("*").single();
+      lempar("Gagal menyimpan pendaftaran", error);
+      return data as Registration;
+    },
+    async setRegistrationStatus(id, status) {
+      const { data, error } = await sb
+        .from("registrations")
+        .update({ status })
+        .eq("id", id)
+        .select("*")
+        .single();
+      lempar("Gagal memperbarui pendaftar", error);
+      return (data as Registration) ?? null;
+    },
+    async markCheckedIn(id) {
+      const { data, error } = await sb
+        .from("registrations")
+        .update({ status: "checked_in", checked_in_at: new Date().toISOString() })
+        .eq("id", id)
+        .select("*")
+        .single();
+      lempar("Gagal menandai kehadiran", error);
+      return (data as Registration) ?? null;
+    },
+
+    async listUpdates(opts = {}) {
+      let q = sb.from("updates").select("*").order("published_at", { ascending: false });
+      if (opts.hanyaTerbit) q = q.eq("is_published", true);
+      if (opts.seasonId) q = q.eq("season_id", opts.seasonId);
+      if (opts.limit) q = q.limit(opts.limit);
+      const { data, error } = await q;
+      lempar("Gagal membaca kabar", error);
+      return (data ?? []) as Update[];
+    },
+    async getUpdateById(id) {
+      const { data, error } = await sb.from("updates").select("*").eq("id", id).maybeSingle();
+      lempar("Gagal membaca kabar", error);
+      return (data as Update) ?? null;
+    },
+    async saveUpdate(input: UpdateInput) {
+      const { id, ...isi } = input;
+      if (id) {
+        const { data, error } = await sb.from("updates").update(isi).eq("id", id).select("*").single();
+        lempar("Gagal menyimpan kabar", error);
+        return data as Update;
+      }
+      const { data, error } = await sb.from("updates").insert(isi).select("*").single();
+      lempar("Gagal membuat kabar", error);
+      return data as Update;
+    },
+    async deleteUpdate(id) {
+      const { error } = await sb.from("updates").delete().eq("id", id);
+      lempar("Gagal menghapus kabar", error);
+    },
+
+    async listSponsors(seasonId) {
+      const { data, error } = await sb
+        .from("sponsors")
+        .select("*")
+        .eq("season_id", seasonId)
+        .order("sort_order", { ascending: true });
+      lempar("Gagal membaca sponsor", error);
+      return (data ?? []) as Sponsor[];
+    },
+    async saveSponsor(input: SponsorInput) {
+      const { id, ...isi } = input;
+      if (id) {
+        const { data, error } = await sb.from("sponsors").update(isi).eq("id", id).select("*").single();
+        lempar("Gagal menyimpan sponsor", error);
+        return data as Sponsor;
+      }
+      const { data, error } = await sb.from("sponsors").insert(isi).select("*").single();
+      lempar("Gagal membuat sponsor", error);
+      return data as Sponsor;
+    },
+    async deleteSponsor(id) {
+      const { error } = await sb.from("sponsors").delete().eq("id", id);
+      lempar("Gagal menghapus sponsor", error);
+    },
+
+    async uploadImage(file, folder) {
+      const ext = (file.name.split(".").pop() ?? "jpg").toLowerCase().replace(/[^a-z0-9]/g, "");
+      const nama = `${folder}/${crypto.randomUUID()}.${ext}`;
+      const { error } = await sb.storage
+        .from(BUCKET)
+        .upload(nama, await file.arrayBuffer(), { contentType: file.type, upsert: false });
+      lempar("Gagal mengunggah berkas", error as { message: string } | null);
+      const { data } = sb.storage.from(BUCKET).getPublicUrl(nama);
+      return data.publicUrl;
+    },
+  };
+}

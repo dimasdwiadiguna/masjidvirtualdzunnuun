@@ -1,0 +1,257 @@
+@import "tailwindcss";
+
+@theme {
+  --color-cream: #f7f3ea;
+  --color-paper: #fffdf7;
+  --color-ink: #06232a;
+  --color-ink-soft: #47615f;
+  --color-teal: #0a8074;
+  --color-teal-ink: #075f57;
+  --color-teal-deep: #043a43;
+  --color-gold: #c6b066;
+  --color-gold-ink: #6e5410;
+  --color-sukses: #1e6b3a;
+  --color-bahaya: #8a1f1f;
+  --color-garis: #47615f;
+
+  --font-judul: var(--font-geologica), ui-sans-serif, system-ui, sans-serif;
+  --font-isi: var(--font-raleway), ui-sans-serif, system-ui, sans-serif;
+
+  --radius-kecil: 4px;
+  --radius-kartu: 10px;
+  --radius-tombol: 14px;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: auto;
+}
+
+body {
+  background-color: var(--color-cream);
+  color: var(--color-ink);
+  font-family: var(--font-isi);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-judul);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+h1 {
+  font-size: clamp(1.6rem, 5.5vw, 2.15rem);
+}
+
+h2 {
+  font-size: clamp(1.25rem, 4.4vw, 1.6rem);
+}
+
+h3 {
+  font-size: clamp(1.05rem, 3.6vw, 1.25rem);
+}
+
+/* Fokus keyboard selalu terlihat. Tidak ada outline yang dihapus tanpa pengganti. */
+:focus-visible {
+  outline: 3px solid var(--color-teal-deep);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.di-gelap :focus-visible {
+  outline-color: var(--color-gold);
+}
+
+@layer components {
+  /* Bayangan padat tanpa blur, diambil dari wordmark di logo Dzun Nuun. */
+  .bayang-padat {
+    box-shadow: 3px 3px 0 var(--color-ink);
+  }
+
+  .bayang-padat-terang {
+    box-shadow: 3px 3px 0 var(--color-gold);
+  }
+
+  .tombol-utama {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 48px;
+    padding: 12px 20px;
+    border-radius: var(--radius-tombol);
+    background-color: var(--color-teal);
+    color: var(--color-paper);
+    font-family: var(--font-judul);
+    font-weight: 600;
+    font-size: 1rem;
+    box-shadow: 3px 3px 0 var(--color-ink);
+    transition: transform 120ms ease, box-shadow 120ms ease;
+  }
+
+  .tombol-utama:hover {
+    transform: translate(1px, 1px);
+    box-shadow: 2px 2px 0 var(--color-ink);
+  }
+
+  .tombol-utama:active {
+    transform: translate(3px, 3px);
+    box-shadow: 0 0 0 var(--color-ink);
+  }
+
+  .tombol-utama:disabled {
+    background-color: var(--color-ink-soft);
+    box-shadow: none;
+    transform: none;
+    cursor: not-allowed;
+  }
+
+  .tombol-kedua {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 48px;
+    padding: 12px 18px;
+    border-radius: var(--radius-tombol);
+    border: 1.5px solid var(--color-ink);
+    background-color: transparent;
+    color: var(--color-ink);
+    font-family: var(--font-judul);
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+
+  .tombol-kedua:hover {
+    background-color: rgba(10, 128, 116, 0.1);
+  }
+
+  .tombol-kecil {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 8px 14px;
+    border-radius: var(--radius-kecil);
+    border: 1.5px solid var(--color-ink-soft);
+    font-family: var(--font-judul);
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  .tombol-kecil:hover {
+    background-color: rgba(10, 128, 116, 0.1);
+  }
+
+  .kartu {
+    background-color: var(--color-paper);
+    border: 1.5px solid var(--color-ink-soft);
+    border-radius: var(--radius-kartu);
+  }
+
+  .blok-gelap {
+    background-color: var(--color-teal-deep);
+    color: var(--color-cream);
+  }
+
+  .kolom-isi {
+    width: 100%;
+    max-width: 640px;
+    margin-inline: auto;
+    padding-inline: 16px;
+  }
+
+  .label-isian {
+    display: block;
+    font-family: var(--font-judul);
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 6px;
+  }
+
+  .isian {
+    width: 100%;
+    min-height: 48px;
+    padding: 10px 12px;
+    border: 1.5px solid var(--color-ink-soft);
+    border-radius: var(--radius-kecil);
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-isi);
+    font-size: 1rem;
+  }
+
+  .isian::placeholder {
+    color: var(--color-ink-soft);
+  }
+
+  .isian:disabled {
+    background-color: rgba(71, 97, 95, 0.12);
+  }
+
+  .badge-kode {
+    display: inline-block;
+    padding: 4px 10px;
+    border: 1.5px solid var(--color-ink);
+    border-radius: var(--radius-kecil);
+    background-color: var(--color-paper);
+    font-family: var(--font-judul);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+
+  .isi-tulisan p {
+    margin-bottom: 14px;
+  }
+
+  .isi-tulisan h2,
+  .isi-tulisan h3,
+  .isi-tulisan h4 {
+    margin-top: 22px;
+    margin-bottom: 8px;
+  }
+
+  .isi-tulisan ul,
+  .isi-tulisan ol {
+    margin: 0 0 14px 20px;
+  }
+
+  .isi-tulisan ul {
+    list-style: disc;
+  }
+
+  .isi-tulisan ol {
+    list-style: decimal;
+  }
+
+  .isi-tulisan li {
+    margin-bottom: 6px;
+  }
+
+  .isi-tulisan a {
+    color: var(--color-teal-ink);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .di-gelap .isi-tulisan a {
+    color: var(--color-gold);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tombol-utama {
+    transition: none;
+  }
+}
