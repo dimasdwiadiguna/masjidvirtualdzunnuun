@@ -14,7 +14,7 @@ Kenapa dial-nya begitu:
 
 - **ENERGY 2.** Ini komunitas pemuda, bukan situs layanan publik yang datar, tapi juga bukan portofolio agensi. Halaman harus menyapa dengan hangat lalu cepat masuk ke isi (nominal, tanggal, tombol).
 - **RHYTHM 2.** Komposisi antar section memang berbeda (hero gelap, feed kabar, daftar acara, blok arsip), tapi tetap ada pola yang konsisten supaya pengurus non-teknis gampang menambah konten tanpa merusak tampilan.
-- **MOTION 1.** Hanya state hover, active, dan focus. Tidak ada animasi scroll. Alasannya dua: BRIEF §12 melarang animasi scroll sepanjang halaman, dan target perangkatnya HP kelas menengah-bawah dengan koneksi lambat.
+- **MOTION 2.** Hanya dua gerak yang dipakai: pergantian foto di hero, dan perubahan state pada tombol. Tidak ada animasi scroll, sesuai larangan BRIEF §12. Pergantian foto berhenti sendiri kalau perangkat meminta gerak minimal.
 
 ## 2. Karakter
 
@@ -40,7 +40,9 @@ Palet aktif: **2 warna inti (teal, teal gelap) + 1 aksen (emas)**, di atas netra
 | `--success` | `#1E6B3A` | Status terverifikasi, tiket terkonfirmasi. |
 | `--danger` | `#8A1F1F` | Status ditolak, error form. |
 
-Aksen emas dipakai **hanya di tiga tempat**: isi progress bar donasi di kartu gelap, badge jumlah kabar baru di navigasi, dan label "Hari ke-N" di Kabar Aksi (memakai `--gold-ink` karena label itu duduk di atas krem). Di luar itu emas tidak muncul, supaya aksennya tetap terasa aksen (Part 3 antislop, one deliberate accent).
+Aksen emas dipakai **hanya di dua tempat**: kalimat pembuka di hero (emas di atas foto gelap) dan label "Hari ke-N" di Kabar Aksi (memakai `--gold-ink` karena label itu duduk di atas krem). Progress bar memakai teal karena barnya kini duduk di kartu terang, dan emas tidak lolos kontras di sana.
+
+Garis kartu memakai `--garis` (`#DED5C2`) yang sengaja tipis dan tenang, sedangkan garis isian memakai `--garis-isian` (`#7B8886`, rasio 3.62 terhadap kertas) karena batas komponen yang bisa diisi wajib memenuhi kontras non-teks 3:1.
 
 ### Bukti kontras (WCAG AA, dihitung dengan `contrast-check.py` dari antislop-human)
 
@@ -70,26 +72,25 @@ Yang **tidak boleh**: `--gold` sebagai teks atau garis di atas `--cream` (rasio 
 
 ## 5. Motif identitas
 
-Satu motif, diambil langsung dari logo: **bayangan padat tanpa blur** (`box-shadow: 3px 3px 0`). Di logo, wordmark "Dzun nuun" punya bayangan offset padat. Motif itu dipakai ulang di:
+Satu motif: **garis pendek teal di atas setiap judul bagian** (22 x 3 piksel). Motif itu diulang di beranda, halaman season, halaman tentang, dan blok cara bayar, sehingga bagian-bagian halaman mudah dipindai sambil digulir cepat.
 
-- tombol utama (donasi, daftar acara, konfirmasi WhatsApp)
-- kartu progress season
-- badge kode donasi dan kode tiket
+Kartu memakai garis tipis, bukan bayangan. Tidak ada bayangan melayang di elemen mana pun, jadi halaman tetap jauh dari pola kartu putih melayang yang dilarang BRIEF §9, sekaligus terasa rapat dan tenang seperti app penggalangan dana yang sudah mapan.
 
-Tidak ada bayangan blur lembut di elemen lain. Elemen biasa duduk rata di atas kertas, dibatasi garis `--ink-soft` setebal 1.5px. Ini yang membedakan halaman ini dari kartu putih melayang yang dilarang BRIEF §9.
+Motif bayangan padat tanpa blur yang sebelumnya dipakai sudah dilepas atas permintaan pengurus, yang meminta tampilan yang lebih compact dan clean. Alasannya dicatat di `DECISIONS.md` butir D-53.
 
 ## 6. Bentuk dan jarak
 
-- Radius: `4px` untuk input dan badge, `10px` untuk kartu, `14px` untuk tombol utama. Variasi ini disengaja sebagai penanda hierarki (R-11). Tidak ada elemen berbentuk pil.
-- Skala jarak: 4, 8, 12, 16, 24, 32, 48, 64. Section di mobile memakai padding vertikal 32 sampai 40, bukan 96 seperti desktop.
-- Lebar konten maksimal 640px. Ini app satu kolom, bukan landing page lebar.
+- Radius: `8px` untuk input, chip, dan label status, `10px` untuk tombol, `12px` untuk kartu. Variasi ini disengaja sebagai penanda hierarki (R-11). Tidak ada elemen berbentuk pil, kecuali titik penanda foto hero yang memang bulat.
+- Skala jarak: 4, 8, 12, 16, 24, 32. Jarak antar kartu 8px, padding kartu 16px, jarak antar bagian 32px.
+- Ukuran teks dasar 15px dengan tinggi baris 1,55. Halaman jadi lebih rapat tanpa mengorbankan keterbacaan.
+- Lebar konten 600px untuk halaman isi, 880px untuk beranda dan daftar.
 - Target tap minimal 44x44px, dengan jarak antar target minimal 8px.
 
 ## 7. Komposisi per halaman (RHYTHM 2)
 
 Setiap halaman punya komposisi berbeda, bukan pengulangan "judul di tengah + grid kartu":
 
-- **Beranda**: blok hero gelap penuh lebar berisi progress season, lalu feed kabar (kartu horizontal, foto kiri teks kanan), lalu daftar acara (baris dengan tanggal sebagai blok kiri), lalu paragraf tentang kami rata kiri, lalu footer gelap.
+- **Beranda**: hero berupa foto kegiatan yang berganti pelan dengan lapisan gelap di atasnya, judul pendek di bagian bawah foto, lalu kartu progress yang sedikit menumpuk ke atas foto, lalu feed kabar, daftar acara, dan paragraf tentang kami.
 - **Season**: foto header lebar, judul, progress besar di kartu gelap, deskripsi mengalir, feed kabar, logo sponsor sebagai baris sederhana.
 - **Donasi**: form satu kolom, chip paket sebagai grid 2x2 di 360px, konversi hidup tepat di bawah input.
 - **Status donasi**: nominal sebagai angka terbesar di halaman, sisanya menurun tajam. Ini satu-satunya halaman dengan satu fokus tunggal sebesar itu.

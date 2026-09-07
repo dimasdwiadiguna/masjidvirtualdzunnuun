@@ -47,7 +47,7 @@ export default function FormAksi({
   return (
     <form action={dispatch} className={`grid gap-4 ${className ?? ""}`}>
       {hasil.pesan && !hasil.sukses ? (
-        <p role="alert" className="rounded-[4px] border-2 border-bahaya bg-paper p-3 text-bahaya">
+        <p role="alert" className="rounded-[4px] border border-bahaya bg-paper p-3 text-bahaya">
           {hasil.pesan}
         </p>
       ) : null}

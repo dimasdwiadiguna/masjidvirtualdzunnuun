@@ -65,7 +65,7 @@ export default function KonfirmasiAksi({
       <dialog
         ref={dialog}
         onClose={() => setTerbuka(false)}
-        className="w-[min(92vw,420px)] rounded-[10px] border-2 border-ink bg-paper p-0 text-ink backdrop:bg-ink/50"
+        className="w-[min(92vw,420px)] rounded-[12px] border border-garis bg-paper p-0 text-ink backdrop:bg-ink/50"
       >
         <form action={aksi} className="grid gap-3 p-4">
           {Object.entries(tersembunyi).map(([nama, nilai]) => (

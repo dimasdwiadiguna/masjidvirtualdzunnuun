@@ -56,3 +56,50 @@ export function IkonLokasi({ className }: Props) {
     </svg>
   );
 }
+
+export function IkonBeranda({ className, aktif }: Props & { aktif?: boolean }) {
+  return (
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" className={className} fill={aktif ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round">
+      <path d="M4 11 12 4l8 7v8a1 1 0 0 1-1 1h-4v-5H9v5H5a1 1 0 0 1-1-1Z" />
+    </svg>
+  );
+}
+
+export function IkonKabar({ className, aktif }: Props & { aktif?: boolean }) {
+  return (
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" className={className} fill={aktif ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round">
+      <rect x="3.5" y="5" width="17" height="14" rx="2" />
+      <path d="M7 9h6M7 13h10M7 16h7" stroke={aktif ? "var(--color-paper)" : "currentColor"} strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function IkonAcaraNav({ className, aktif }: Props & { aktif?: boolean }) {
+  return (
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" className={className} fill={aktif ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round">
+      <rect x="3.5" y="5.5" width="17" height="14" rx="2" />
+      <path d="M3.5 10h17" />
+      <path d="M8 3.5v4M16 3.5v4" strokeLinecap="round" />
+      {aktif ? <circle cx="12" cy="14.5" r="1.6" fill="var(--color-paper)" stroke="none" /> : null}
+    </svg>
+  );
+}
+
+export function IkonTentang({ className, aktif }: Props & { aktif?: boolean }) {
+  return (
+    <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" className={className} fill={aktif ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.8">
+      <circle cx="12" cy="8.5" r="3.4" />
+      <path d="M4.8 20c.7-3.6 3.6-5.6 7.2-5.6s6.5 2 7.2 5.6" strokeLinecap="round" fill="none" />
+    </svg>
+  );
+}
+
+export function IkonBagikan({ className }: Props) {
+  return (
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" className={className} fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 4v11" />
+      <path d="m8 8 4-4 4 4" />
+      <path d="M5 13v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-6" />
+    </svg>
+  );
+}

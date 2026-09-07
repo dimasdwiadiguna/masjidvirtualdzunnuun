@@ -36,31 +36,32 @@ export default async function HalamanTiket({ params }: Props) {
 
   const label =
     tiket.status === "checked_in"
-      ? "Sudah hadir, terima kasih"
+      ? { teks: "Sudah hadir", kelas: "bg-sukses/10 text-sukses" }
       : tiket.status === "confirmed"
-        ? "Tiket siap dipakai"
+        ? { teks: "Tiket siap dipakai", kelas: "bg-sukses/10 text-sukses" }
         : tiket.status === "pending"
-          ? "Menunggu konfirmasi pembayaran"
-          : "Tiket dibatalkan";
+          ? { teks: "Menunggu pembayaran", kelas: "bg-gold-ink/10 text-gold-ink" }
+          : { teks: "Dibatalkan", kelas: "bg-bahaya/10 text-bahaya" };
 
   return (
-    <div className="kolom-isi py-8">
-      <p className="text-sm text-ink-soft">Tiket acara</p>
-      <h1 className="mt-1">{acara.title}</h1>
-      <p className="mt-2 text-ink-soft">{tanggalDanJam(acara.starts_at)}</p>
-      {acara.location_name ? <p className="text-ink-soft">{acara.location_name}</p> : null}
+    <div className="kolom-isi py-6">
+      <span className={`label-status ${label.kelas}`}>{label.teks}</span>
+      <h1 className="mt-2">{acara.title}</h1>
+      <p className="mt-1 text-sm text-ink-soft">
+        {tanggalDanJam(acara.starts_at)}
+        {acara.location_name ? ` · ${acara.location_name}` : ""}
+      </p>
 
-      <div className="kartu bayang-padat mt-5 p-4">
-        <p className="font-semibold text-ink-soft">{label}</p>
-        <p className="mt-2 font-[family-name:var(--font-judul)] text-[clamp(1.9rem,9vw,2.6rem)] font-bold leading-none tracking-wide">
-          {tiket.code}
-        </p>
-        <p className="mt-2 text-[0.95rem]">
-          Atas nama {tiket.name}, {tiket.quantity} orang. Nomor WhatsApp {samarkanWa(tiket.whatsapp)}.
-        </p>
-        {tiket.status === "confirmed" || tiket.status === "checked_in" ? <QrTiket kode={tiket.code} /> : null}
-        <p className="mt-3 text-[0.95rem] text-ink-soft">
-          Tunjukkan kode ini di meja panitia. Kalau kameranya bermasalah, panitia bisa mengetik kodenya.
+      <div className="kartu mt-4 p-4 text-center">
+        <p className="text-sm text-ink-soft">Tunjukkan kode ini di meja panitia</p>
+        <p className="kode-besar mt-1 text-[clamp(1.7rem,8vw,2.2rem)] leading-none">{tiket.code}</p>
+        {tiket.status === "confirmed" || tiket.status === "checked_in" ? (
+          <div className="mt-3 flex justify-center">
+            <QrTiket kode={tiket.code} />
+          </div>
+        ) : null}
+        <p className="petunjuk">
+          Atas nama {tiket.name}, {tiket.quantity} orang, {samarkanWa(tiket.whatsapp)}.
         </p>
       </div>
 
@@ -74,28 +75,25 @@ export default async function HalamanTiket({ params }: Props) {
       ) : null}
 
       {tiket.status === "cancelled" ? (
-        <p className="mt-5 rounded-[4px] border-2 border-bahaya bg-paper p-3">
-          Tiket ini dibatalkan pengurus. Kalau menurut Anda keliru, hubungi pengurus dengan menyebut kode {tiket.code}.
+        <p className="mt-4 rounded-[8px] border border-bahaya bg-paper p-3 text-sm">
+          Tiket ini dibatalkan pengurus. Hubungi pengurus dengan menyebut kode {tiket.code}.
         </p>
       ) : null}
 
-      <div className="mt-6 flex flex-wrap gap-3">
+      <div className="mt-5 flex flex-wrap gap-2">
         <a href={`/acara/${acara.slug}/kalender.ics`} className="tombol-kedua">
           <IkonKalender />
           Tambah ke kalender
         </a>
         <Link href={`/acara/${acara.slug}`} className="tombol-kedua">
-          Buka halaman acara
+          Halaman acara
         </Link>
       </div>
 
-      <section className="mt-8 border-t-2 border-ink-soft pt-5">
-        <h2 className="text-[1.15rem]">Simpan halaman ini</h2>
-        <p className="mt-1 text-[0.98rem] text-ink-soft">
-          Alamat halaman ini yang menyimpan kode tiket Anda. Simpan di catatan atau kirim ke diri sendiri lewat
-          WhatsApp.
-        </p>
-        <SalinTeks gunakanUrlSekarang label="Salin link tiket" labelSelesai="Link tersalin" className="mt-3 block" />
+      <section className="mt-6 border-t border-garis pt-4">
+        <h2 className="text-base">Simpan halaman ini</h2>
+        <p className="petunjuk">Alamat ini yang menyimpan kode tiket Anda.</p>
+        <SalinTeks gunakanUrlSekarang label="Salin link" labelSelesai="Link tersalin" className="mt-2 block" />
       </section>
     </div>
   );

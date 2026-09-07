@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import Bagikan from "@/components/Bagikan";
 import Markdown from "@/components/Markdown";
 import { db } from "@/lib/data";
 import { tanggalPanjang } from "@/lib/format";
@@ -28,12 +29,12 @@ export default async function DetailKabar({ params }: Props) {
   if (!kabar || !kabar.is_published) notFound();
 
   return (
-    <article className="kolom-isi py-8">
-      {kabar.day_number ? (
-        <p className="font-[family-name:var(--font-judul)] font-bold text-gold-ink">Hari ke-{kabar.day_number}</p>
-      ) : null}
-      <h1 className="mt-1">{kabar.title}</h1>
-      <p className="mt-2 text-ink-soft">{tanggalPanjang(kabar.published_at)}</p>
+    <article className="kolom-isi py-6">
+      <p className="text-xs font-semibold text-gold-ink">
+        {kabar.day_number ? `Hari ke-${kabar.day_number}` : "Kabar"}
+        <span className="text-ink-soft"> · {tanggalPanjang(kabar.published_at)}</span>
+      </p>
+      <h1 className="mt-1.5">{kabar.title}</h1>
 
       {kabar.image_url ? (
         <Image
@@ -41,19 +42,20 @@ export default async function DetailKabar({ params }: Props) {
           alt=""
           width={1200}
           height={800}
-          sizes="(max-width: 640px) 100vw, 640px"
-          className="mt-5 h-auto w-full rounded-[10px] border-2 border-ink object-cover"
+          sizes="(max-width: 640px) 100vw, 600px"
+          className="mt-4 h-auto w-full rounded-[12px] object-cover"
         />
       ) : null}
 
-      <Markdown sumber={kabar.body} className="mt-5 max-w-[60ch]" />
+      <Markdown sumber={kabar.body} className="mt-4" />
 
-      <div className="mt-8 flex flex-wrap gap-3 border-t-2 border-ink-soft pt-5">
-        <Link href="/kabar" className="tombol-kedua">
-          Kabar lainnya
-        </Link>
+      <div className="mt-6 flex flex-wrap gap-2 border-t border-garis pt-4">
         <Link href="/donasi" className="tombol-utama">
           Ikut patungan
+        </Link>
+        <Bagikan judul={kabar.title} teks={kabar.title} jalurCadangan={`/kabar/${kabar.id}`} />
+        <Link href="/kabar" className="tombol-kedua">
+          Kabar lainnya
         </Link>
       </div>
     </article>

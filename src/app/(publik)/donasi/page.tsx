@@ -16,12 +16,9 @@ export default async function HalamanDonasi() {
 
   if (!season) {
     return (
-      <div className="kolom-isi py-8">
+      <div className="kolom-isi py-6">
         <h1>Ikut patungan</h1>
-        <p className="mt-3 text-ink-soft">
-          Belum ada season patungan yang berjalan, jadi formulirnya belum dibuka. Kabar season berikutnya akan kami tulis
-          di Kabar Aksi.
-        </p>
+        <p className="mt-2 text-ink-soft">Belum ada patungan yang berjalan.</p>
         <Link href="/kabar" className="tombol-kedua mt-4">
           Baca Kabar Aksi
         </Link>
@@ -30,11 +27,10 @@ export default async function HalamanDonasi() {
   }
 
   return (
-    <div className="kolom-isi py-8">
+    <div className="kolom-isi py-6">
       <h1>Ikut patungan</h1>
-      <p className="mt-3 max-w-[46ch]">
-        1 paket = {rupiah(season.package_price)} = biaya merangkul satu jamaah yang singgah ke masjid, agar amal
-        ibadahnya mengalir.
+      <p className="mt-2 text-[0.98rem] text-ink-soft">
+        1 paket {rupiah(season.package_price)} untuk merangkul satu jamaah yang singgah ke masjid.
       </p>
       <FormDonasi hargaPaket={season.package_price} />
     </div>

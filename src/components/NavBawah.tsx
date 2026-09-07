@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { IkonAcaraNav, IkonBeranda, IkonKabar, IkonTentang } from "./Ikon";
 
 const TAUTAN = [
-  { href: "/", label: "Beranda" },
-  { href: "/kabar", label: "Kabar" },
-  { href: "/acara", label: "Acara" },
-  { href: "/tentang", label: "Tentang" },
+  { href: "/", label: "Beranda", Ikon: IkonBeranda },
+  { href: "/kabar", label: "Kabar", Ikon: IkonKabar },
+  { href: "/acara", label: "Acara", Ikon: IkonAcaraNav },
+  { href: "/tentang", label: "Tentang", Ikon: IkonTentang },
 ];
 
 /**
@@ -32,16 +33,14 @@ export default function NavBawah() {
         if (!respons.ok) return;
         terbit = ((await respons.json()) as { terbit: string[] }).terbit;
       } catch {
-        // Badge hanya penunjuk tambahan. Kalau gagal diambil, navigasi tetap jalan.
         return;
       }
       if (batal) return;
 
       const paling = terbit.reduce((puncak, waktu) => (waktu > puncak ? waktu : puncak), "");
       const terbaca = window.localStorage.getItem(KUNCI_TERBACA);
-      const diHalamanKabar = jalur.startsWith("/kabar");
 
-      if (diHalamanKabar || terbaca === null) {
+      if (jalur.startsWith("/kabar") || terbaca === null) {
         window.localStorage.setItem(KUNCI_TERBACA, paling);
         setKabarBaru(0);
         return;
@@ -59,32 +58,29 @@ export default function NavBawah() {
   return (
     <nav
       aria-label="Navigasi utama"
-      className="fixed bottom-0 left-0 right-0 z-40 border-t-2 border-ink bg-paper pb-[env(safe-area-inset-bottom)] md:hidden"
+      className="fixed bottom-0 left-0 right-0 z-40 border-t border-garis bg-paper pb-[env(safe-area-inset-bottom)] md:hidden"
     >
-      <ul className="mx-auto flex max-w-[640px]">
-        {TAUTAN.map((tautan) => {
-          const aktif = tautan.href === "/" ? jalur === "/" : jalur.startsWith(tautan.href);
+      <ul className="mx-auto flex max-w-[600px]">
+        {TAUTAN.map(({ href, label, Ikon }) => {
+          const aktif = href === "/" ? jalur === "/" : jalur.startsWith(href);
           return (
-            <li key={tautan.href} className="flex-1">
+            <li key={href} className="flex-1">
               <Link
-                href={tautan.href}
+                href={href}
                 aria-current={aktif ? "page" : undefined}
-                className={`flex min-h-[52px] flex-col items-center justify-center gap-1 px-2 py-2 text-[0.78rem] font-semibold ${
+                className={`flex min-h-[54px] flex-col items-center justify-center gap-0.5 py-1.5 text-[0.7rem] font-semibold ${
                   aktif ? "text-teal-ink" : "text-ink-soft"
                 }`}
               >
-                <span className="flex items-center gap-1">
-                  {tautan.label}
-                  {tautan.label === "Kabar" && kabarBaru > 0 ? (
-                    <span className="rounded-[4px] bg-teal-deep px-1.5 py-0.5 text-[0.7rem] font-bold text-gold">
+                <span className="relative">
+                  <Ikon aktif={aktif} />
+                  {label === "Kabar" && kabarBaru > 0 ? (
+                    <span className="absolute -right-2 -top-1 min-w-[16px] rounded-full bg-bahaya px-1 text-center text-[0.62rem] font-bold leading-4 text-paper">
                       {kabarBaru}
                     </span>
                   ) : null}
                 </span>
-                <span
-                  aria-hidden="true"
-                  className={`h-[3px] w-6 rounded-full ${aktif ? "bg-teal" : "bg-transparent"}`}
-                />
+                {label}
               </Link>
             </li>
           );

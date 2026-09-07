@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import BannerTersimpan from "@/components/admin/BannerTersimpan";
 import FormAksi from "@/components/admin/FormAksi";
+import PilihGambar from "@/components/admin/PilihGambar";
 import { db } from "@/lib/data";
 import { PLACEHOLDER_WA } from "@/lib/data/seed";
 import { simpanPengaturan } from "./actions";
@@ -54,7 +55,7 @@ export default async function AdminPengaturan({ searchParams }: Props) {
                 alt="QRIS yang sedang dipakai"
                 width={320}
                 height={320}
-                className="h-auto w-[180px] rounded-[4px] border border-ink-soft"
+                className="h-auto w-[180px] rounded-[4px] border border-garis"
               />
               <label className="mt-2 flex items-center gap-2 text-[0.95rem]">
                 <input type="checkbox" name="hapus_qris" value="ya" className="h-5 w-5 accent-[#8A1F1F]" />
@@ -64,14 +65,7 @@ export default async function AdminPengaturan({ searchParams }: Props) {
           ) : (
             <p className="text-ink-soft">Belum ada QRIS terpasang.</p>
           )}
-          <input
-            id="qris"
-            name="qris"
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            className="isian mt-2 py-2"
-          />
-          <p className="mt-1 text-sm text-ink-soft">JPG, PNG, atau WebP, maksimal 3 MB.</p>
+          <PilihGambar name="qris" label="Unggah QRIS" jenis="qris" bantuan="Pastikan seluruh kode QR terlihat utuh." />
         </div>
 
         <div>

@@ -27,7 +27,7 @@ export default async function HalamanMasuk({ searchParams }: Props) {
       <form method="post" action="/admin/masuk/kirim" className="mt-6 grid gap-4">
         <input type="hidden" name="tujuan" value={tujuanAman} />
         {pesan ? (
-          <p role="alert" className="rounded-[4px] border-2 border-bahaya bg-paper p-3 text-bahaya">
+          <p role="alert" className="rounded-[4px] border border-bahaya bg-paper p-3 text-bahaya">
             {pesan}
           </p>
         ) : null}

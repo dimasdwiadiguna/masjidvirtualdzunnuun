@@ -68,7 +68,7 @@ export default async function AdminKabar({ searchParams }: Props) {
                   </div>
                   <p
                     className={`rounded-[4px] border-2 px-2 py-1 text-sm font-semibold ${
-                      kabar.is_published ? "border-sukses text-sukses" : "border-ink-soft text-ink-soft"
+                      kabar.is_published ? "border-sukses text-sukses" : "border-garis text-ink-soft"
                     }`}
                   >
                     {kabar.is_published ? "Terbit" : "Draf"}

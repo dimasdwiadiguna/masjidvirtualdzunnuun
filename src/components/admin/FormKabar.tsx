@@ -1,5 +1,6 @@
 import Image from "next/image";
 import FormAksi from "@/components/admin/FormAksi";
+import PilihGambar from "@/components/admin/PilihGambar";
 import { simpanKabar } from "@/app/admin/kabar/actions";
 import { keInputWaktu } from "@/lib/format";
 import type { Season, Update } from "@/lib/data/types";
@@ -74,7 +75,7 @@ export default function FormKabar({ kabar, season, hariOtomatis }: Props) {
               alt="Foto kabar yang sedang dipakai"
               width={320}
               height={240}
-              className="h-auto w-[180px] rounded-[4px] border border-ink-soft"
+              className="h-auto w-[180px] rounded-[4px] border border-garis"
             />
             <label className="mt-2 flex items-center gap-2 text-[0.95rem]">
               <input type="checkbox" name="hapus_gambar" value="ya" className="h-5 w-5 accent-[#8A1F1F]" />
@@ -84,7 +85,7 @@ export default function FormKabar({ kabar, season, hariOtomatis }: Props) {
         ) : (
           <p className="text-ink-soft">Belum ada foto.</p>
         )}
-        <input name="gambar" type="file" accept="image/jpeg,image/png,image/webp" className="isian mt-2 py-2" />
+        <PilihGambar name="gambar" label="Unggah foto baru" />
       </div>
 
       <div>

@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 const TAUTAN = [
-  { href: "/kabar", label: "Kabar Aksi" },
+  { href: "/kabar", label: "Kabar" },
   { href: "/acara", label: "Acara" },
   { href: "/arsip", label: "Arsip" },
   { href: "/tentang", label: "Tentang" },
@@ -10,17 +10,17 @@ const TAUTAN = [
 
 export default function HeaderSitus() {
   return (
-    <header className="border-b-2 border-ink bg-cream">
-      <div className="kolom-isi flex min-h-[60px] items-center justify-between gap-3 md:max-w-[900px]">
-        <Link href="/" className="flex items-center gap-2 py-2" aria-label="Beranda Dzun Nuun">
+    <header className="sticky top-0 z-30 border-b border-garis bg-cream/95 backdrop-blur-sm">
+      <div className="kolom-lebar flex min-h-[56px] items-center justify-between gap-3">
+        <Link href="/" className="flex items-center py-2" aria-label="Beranda Dzun Nuun">
           <Image
             src="/logo-gelap.png"
             alt="Dzun Nuun, masjid virtual"
             width={240}
             height={127}
-            sizes="60px"
+            sizes="58px"
             priority
-            className="h-8 w-[60px]"
+            className="h-[30px] w-[58px]"
           />
         </Link>
         <nav aria-label="Navigasi halaman" className="hidden md:block">
@@ -29,7 +29,7 @@ export default function HeaderSitus() {
               <li key={tautan.href}>
                 <Link
                   href={tautan.href}
-                  className="inline-flex min-h-[44px] items-center rounded-[4px] px-3 font-semibold text-ink hover:bg-teal/10"
+                  className="inline-flex min-h-[44px] items-center rounded-[8px] px-3 text-sm font-semibold text-ink hover:text-teal-ink"
                 >
                   {tautan.label}
                 </Link>
@@ -37,7 +37,7 @@ export default function HeaderSitus() {
             ))}
           </ul>
         </nav>
-        <Link href="/donasi" className="tombol-kecil border-ink bg-paper">
+        <Link href="/donasi" className="tombol-utama min-h-[38px] px-4 py-2 text-sm">
           Ikut patungan
         </Link>
       </div>

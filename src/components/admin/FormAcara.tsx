@@ -1,5 +1,6 @@
 import Image from "next/image";
 import FormAksi from "@/components/admin/FormAksi";
+import PilihGambar from "@/components/admin/PilihGambar";
 import { simpanAcara } from "@/app/admin/acara/actions";
 import { keInputWaktu } from "@/lib/format";
 import type { EventItem } from "@/lib/data/types";
@@ -161,7 +162,7 @@ export default function FormAcara({ acara }: { acara?: EventItem }) {
               alt="Poster acara yang sedang dipakai"
               width={320}
               height={400}
-              className="h-auto w-[160px] rounded-[4px] border border-ink-soft"
+              className="h-auto w-[160px] rounded-[4px] border border-garis"
             />
             <label className="mt-2 flex items-center gap-2 text-[0.95rem]">
               <input type="checkbox" name="hapus_poster" value="ya" className="h-5 w-5 accent-[#8A1F1F]" />
@@ -171,7 +172,7 @@ export default function FormAcara({ acara }: { acara?: EventItem }) {
         ) : (
           <p className="text-ink-soft">Belum ada poster.</p>
         )}
-        <input name="poster" type="file" accept="image/jpeg,image/png,image/webp" className="isian mt-2 py-2" />
+        <PilihGambar name="poster" label="Unggah poster baru" bantuan="Poster tegak lebih pas di layar HP." />
       </div>
 
       <label className="flex items-start gap-2">

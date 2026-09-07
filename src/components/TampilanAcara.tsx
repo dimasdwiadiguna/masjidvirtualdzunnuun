@@ -25,31 +25,33 @@ export default function TampilanAcara({ daftar }: { daftar: Item[] }) {
 
   return (
     <>
-      <div className="mt-5 inline-flex rounded-[4px] border-2 border-ink" role="group" aria-label="Pilih tampilan acara">
+      <div
+        className="mt-4 inline-flex rounded-[8px] border border-garis-isian p-0.5"
+        role="group"
+        aria-label="Pilih tampilan acara"
+      >
         {(["kartu", "kalender"] as Mode[]).map((pilihan) => (
           <button
             key={pilihan}
             type="button"
             onClick={() => ganti(pilihan)}
             aria-pressed={mode === pilihan}
-            className={`min-h-[44px] px-4 font-[family-name:var(--font-judul)] font-semibold ${
-              mode === pilihan ? "bg-teal text-paper" : "bg-paper text-ink"
+            className={`min-h-[38px] rounded-[6px] px-4 font-[family-name:var(--font-judul)] text-sm font-semibold ${
+              mode === pilihan ? "bg-teal text-paper" : "text-ink-soft"
             }`}
           >
-            {pilihan === "kartu" ? "Kartu" : "Kalender"}
+            {pilihan === "kartu" ? "Daftar" : "Kalender"}
           </button>
         ))}
       </div>
 
       {daftar.length === 0 ? (
-        <div className="kartu mt-5 p-4">
+        <div className="kartu mt-4 p-4">
           <p className="font-semibold">Belum ada acara yang dijadwalkan.</p>
-          <p className="mt-1 text-ink-soft">
-            Begitu jadwal berikutnya siap, acaranya muncul di sini lengkap dengan tombol daftar.
-          </p>
+          <p className="petunjuk">Jadwal berikutnya muncul di sini lengkap dengan tombol daftar.</p>
         </div>
       ) : mode === "kartu" ? (
-        <div className="mt-5 grid gap-3">
+        <div className="mt-4 grid gap-2">
           {daftar.map((item) => (
             <BarisAcara key={item.acara.id} acara={item.acara} sisaKuota={item.sisaKuota} tingkat="h2" />
           ))}

@@ -24,30 +24,29 @@ export default function BarisAcara({
   sisaKuota: number | null;
   tingkat?: "h2" | "h3";
 }) {
-  const Judul = tingkat;
   const blok = tanggalBlok(acara.starts_at);
+  const penuh = sisaKuota !== null && sisaKuota <= 0;
+  const Judul = tingkat;
+
   return (
-    <article className="kartu">
-      <Link href={`/acara/${acara.slug}`} className="flex gap-3 p-3">
-        <div className="flex h-[64px] w-[56px] shrink-0 flex-col items-center justify-center rounded-[4px] border-2 border-ink bg-teal-deep text-cream">
-          <span className="font-[family-name:var(--font-judul)] text-xl font-bold leading-none">{blok.hari}</span>
-          <span className="text-xs">{blok.bulan}</span>
+    <article className="kartu kartu-tekan">
+      <Link href={`/acara/${acara.slug}`} className="flex items-center gap-3 p-3">
+        <div className="flex h-[52px] w-[48px] shrink-0 flex-col items-center justify-center rounded-[8px] bg-teal-deep text-cream">
+          <span className="font-[family-name:var(--font-judul)] text-lg font-bold leading-none">{blok.hari}</span>
+          <span className="mt-0.5 text-[0.68rem]">{blok.bulan}</span>
         </div>
         <div className="min-w-0 flex-1">
-          <Judul className="text-[1.05rem] leading-snug">{acara.title}</Judul>
-          <p className="mt-1 text-sm text-ink-soft">
+          <Judul className="line-clamp-2 text-[0.98rem] leading-snug">{acara.title}</Judul>
+          <p className="mt-0.5 line-clamp-1 text-sm text-ink-soft">
             {jam(acara.starts_at)}
-            {acara.location_name ? `, ${acara.location_name}` : ""}
+            {acara.location_name ? ` · ${acara.location_name}` : ""}
           </p>
-          <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-            <span className="font-semibold text-teal-ink">
+          <p className="mt-1 flex flex-wrap items-center gap-2 text-xs">
+            <span className="label-status bg-teal/10 text-teal-ink">
               {acara.is_paid ? rupiah(acara.price) : "Gratis"}
             </span>
-            {sisaKuota !== null ? (
-              <span className={sisaKuota > 0 ? "text-ink-soft" : "font-semibold text-bahaya"}>
-                {sisaKuota > 0 ? `Sisa ${sisaKuota} tempat` : "Kuota penuh"}
-              </span>
-            ) : null}
+            {penuh ? <span className="label-status bg-bahaya/10 text-bahaya">Kuota penuh</span> : null}
+            {!penuh && sisaKuota !== null ? <span className="text-ink-soft">Sisa {sisaKuota} tempat</span> : null}
           </p>
         </div>
       </Link>

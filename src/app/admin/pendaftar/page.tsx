@@ -89,7 +89,7 @@ export default async function AdminPendaftar({ searchParams }: Props) {
                             {orang.name}, {orang.quantity} orang
                           </p>
                           <p className="text-sm text-ink-soft">
-                            <span className="badge-kode text-sm">{orang.code}</span>
+                            <span className="kode-besar text-sm">{orang.code}</span>
                             {orang.total_amount > 0 ? `, ${rupiah(orang.total_amount)}` : ", gratis"}
                             {`, daftar ${tanggalPendek(orang.created_at)}`}
                           </p>
@@ -99,7 +99,7 @@ export default async function AdminPendaftar({ searchParams }: Props) {
                             orang.status === "cancelled"
                               ? "border-bahaya text-bahaya"
                               : orang.status === "pending"
-                                ? "border-ink-soft text-ink-soft"
+                                ? "border-garis text-ink-soft"
                                 : "border-sukses text-sukses"
                           }`}
                         >

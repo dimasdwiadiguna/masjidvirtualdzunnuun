@@ -17,36 +17,32 @@ export default function BlokPembayaran({ nominal, qrisUrl, adminWa, teksKonfirma
   const waSiap = adminWa && adminWa !== PLACEHOLDER_WA;
 
   return (
-    <section className="mt-6">
-      <h2>Cara membayar</h2>
+    <section className="mt-5">
+      <div className="judul-bagian">
+        <h2>Cara bayar</h2>
+      </div>
 
-      <div className="kartu bayang-padat mt-3 p-4">
-        <p className="text-sm font-semibold text-ink-soft">Nominal transfer, persis sampai angka terakhir</p>
-        <p className="mt-1 font-[family-name:var(--font-judul)] text-[clamp(2rem,9vw,2.8rem)] font-bold leading-none">
+      <div className="kartu mt-3 p-4">
+        <p className="text-sm text-ink-soft">Transfer persis sampai angka terakhir</p>
+        <p className="mt-1 font-[family-name:var(--font-judul)] text-[clamp(1.8rem,8vw,2.4rem)] font-bold leading-none">
           {rupiah(nominal)}
         </p>
-        <SalinTeks
-          teks={String(nominal)}
-          label="Salin nominal"
-          labelSelesai="Nominal tersalin"
-          className="mt-3 block"
-        />
-        <p className="mt-3 text-[0.95rem] text-ink-soft">
-          Angka belakangnya sengaja kami bedakan sedikit dari kelipatan biasa. Itu yang membuat pengurus bisa mengenali
-          transfer Anda tanpa harus bertanya dua kali.
+        <SalinTeks teks={String(nominal)} label="Salin nominal" labelSelesai="Tersalin" className="mt-3 block" />
+        <p className="petunjuk">
+          Angka belakangnya sengaja dibedakan supaya pengurus bisa mengenali transfer Anda.
         </p>
       </div>
 
       {qrisUrl ? (
-        <div className="kartu mt-4 p-4">
+        <div className="kartu mt-3 p-4">
           <p className="font-semibold">Bayar lewat QRIS</p>
           <Image
             src={qrisUrl}
-            alt="Kode QRIS Dzun Nuun untuk dipindai dari aplikasi bank atau dompet digital"
+            alt="Kode QRIS Dzun Nuun"
             width={640}
             height={640}
-            sizes="(max-width: 640px) 90vw, 400px"
-            className="mt-3 h-auto w-full max-w-[320px] rounded-[4px] border border-ink-soft bg-paper"
+            sizes="(max-width: 640px) 80vw, 300px"
+            className="mt-2 h-auto w-full max-w-[280px] rounded-[8px] border border-garis bg-paper"
           />
           <a href="/api/qris" className="tombol-kedua mt-3">
             <IkonUnduh />
@@ -54,12 +50,9 @@ export default function BlokPembayaran({ nominal, qrisUrl, adminWa, teksKonfirma
           </a>
         </div>
       ) : (
-        <div className="kartu mt-4 p-4">
-          <p className="font-semibold">Gambar QRIS belum dipasang</p>
-          <p className="mt-1 text-ink-soft">
-            Pengurus belum mengunggah QRIS di halaman pengaturan. Sementara ini, tanyakan cara transfernya lewat tombol
-            WhatsApp di bawah.
-          </p>
+        <div className="kartu mt-3 p-4">
+          <p className="font-semibold">QRIS belum dipasang</p>
+          <p className="petunjuk">Tanyakan cara transfernya lewat tombol WhatsApp di bawah.</p>
         </div>
       )}
 
@@ -68,15 +61,14 @@ export default function BlokPembayaran({ nominal, qrisUrl, adminWa, teksKonfirma
           href={linkWa(adminWa, teksKonfirmasi)}
           target="_blank"
           rel="noopener noreferrer"
-          className="tombol-utama mt-4 w-full"
+          className="tombol-utama mt-3 w-full"
         >
           <IkonWhatsApp />
           Konfirmasi lewat WhatsApp
         </a>
       ) : (
-        <p className="mt-4 rounded-[4px] border-2 border-bahaya bg-paper p-3">
-          Nomor WhatsApp pengurus masih berisi nilai contoh, jadi tombol konfirmasi belum bisa dipakai. Pengurus perlu
-          mengisinya di halaman pengaturan admin lebih dulu.
+        <p className="mt-3 rounded-[8px] border border-bahaya bg-paper p-3 text-sm">
+          Nomor WhatsApp pengurus masih nilai contoh, jadi tombol konfirmasi belum bisa dipakai.
         </p>
       )}
     </section>

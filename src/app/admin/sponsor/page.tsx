@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import BannerTersimpan from "@/components/admin/BannerTersimpan";
 import FormAksi from "@/components/admin/FormAksi";
+import PilihGambar from "@/components/admin/PilihGambar";
 import KonfirmasiAksi from "@/components/admin/KonfirmasiAksi";
 import { db } from "@/lib/data";
 import { judulSeason } from "@/lib/format";
@@ -78,21 +79,11 @@ export default async function AdminSponsor({ searchParams }: Props) {
                   <input id="sort_order" name="sort_order" type="number" defaultValue={0} className="isian" />
                 </div>
               </div>
-              <div>
-                <label className="label-isian" htmlFor="logo">
-                  Logo
-                </label>
-                <input
-                  id="logo"
-                  name="logo"
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  className="isian py-2"
-                />
-                <p className="mt-1 text-sm text-ink-soft">
-                  Kalau logonya belum ada, nama sponsor yang ditampilkan sebagai teks.
-                </p>
-              </div>
+              <PilihGambar
+                name="logo"
+                label="Logo"
+                bantuan="Kalau logonya belum ada, nama sponsor yang ditampilkan sebagai teks."
+              />
             </FormAksi>
           </section>
 

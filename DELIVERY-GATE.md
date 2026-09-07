@@ -6,6 +6,8 @@ Cara pengujian: aplikasi dibangun (`next build`) lalu dijalankan (`next start`),
 
 Status akhir: **PASS**. Tidak ada satu pun butir FAIL.
 
+Diperbarui setelah putaran masukan pengurus: tampilan diarahkan ulang jadi compact dan clean, hero memakai foto asli yang berganti, navigasi bawah memakai ikon, teks dipendekkan, unggahan foto dan tombol bagikan diperbaiki. Seluruh pemeriksaan di bawah dijalankan ulang pada tampilan baru.
+
 ---
 
 ## Blok 1: Hard Gate (mutlak)
@@ -76,6 +78,11 @@ Dijalankan pada build produksi, lebar 360px, mode sentuh. **Tidak ada satu pun g
 
 | Elemen yang diklik | Yang benar-benar terjadi |
 |---|---|
+| Unggah poster 6 MB di panel pengurus | Dikecilkan di perangkat jadi 845 KB sebelum dikirim, lalu tersimpan. Sebelum diperbaiki, kiriman ini ditolak dengan "Body exceeded 1 MB limit" (D-51) |
+| Unggah berkas yang bukan gambar | Ditolak di perangkat: "Gambar tidak bisa dipakai, berkas ini bukan gambar yang bisa dibaca" |
+| Tombol "Bagikan" di halaman acara | Membuka lembar bagikan bawaan sistem kalau tersedia, dan tetap menuju api.whatsapp.com sebagai cadangan (D-52) |
+| Foto hero di beranda | Berganti setiap 6 detik, titik penanda bisa ditekan untuk memilih foto, berhenti kalau perangkat meminta gerak minimal |
+| Ikon navigasi bawah | Empat ikon terisi saat halamannya aktif, badge angka muncul di ikon Kabar saat ada kabar baru |
 | `/acara` tampilan bawaan | 2 acara tampil sebagai kartu |
 | Tombol "Kalender" | Grid bulanan muncul dengan 33 tombol tanggal |
 | Muat ulang halaman | Tampilan kalender tetap aktif (tersimpan di `localStorage`) |
@@ -119,10 +126,10 @@ FAIL kalau teknik muncul sebagai bawaan tanpa alasan tertulis.
 | R-08 Panah di hampir semua tombol? | tidak | Tidak ada panah dekoratif. |
 | R-09 Badge kapsul dekoratif? | tidak | Badge hanya untuk status nyata (Terverifikasi, Terbit, Draf, Gratis, Kuota penuh) dan untuk kode donasi atau tiket. |
 | R-10 Glassmorphism lebih dari 1 sampai 2 elemen? | tidak | Tidak ada blur sama sekali. |
-| R-12 Bayangan besar di semua komponen? | tidak | Bayangan hanya bayangan padat tanpa blur, dan hanya di tombol utama, kartu progress, dan badge kode. Alasannya di `DESIGN.md` §5 dan D-27. |
+| R-12 Bayangan besar di semua komponen? | tidak | Tidak ada bayangan sama sekali. Kartu dibatasi garis tipis (D-53). |
 | R-13 Glow di banyak elemen sekaligus? | tidak | Tidak ada glow. |
 | R-14 Semua kartu identik tanpa alasan hierarki? | tidak | Kartu kabar memakai foto kiri dan teks kanan, baris acara memakai blok tanggal gelap di kiri, kartu progress berbeda sendiri sebagai blok gelap. |
-| R-19 Animasi template menumpuk? | tidak | Gerak hanya pada hover, active, dan focus tombol, ditambah `prefers-reduced-motion` yang mematikannya. Sesuai dial MOTION 1. |
+| R-19 Animasi template menumpuk? | tidak | Hanya dua gerak: pergantian foto hero setiap 6 detik dan perubahan state tombol. Keduanya berhenti kalau perangkat meminta gerak minimal. Sesuai dial MOTION 2 yang dideklarasikan di `DESIGN.md`. Tidak ada animasi scroll. |
 | R-22 Ilustrasi stok tanpa hubungan? | tidak | Tidak ada ilustrasi. Gambar yang tampil hanya foto asli yang diunggah pengurus. |
 
 ---
@@ -137,8 +144,8 @@ Semua jawaban harus **ya**.
 | Hasil sesuai dial? | ya | Komposisi tiap halaman memang berbeda (`DESIGN.md` §7): beranda memakai blok hero gelap penuh lebar, kabar memakai feed foto kiri, acara memakai blok tanggal atau grid kalender, admin tanpa hero sama sekali. Gerak berhenti di hover, active, dan focus, sesuai MOTION 1. |
 | Ada satu focal point per layar? | ya | Beranda dan season pada angka rupiah, halaman status pada nominal transfer, detail acara pada tombol daftar, check-in pada hasil pemindaian yang dicetak besar. |
 | Ruang kosong dipakai sebagai struktur? | ya | Skala jarak tetap (4 sampai 64), padding section mobile 32 sampai 40 bukan ukuran desktop, lebar isi dikunci 640px. |
-| Ada satu aksen yang disengaja? | ya | Emas hanya di tiga tempat: isi progress bar, badge kabar baru, dan label "Hari ke-N". Selebihnya tidak muncul (D-26). |
-| Ada motif identitas yang diulang? | ya | Bayangan padat tanpa blur yang diambil dari wordmark logo (D-27). |
+| Ada satu aksen yang disengaja? | ya | Emas hanya di dua tempat: kalimat pembuka hero di atas foto gelap, dan label "Hari ke-N" di Kabar Aksi (D-26). |
+| Ada motif identitas yang diulang? | ya | Garis pendek teal di atas setiap judul bagian, diulang di beranda, season, tentang, dan blok cara bayar (D-53). |
 | Design Read dideklarasikan sebelum membangun? | ya | `DESIGN.md` §1, ditulis sebelum baris kode pertama. |
 
 ---
@@ -155,13 +162,13 @@ Semua jawaban harus **tidak**.
 | C-4 UI rusak di suatu keadaan, tema, breakpoint, atau tanpa tetikus? | tidak | Keadaan kosong, memuat, dan galat ada di semua tampilan data. Keyboard diuji (R-32). Lebar 360px diuji di 11 halaman. |
 | C-5 Ada testimoni, statistik, atau klaim karangan? | tidak | Tidak ada satu pun. |
 | R-05 Tata letak mengikuti template AI? | tidak | Tidak ada hero dengan tiga kartu, tidak ada "How It Works" tiga langkah, tidak ada logo bar, tidak ada bento grid, tidak ada jendela terminal palsu, tidak ada tiga kolom harga. Footer satu kolom mengalir, bukan empat kolom Product/Company/Resources/Legal. |
-| R-11 Semua elemen berbentuk pil? | tidak | Tiga radius dipakai sengaja: 4px isian dan badge, 10px kartu, 14px tombol utama. |
+| R-11 Semua elemen berbentuk pil? | tidak | Tiga radius dipakai sengaja: 8px isian dan label status, 10px tombol, 12px kartu. Yang bulat hanya titik penanda foto hero. |
 | R-15 CTA masih generik? | tidak | "Ikut patungan sekarang", "Lanjut ke cara transfer", "Konfirmasi lewat WhatsApp", "Ambil tiket gratis", "Daftar ikut acara ini", "Ya, dana sudah masuk". Tidak ada "Selengkapnya" atau "Pelajari lebih lanjut" tanpa konteks. |
 | R-16 Ada buzzword pemasaran? | tidak | Tidak ada "platform", "solusi terpadu", "ekosistem", "revolusioner". Tidak ada ajakan bertingkat dan tidak ada emoji berderet, sesuai BRIEF §8. |
 | R-20 Desain masih generik kalau logo diganti? | tidak | Kertas krem hangat, bayangan padat tanpa blur, dan judul Geologica yang tebal membuat halaman ini tetap punya wajah sendiri tanpa logo. |
 | R-21 Dark mode dipaksa atau ditunda dengan alasan? | tidak | Satu tema terang, dipilih dari identitas brand, dan dibuat berfungsi penuh (D-29). BRIEF §12 melarang tombol ganti tema. |
 | R-29 Palet melebihi 2 sampai 3 warna inti dan 1 aksen? | tidak | Teal dan teal gelap sebagai inti, emas sebagai aksen, sisanya netral krem dan tinta. Warna status hijau dan merah hanya untuk status, bukan warna identitas. |
-| R-30 Meniru produk populer? | tidak | Rujukan rasanya poster pengumuman masjid, bukan produk lain. |
+| R-30 Meniru produk populer? | tidak | Pengurus sebagai pemilik produk meminta tampilan sekelas app penggalangan dana yang sudah mapan, dan R-30 memang mengecualikan permintaan eksplisit pemilik. Palet, tipografi, motif garis teal, dan susunan halaman tetap milik Dzun Nuun sendiri (D-53). |
 | R-31 Ada keputusan besar yang alasannya tidak bisa ditulis satu baris? | tidak | `DESIGN.md` dan `DECISIONS.md` memuat alasan untuk warna, tipografi, jarak, bentuk, motif, komposisi, dan setiap keputusan teknis yang mengubah rancangan. |
 
 ---
@@ -172,9 +179,9 @@ Diminta BRIEF §13.
 
 | Pemeriksaan | Hasil |
 |---|---|
-| Lighthouse mobile, performa | `/` 98, `/season/season-1` 96, `/kabar` 98, `/donasi` 98, `/acara` 98, `/tentang` 98, `/arsip` 99. Ambang brief 85. |
-| Lighthouse mobile, aksesibilitas | 100 di ketujuh halaman. Ambang brief 95. |
-| Lighthouse mobile, praktik terbaik dan SEO | 100 di ketujuh halaman. |
+| Lighthouse mobile, performa | Setelah tampilan baru: `/` 95, `/acara` 98, `/kabar` 99, `/donasi` 98, `/tentang` 94, `/arsip` 98. Ambang brief 85. |
+| Lighthouse mobile, aksesibilitas | 100 di semua halaman yang diukur. Ambang brief 95. |
+| Lighthouse mobile, praktik terbaik dan SEO | 100 di semua halaman yang diukur, tanpa galat konsol. |
 | Cumulative Layout Shift | 0 di enam halaman, 0.061 di halaman season. Batas "baik" menurut Core Web Vitals adalah 0.1. Dicapai setelah ukuran logo dipasang pasti (D-42) dan keadaan memuat diberi tinggi minimal (D-44). |
 | Metadata pratinjau tautan | Judul, deskripsi, dan `og:image` diperiksa benar-benar berada di dalam `<head>` pada HTML mentah, bukan menyusul di akhir dokumen (D-45). |
 | Kunci rahasia di bundle klien | Build dijalankan dengan nilai rahasia penanda, lalu `grep` pada `.next/static/` dan seluruh `.next/`: tidak ditemukan sama sekali. |
