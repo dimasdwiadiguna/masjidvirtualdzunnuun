@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import BagikanWa from "@/components/BagikanWa";
+import Bagikan from "@/components/Bagikan";
 import Markdown from "@/components/Markdown";
 import { IkonKalender, IkonLokasi } from "@/components/Ikon";
 import { db } from "@/lib/data";
@@ -38,29 +38,34 @@ export default async function DetailAcara({ params }: Props) {
   const bisaDaftar = !tenggatLewat && !penuh && !acaraLewat;
 
   return (
-    <div className="pb-8">
+    <div className="pb-24 md:pb-8">
       {acara.poster_url ? (
         <Image
           src={acara.poster_url}
-          alt={`Poster acara ${acara.title}`}
+          alt={`Poster ${acara.title}`}
           width={1200}
           height={1500}
           priority
-          sizes="(max-width: 640px) 100vw, 640px"
-          className="mx-auto h-auto w-full max-w-[640px] border-b-2 border-ink object-cover"
+          sizes="(max-width: 640px) 100vw, 600px"
+          className="mx-auto h-auto w-full max-w-[600px] object-cover"
         />
       ) : null}
 
-      <div className="kolom-isi py-8">
-        <h1>{acara.title}</h1>
+      <div className="kolom-isi py-5">
+        <p className="flex flex-wrap items-center gap-2 text-xs">
+          <span className="label-status bg-teal/10 text-teal-ink">{acara.is_paid ? rupiah(acara.price) : "Gratis"}</span>
+          {penuh ? <span className="label-status bg-bahaya/10 text-bahaya">Kuota penuh</span> : null}
+          {!penuh && kuota.remaining !== null ? (
+            <span className="text-ink-soft">Sisa {kuota.remaining} tempat</span>
+          ) : null}
+        </p>
+        <h1 className="mt-2">{acara.title}</h1>
 
-        <div className="kartu mt-4 grid gap-2 p-4">
+        <div className="kartu mt-4 grid gap-2 p-4 text-[0.95rem]">
           <p className="flex items-start gap-2">
             <IkonKalender className="mt-0.5 shrink-0 text-teal-ink" />
             <span>
-              {tanggalPanjang(acara.starts_at)}
-              <br />
-              {jam(acara.starts_at)}
+              {tanggalPanjang(acara.starts_at)}, {jam(acara.starts_at)}
               {acara.ends_at ? ` sampai ${jam(acara.ends_at)}` : ""}
             </span>
           </p>
@@ -71,58 +76,57 @@ export default async function DetailAcara({ params }: Props) {
                 {acara.location_name}
                 {acara.location_map_url ? (
                   <>
-                    <br />
+                    {" "}
                     <a
                       href={acara.location_map_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex min-h-[44px] items-center font-semibold text-teal-ink underline underline-offset-4"
+                      className="font-semibold text-teal-ink underline underline-offset-4"
                     >
-                      Buka lokasi di peta
+                      Buka peta
                     </a>
                   </>
                 ) : null}
               </span>
             </p>
           ) : null}
-          <p className="font-semibold text-teal-ink">{acara.is_paid ? rupiah(acara.price) : "Gratis"}</p>
           {acara.is_recurring_note ? <p className="text-ink-soft">{acara.is_recurring_note}</p> : null}
-          {kuota.remaining !== null ? (
-            <p className={penuh ? "font-semibold text-bahaya" : "text-ink-soft"}>
-              {penuh ? "Kuota penuh" : `Sisa ${kuota.remaining} tempat dari ${acara.capacity}`}
-            </p>
-          ) : null}
         </div>
 
-        {acara.description ? <Markdown sumber={acara.description} className="mt-5 max-w-[60ch]" /> : null}
+        {acara.description ? <Markdown sumber={acara.description} className="mt-4" /> : null}
 
-        <div className="mt-6">
-          {bisaDaftar ? (
-            <Link href={`/acara/${acara.slug}/daftar`} className="tombol-utama w-full sm:w-auto">
-              Daftar ikut acara ini
-            </Link>
-          ) : (
-            <p className="rounded-[4px] border-2 border-ink-soft bg-paper p-3 font-semibold">
-              {acaraLewat
-                ? "Acara ini sudah lewat. Jadwal berikutnya kami umumkan di halaman Acara."
-                : penuh
-                  ? "Kuota penuh. Kalau ada yang batal, pengurus mengumumkannya lewat Saluran WhatsApp."
-                  : `Pendaftaran ditutup pada ${tanggalDanJam(acara.registration_deadline as string)}.`}
-            </p>
-          )}
-        </div>
+        {!bisaDaftar ? (
+          <p className="mt-4 rounded-[8px] border border-garis bg-paper p-3 text-sm font-semibold">
+            {acaraLewat
+              ? "Acara ini sudah lewat."
+              : penuh
+                ? "Kuota penuh. Pengurus mengumumkan kalau ada yang batal."
+                : `Pendaftaran ditutup ${tanggalDanJam(acara.registration_deadline as string)}.`}
+          </p>
+        ) : null}
 
-        <div className="mt-4 flex flex-wrap gap-3">
+        <div className="mt-4 flex flex-wrap gap-2">
           <a href={`/acara/${acara.slug}/kalender.ics`} className="tombol-kedua">
             <IkonKalender />
             Tambah ke kalender
           </a>
-          <BagikanWa
+          <Bagikan
+            judul={acara.title}
             teks={`${acara.title}, ${tanggalDanJam(acara.starts_at)}`}
             jalurCadangan={`/acara/${acara.slug}`}
           />
         </div>
       </div>
+
+      {bisaDaftar ? (
+        <div className="fixed bottom-[54px] left-0 right-0 z-30 border-t border-garis bg-paper p-3 md:static md:border-0 md:bg-transparent md:p-0">
+          <div className="kolom-isi">
+            <Link href={`/acara/${acara.slug}/daftar`} className="tombol-utama w-full">
+              Daftar ikut acara ini
+            </Link>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

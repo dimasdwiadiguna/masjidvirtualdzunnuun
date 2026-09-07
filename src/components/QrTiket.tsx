@@ -29,16 +29,13 @@ export default function QrTiket({ kode }: { kode: string }) {
 
   if (gagal) {
     return (
-      <p className="mt-3 rounded-[4px] border-2 border-ink-soft bg-paper p-3 text-ink-soft">
-        Gambar QR gagal dibuat di perangkat ini. Tidak masalah, panitia bisa memasukkan kode {kode} secara manual saat
-        Anda datang.
-      </p>
+      <p className="petunjuk">Kode QR gagal dibuat. Panitia bisa memasukkan kode {kode} secara manual.</p>
     );
   }
 
   if (!gambar) {
     return (
-      <div className="mt-3 flex h-[240px] w-[240px] items-center justify-center rounded-[4px] border-2 border-ink-soft bg-paper text-sm text-ink-soft">
+      <div className="flex h-[200px] w-[200px] items-center justify-center rounded-[8px] border border-garis bg-paper text-sm text-ink-soft">
         Menyiapkan kode QR...
       </div>
     );
@@ -51,9 +48,9 @@ export default function QrTiket({ kode }: { kode: string }) {
     <img
       src={gambar}
       alt={`Kode QR untuk tiket ${kode}`}
-      width={240}
-      height={240}
-      className="mt-3 h-[240px] w-[240px] rounded-[4px] border-2 border-ink bg-paper"
+      width={200}
+      height={200}
+      className="h-[200px] w-[200px] rounded-[8px] border border-garis bg-paper"
     />
   );
 }

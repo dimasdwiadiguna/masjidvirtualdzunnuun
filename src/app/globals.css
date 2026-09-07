@@ -12,30 +12,27 @@
   --color-gold-ink: #6e5410;
   --color-sukses: #1e6b3a;
   --color-bahaya: #8a1f1f;
-  --color-garis: #47615f;
+  --color-garis: #ded5c2;
+  --color-garis-isian: #7b8886;
 
   --font-judul: var(--font-geologica), ui-sans-serif, system-ui, sans-serif;
   --font-isi: var(--font-raleway), ui-sans-serif, system-ui, sans-serif;
 
-  --radius-kecil: 4px;
-  --radius-kartu: 10px;
-  --radius-tombol: 14px;
+  --radius-kecil: 8px;
+  --radius-kartu: 12px;
+  --radius-tombol: 10px;
 }
 
 :root {
   color-scheme: light;
 }
 
-html {
-  scroll-behavior: auto;
-}
-
 body {
   background-color: var(--color-cream);
   color: var(--color-ink);
   font-family: var(--font-isi);
-  font-size: 16px;
-  line-height: 1.6;
+  font-size: 15px;
+  line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
@@ -46,27 +43,26 @@ h3,
 h4 {
   font-family: var(--font-judul);
   font-weight: 700;
-  line-height: 1.15;
-  letter-spacing: -0.01em;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
 }
 
 h1 {
-  font-size: clamp(1.6rem, 5.5vw, 2.15rem);
+  font-size: clamp(1.4rem, 5vw, 1.85rem);
 }
 
 h2 {
-  font-size: clamp(1.25rem, 4.4vw, 1.6rem);
+  font-size: clamp(1.1rem, 3.8vw, 1.35rem);
 }
 
 h3 {
-  font-size: clamp(1.05rem, 3.6vw, 1.25rem);
+  font-size: 1rem;
 }
 
-/* Fokus keyboard selalu terlihat. Tidak ada outline yang dihapus tanpa pengganti. */
 :focus-visible {
   outline: 3px solid var(--color-teal-deep);
   outline-offset: 2px;
-  border-radius: 2px;
+  border-radius: 3px;
 }
 
 .di-gelap :focus-visible {
@@ -74,13 +70,62 @@ h3 {
 }
 
 @layer components {
-  /* Bayangan padat tanpa blur, diambil dari wordmark di logo Dzun Nuun. */
-  .bayang-padat {
-    box-shadow: 3px 3px 0 var(--color-ink);
+  .kolom-isi {
+    width: 100%;
+    max-width: 600px;
+    margin-inline: auto;
+    padding-inline: 16px;
   }
 
-  .bayang-padat-terang {
-    box-shadow: 3px 3px 0 var(--color-gold);
+  .kolom-lebar {
+    width: 100%;
+    max-width: 880px;
+    margin-inline: auto;
+    padding-inline: 16px;
+  }
+
+  /* Kartu memakai garis tipis, bukan bayangan tebal, supaya halaman terasa
+     rapat dan tenang seperti app penggalangan dana yang sudah mapan. */
+  .kartu {
+    background-color: var(--color-paper);
+    border: 1px solid var(--color-garis);
+    border-radius: var(--radius-kartu);
+  }
+
+  .kartu-tekan {
+    transition: border-color 120ms ease, background-color 120ms ease;
+  }
+
+  .kartu-tekan:hover {
+    border-color: var(--color-teal);
+  }
+
+  .kartu-tekan:active {
+    background-color: rgba(10, 128, 116, 0.06);
+  }
+
+  .blok-gelap {
+    background-color: var(--color-teal-deep);
+    color: var(--color-cream);
+  }
+
+  /* Penanda judul bagian: garis pendek teal di atas judul. Satu motif yang
+     diulang di seluruh halaman supaya bagian-bagian mudah dipindai. */
+  .judul-bagian {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .judul-bagian h2::before {
+    content: "";
+    display: block;
+    width: 22px;
+    height: 3px;
+    border-radius: 2px;
+    background-color: var(--color-teal);
+    margin-bottom: 8px;
   }
 
   .tombol-utama {
@@ -88,32 +133,27 @@ h3 {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    min-height: 48px;
-    padding: 12px 20px;
+    min-height: 46px;
+    padding: 11px 18px;
     border-radius: var(--radius-tombol);
     background-color: var(--color-teal);
     color: var(--color-paper);
     font-family: var(--font-judul);
     font-weight: 600;
-    font-size: 1rem;
-    box-shadow: 3px 3px 0 var(--color-ink);
-    transition: transform 120ms ease, box-shadow 120ms ease;
+    font-size: 0.95rem;
+    transition: background-color 120ms ease;
   }
 
   .tombol-utama:hover {
-    transform: translate(1px, 1px);
-    box-shadow: 2px 2px 0 var(--color-ink);
+    background-color: var(--color-teal-ink);
   }
 
   .tombol-utama:active {
-    transform: translate(3px, 3px);
-    box-shadow: 0 0 0 var(--color-ink);
+    background-color: var(--color-teal-deep);
   }
 
   .tombol-utama:disabled {
     background-color: var(--color-ink-soft);
-    box-shadow: none;
-    transform: none;
     cursor: not-allowed;
   }
 
@@ -122,69 +162,55 @@ h3 {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    min-height: 48px;
-    padding: 12px 18px;
+    min-height: 46px;
+    padding: 11px 16px;
     border-radius: var(--radius-tombol);
-    border: 1.5px solid var(--color-ink);
-    background-color: transparent;
+    border: 1px solid var(--color-garis-isian);
+    background-color: var(--color-paper);
     color: var(--color-ink);
     font-family: var(--font-judul);
     font-weight: 600;
-    font-size: 0.95rem;
+    font-size: 0.92rem;
   }
 
   .tombol-kedua:hover {
-    background-color: rgba(10, 128, 116, 0.1);
+    border-color: var(--color-teal);
+    color: var(--color-teal-ink);
   }
 
   .tombol-kecil {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    gap: 6px;
     min-height: 44px;
-    padding: 8px 14px;
+    padding: 8px 12px;
     border-radius: var(--radius-kecil);
-    border: 1.5px solid var(--color-ink-soft);
+    border: 1px solid var(--color-garis-isian);
+    background-color: var(--color-paper);
     font-family: var(--font-judul);
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
   }
 
   .tombol-kecil:hover {
-    background-color: rgba(10, 128, 116, 0.1);
-  }
-
-  .kartu {
-    background-color: var(--color-paper);
-    border: 1.5px solid var(--color-ink-soft);
-    border-radius: var(--radius-kartu);
-  }
-
-  .blok-gelap {
-    background-color: var(--color-teal-deep);
-    color: var(--color-cream);
-  }
-
-  .kolom-isi {
-    width: 100%;
-    max-width: 640px;
-    margin-inline: auto;
-    padding-inline: 16px;
+    border-color: var(--color-teal);
+    color: var(--color-teal-ink);
   }
 
   .label-isian {
     display: block;
     font-family: var(--font-judul);
     font-weight: 600;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     margin-bottom: 6px;
   }
 
   .isian {
     width: 100%;
-    min-height: 48px;
+    min-height: 46px;
     padding: 10px 12px;
-    border: 1.5px solid var(--color-ink-soft);
+    border: 1px solid var(--color-garis-isian);
     border-radius: var(--radius-kecil);
     background-color: var(--color-paper);
     color: var(--color-ink);
@@ -192,39 +218,57 @@ h3 {
     font-size: 1rem;
   }
 
+  .isian:focus {
+    border-color: var(--color-teal);
+  }
+
   .isian::placeholder {
     color: var(--color-ink-soft);
   }
 
-  .isian:disabled {
-    background-color: rgba(71, 97, 95, 0.12);
+  .petunjuk {
+    margin-top: 6px;
+    font-size: 0.85rem;
+    color: var(--color-ink-soft);
   }
 
-  .badge-kode {
-    display: inline-block;
-    padding: 4px 10px;
-    border: 1.5px solid var(--color-ink);
-    border-radius: var(--radius-kecil);
-    background-color: var(--color-paper);
+  .galat-isian {
+    margin-top: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-bahaya);
+  }
+
+  .label-status {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 6px;
+    padding: 3px 8px;
+    font-family: var(--font-judul);
+    font-size: 0.78rem;
+    font-weight: 600;
+  }
+
+  .kode-besar {
     font-family: var(--font-judul);
     font-weight: 700;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.06em;
   }
 
   .isi-tulisan p {
-    margin-bottom: 14px;
+    margin-bottom: 12px;
   }
 
   .isi-tulisan h2,
   .isi-tulisan h3,
   .isi-tulisan h4 {
-    margin-top: 22px;
-    margin-bottom: 8px;
+    margin-top: 18px;
+    margin-bottom: 6px;
   }
 
   .isi-tulisan ul,
   .isi-tulisan ol {
-    margin: 0 0 14px 20px;
+    margin: 0 0 12px 18px;
   }
 
   .isi-tulisan ul {
@@ -236,7 +280,7 @@ h3 {
   }
 
   .isi-tulisan li {
-    margin-bottom: 6px;
+    margin-bottom: 4px;
   }
 
   .isi-tulisan a {
@@ -248,10 +292,30 @@ h3 {
   .di-gelap .isi-tulisan a {
     color: var(--color-gold);
   }
+
+  /* Lapisan gelap di atas foto hero supaya teks tetap terbaca di bagian
+     gambar yang terang. Dihitung untuk menjaga kontras teks krem di atasnya. */
+  .selubung-hero {
+    background: linear-gradient(
+      to top,
+      rgba(4, 58, 67, 0.97) 0%,
+      rgba(4, 58, 67, 0.88) 45%,
+      rgba(4, 58, 67, 0.62) 80%,
+      rgba(4, 58, 67, 0.45) 100%
+    );
+  }
+
+  /* Teks hero ditaruh di area yang lapisan gelapnya minimal 0,88. Pada foto
+     paling terang sekalipun, kontras teks krem di situ 7,8 banding 1. */
+  .teks-hero {
+    color: var(--color-cream);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .tombol-utama {
-    transition: none;
+  * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
   }
 }

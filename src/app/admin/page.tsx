@@ -30,7 +30,7 @@ export default async function RingkasanAdmin() {
       <h1>Ringkasan</h1>
 
       {perluDiisi.length > 0 ? (
-        <div className="mt-4 rounded-[4px] border-2 border-bahaya bg-paper p-4">
+        <div className="mt-4 rounded-[4px] border border-bahaya bg-paper p-4">
           <p className="font-semibold text-bahaya">Belum siap dibagikan ke jamaah</p>
           <p className="mt-1">
             Yang masih kosong atau masih berisi contoh: {perluDiisi.join(", ")}. Halaman donasi tidak bisa dipakai
@@ -43,7 +43,7 @@ export default async function RingkasanAdmin() {
       ) : null}
 
       {!memakaiSupabase() ? (
-        <p className="mt-4 rounded-[4px] border-2 border-ink-soft bg-paper p-3 text-[0.95rem]">
+        <p className="mt-4 rounded-[4px] border border-garis bg-paper p-3 text-[0.95rem]">
           App ini sedang memakai penyimpanan file lokal untuk pratinjau. Isi variabel Supabase di Vercel supaya data
           tersimpan permanen.
         </p>

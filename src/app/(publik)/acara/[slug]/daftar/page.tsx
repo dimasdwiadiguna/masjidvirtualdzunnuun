@@ -28,9 +28,9 @@ export default async function HalamanDaftar({ params }: Props) {
 
   if (tenggatLewat || penuh || acaraLewat) {
     return (
-      <div className="kolom-isi py-8">
+      <div className="kolom-isi py-6">
         <h1>Pendaftaran tertutup</h1>
-        <p className="mt-3">
+        <p className="mt-3 text-[0.95rem]">
           {acaraLewat
             ? "Acara ini sudah lewat."
             : penuh
@@ -45,10 +45,10 @@ export default async function HalamanDaftar({ params }: Props) {
   }
 
   return (
-    <div className="kolom-isi py-8">
+    <div className="kolom-isi py-6">
       <p className="text-sm text-ink-soft">Pendaftaran acara</p>
       <h1 className="mt-1">{acara.title}</h1>
-      <p className="mt-2 text-ink-soft">{tanggalDanJam(acara.starts_at)}</p>
+      <p className="mt-1 text-sm text-ink-soft">{tanggalDanJam(acara.starts_at)}</p>
       <FormPendaftaran
         slug={acara.slug}
         berbayar={acara.is_paid}

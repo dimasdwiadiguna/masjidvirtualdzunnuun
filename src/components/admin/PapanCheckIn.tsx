@@ -22,7 +22,7 @@ function Hasil({ hasil }: { hasil: HasilScan }) {
   if (!hasil.keadaan) return null;
 
   const gaya: Record<HasilScan["keadaan"], string> = {
-    kosong: "border-ink-soft",
+    kosong: "border-garis",
     "tidak-ada": "border-bahaya",
     "belum-bayar": "border-gold-ink",
     dibatalkan: "border-bahaya",
@@ -40,7 +40,7 @@ function Hasil({ hasil }: { hasil: HasilScan }) {
   };
 
   return (
-    <div role="status" aria-live="assertive" className={`mt-5 rounded-[10px] border-2 bg-paper p-4 ${gaya[hasil.keadaan]}`}>
+    <div role="status" aria-live="assertive" className={`mt-5 rounded-[12px] border-2 bg-paper p-4 ${gaya[hasil.keadaan]}`}>
       <p className="font-[family-name:var(--font-judul)] text-[clamp(1.3rem,6vw,1.8rem)] font-bold leading-tight">
         {judul[hasil.keadaan]}
       </p>
@@ -50,7 +50,7 @@ function Hasil({ hasil }: { hasil: HasilScan }) {
         </p>
       ) : null}
       {hasil.acara ? <p className="text-ink-soft">{hasil.acara}</p> : null}
-      {hasil.kode ? <p className="mt-2 badge-kode">{hasil.kode}</p> : null}
+      {hasil.kode ? <p className="mt-2 kode-besar">{hasil.kode}</p> : null}
       {hasil.keadaan === "sudah-hadir" && hasil.waktuSebelumnya ? (
         <p className="mt-2">
           Tercatat hadir pada {tanggalPendek(hasil.waktuSebelumnya)}, {jam(hasil.waktuSebelumnya)}. Kalau memang
@@ -170,12 +170,12 @@ export default function PapanCheckIn() {
         </div>
 
         {kamera === "tidak-didukung" ? (
-          <p className="mt-2 rounded-[4px] border-2 border-ink-soft bg-paper p-3">
+          <p className="mt-2 rounded-[4px] border border-garis bg-paper p-3">
             Peramban di HP ini belum bisa memindai QR sendiri. Pakai kolom kode di atas, hasilnya sama.
           </p>
         ) : null}
         {kamera === "ditolak" ? (
-          <p className="mt-2 rounded-[4px] border-2 border-ink-soft bg-paper p-3">
+          <p className="mt-2 rounded-[4px] border border-garis bg-paper p-3">
             Izin kamera belum diberikan. Beri izin lewat pengaturan peramban, atau pakai kolom kode di atas.
           </p>
         ) : null}
@@ -184,7 +184,7 @@ export default function PapanCheckIn() {
           ref={video}
           muted
           playsInline
-          className={`mt-3 w-full max-w-[360px] rounded-[10px] border-2 border-ink ${kamera === "nyala" ? "" : "hidden"}`}
+          className={`mt-3 w-full max-w-[360px] rounded-[12px] border border-garis ${kamera === "nyala" ? "" : "hidden"}`}
         />
       </section>
 

@@ -1,5 +1,6 @@
 import Image from "next/image";
 import FormAksi from "@/components/admin/FormAksi";
+import PilihGambar from "@/components/admin/PilihGambar";
 import { simpanSeason } from "@/app/admin/season/actions";
 import type { Season } from "@/lib/data/types";
 
@@ -127,7 +128,7 @@ export default function FormSeason({ season }: { season?: Season }) {
               alt="Foto header season yang sedang dipakai"
               width={480}
               height={270}
-              className="h-auto w-[220px] rounded-[4px] border border-ink-soft"
+              className="h-auto w-[220px] rounded-[4px] border border-garis"
             />
             <label className="mt-2 flex items-center gap-2 text-[0.95rem]">
               <input type="checkbox" name="hapus_header" value="ya" className="h-5 w-5 accent-[#8A1F1F]" />
@@ -137,7 +138,7 @@ export default function FormSeason({ season }: { season?: Season }) {
         ) : (
           <p className="text-ink-soft">Belum ada foto header.</p>
         )}
-        <input name="header" type="file" accept="image/jpeg,image/png,image/webp" className="isian mt-2 py-2" />
+        <PilihGambar name="header" label="Unggah foto header baru" bantuan="Foto mendatar lebih pas untuk header." />
       </div>
 
       <div>

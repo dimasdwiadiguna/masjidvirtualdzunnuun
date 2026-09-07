@@ -90,7 +90,7 @@ export default async function AdminDonasi({ searchParams }: Props) {
                 <div>
                   <p className="font-[family-name:var(--font-judul)] text-lg font-bold">{rupiah(item.total_amount)}</p>
                   <p className="text-sm text-ink-soft">
-                    {item.package_count} paket, kode <span className="badge-kode text-sm">{item.code}</span>
+                    {item.package_count} paket, kode <span className="kode-besar text-sm">{item.code}</span>
                   </p>
                 </div>
                 <p
@@ -99,7 +99,7 @@ export default async function AdminDonasi({ searchParams }: Props) {
                       ? "border-sukses text-sukses"
                       : item.status === "rejected"
                         ? "border-bahaya text-bahaya"
-                        : "border-ink-soft text-ink-soft"
+                        : "border-garis text-ink-soft"
                   }`}
                 >
                   {NAMA_STATUS[item.status]}

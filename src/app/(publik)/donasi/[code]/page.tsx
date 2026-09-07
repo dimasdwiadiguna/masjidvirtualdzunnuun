@@ -25,23 +25,28 @@ export default async function StatusDonasi({ params }: Props) {
 
   const [pengaturan, kabar] = await Promise.all([
     data.getSettings(),
-    donasi.status === "verified"
-      ? data.listUpdates({ hanyaTerbit: true, limit: 3 })
-      : Promise.resolve([]),
+    donasi.status === "verified" ? data.listUpdates({ hanyaTerbit: true, limit: 3 }) : Promise.resolve([]),
   ]);
 
   const teksKonfirmasi = [
     `Assalamualaikum, saya ${donasi.donor_name}.`,
-    `Saya sudah transfer untuk patungan Dzun Nuun.`,
+    "Saya sudah transfer untuk patungan Dzun Nuun.",
     `Kode: ${donasi.code}`,
     `Jumlah: ${donasi.package_count} paket`,
     `Nominal: ${rupiah(donasi.total_amount)}`,
   ].join("\n");
 
+  const label =
+    donasi.status === "verified"
+      ? { teks: "Sudah diterima", kelas: "bg-sukses/10 text-sukses" }
+      : donasi.status === "rejected"
+        ? { teks: "Belum cocok", kelas: "bg-bahaya/10 text-bahaya" }
+        : { teks: "Menunggu konfirmasi", kelas: "bg-gold-ink/10 text-gold-ink" };
+
   return (
-    <div className="kolom-isi py-8">
-      <p className="text-sm text-ink-soft">Halaman donasi Anda</p>
-      <h1 className="mt-1">
+    <div className="kolom-isi py-6">
+      <span className={`label-status ${label.kelas}`}>{label.teks}</span>
+      <h1 className="mt-2">
         {donasi.status === "verified"
           ? "Alhamdulillah, donasi Anda sudah kami terima"
           : donasi.status === "rejected"
@@ -49,10 +54,10 @@ export default async function StatusDonasi({ params }: Props) {
             : "Menunggu konfirmasi pengurus"}
       </h1>
 
-      <dl className="kartu mt-4 grid gap-2 p-4 text-[0.98rem]">
+      <dl className="kartu mt-4 grid gap-2 p-4 text-[0.95rem]">
         <div className="flex justify-between gap-3">
           <dt className="text-ink-soft">Kode</dt>
-          <dd className="badge-kode">{donasi.code}</dd>
+          <dd className="kode-besar">{donasi.code}</dd>
         </div>
         <div className="flex justify-between gap-3">
           <dt className="text-ink-soft">Nama</dt>
@@ -63,8 +68,8 @@ export default async function StatusDonasi({ params }: Props) {
           <dd className="font-semibold">{samarkanWa(donasi.whatsapp)}</dd>
         </div>
         <div className="flex justify-between gap-3">
-          <dt className="text-ink-soft">Jumlah paket</dt>
-          <dd className="font-semibold">{angka(donasi.package_count)} paket</dd>
+          <dt className="text-ink-soft">Paket</dt>
+          <dd className="font-semibold">{angka(donasi.package_count)}</dd>
         </div>
         <div className="flex justify-between gap-3">
           <dt className="text-ink-soft">Dicatat</dt>
@@ -80,82 +85,69 @@ export default async function StatusDonasi({ params }: Props) {
             adminWa={pengaturan.admin_whatsapp}
             teksKonfirmasi={teksKonfirmasi}
           />
-          <p className="mt-4 rounded-[4px] border-l-4 border-teal bg-paper p-3">
-            Status sekarang: menunggu konfirmasi. Pengurus mencocokkan transfer satu per satu, biasanya dalam hitungan
-            jam. Halaman ini berubah sendiri begitu donasi Anda tercatat masuk.
+          <p className="mt-4 rounded-[8px] bg-teal/10 px-3 py-2 text-sm">
+            Halaman ini berubah sendiri begitu pengurus mencocokkan transfer Anda.
           </p>
         </>
       ) : null}
 
       {donasi.status === "verified" ? (
-        <section className="mt-6">
-          <div className="di-gelap blok-gelap bayang-padat rounded-[10px] border-2 border-ink p-5">
-            <p className="font-[family-name:var(--font-judul)] text-[clamp(1.5rem,6vw,2rem)] font-bold leading-tight">
+        <section className="mt-5">
+          <div className="di-gelap blok-gelap rounded-[12px] p-4">
+            <p className="font-[family-name:var(--font-judul)] text-[clamp(1.3rem,5.5vw,1.7rem)] font-bold leading-tight">
               {angka(donasi.package_count)} jamaah dirangkul lewat Anda
             </p>
-            <p className="mt-2 text-cream/90">
-              Terima kasih. {rupiah(donasi.total_amount)} sudah kami terima dan masuk hitungan progress di halaman
-              publik. Kami laporkan penggunaannya lewat Kabar Aksi.
+            <p className="mt-1.5 text-sm text-cream/90">
+              {rupiah(donasi.total_amount)} sudah masuk hitungan progress di halaman publik.
             </p>
           </div>
 
           {kabar.length > 0 ? (
             <>
-              <h2 className="mt-6">Yang sedang berjalan</h2>
-              <div className="mt-3 grid gap-3">
+              <div className="judul-bagian mt-6">
+                <h2>Yang sedang berjalan</h2>
+              </div>
+              <div className="mt-3 grid gap-2">
                 {kabar.map((item) => (
                   <KartuKabar key={item.id} kabar={item} />
                 ))}
               </div>
             </>
-          ) : (
-            <p className="mt-4 text-ink-soft">
-              Catatan kegiatan pertama belum ditulis. Begitu ada, kabarnya muncul di halaman Kabar Aksi.
-            </p>
-          )}
+          ) : null}
 
           {pengaturan.whatsapp_channel_url ? (
             <a
               href={pengaturan.whatsapp_channel_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="tombol-utama mt-5 w-full"
+              className="tombol-utama mt-4 w-full"
             >
               <IkonWhatsApp />
-              Ikuti Saluran WhatsApp kami
+              Ikuti Saluran WhatsApp
             </a>
           ) : null}
         </section>
       ) : null}
 
       {donasi.status === "rejected" ? (
-        <section className="mt-6">
-          <p className="rounded-[4px] border-2 border-bahaya bg-paper p-3">
-            Pengurus menandai donasi ini belum bisa dicocokkan dengan transfer yang masuk.
-            {donasi.admin_note ? ` Catatan pengurus: ${donasi.admin_note}` : ""}
+        <section className="mt-5">
+          <p className="rounded-[8px] border border-bahaya bg-paper p-3 text-sm">
+            Pengurus belum menemukan transfer yang cocok.
+            {donasi.admin_note ? ` Catatan: ${donasi.admin_note}` : ""}
           </p>
-          <p className="mt-3">
-            Kalau Anda merasa sudah mengirim, hubungi pengurus lewat WhatsApp dengan menyebut kode {donasi.code}. Kami
-            cek ulang.
+          <p className="mt-3 text-[0.95rem]">
+            Kalau Anda sudah mengirim, hubungi pengurus dengan menyebut kode {donasi.code}.
           </p>
-          <Link href="/donasi" className="tombol-kedua mt-4">
-            Isi ulang formulir patungan
+          <Link href="/donasi" className="tombol-kedua mt-3">
+            Isi ulang formulir
           </Link>
         </section>
       ) : null}
 
-      <section className="mt-8 border-t-2 border-ink-soft pt-5">
-        <h2 className="text-[1.15rem]">Simpan halaman ini</h2>
-        <p className="mt-1 text-[0.98rem] text-ink-soft">
-          Alamat halaman ini satu-satunya cara membuka kembali status donasi Anda. Simpan di catatan atau kirim ke diri
-          sendiri lewat WhatsApp.
-        </p>
-        <SalinTeks
-          gunakanUrlSekarang
-          label="Salin link halaman ini"
-          labelSelesai="Link tersalin"
-          className="mt-3 block"
-        />
+      <section className="mt-6 border-t border-garis pt-4">
+        <h2 className="text-base">Simpan halaman ini</h2>
+        <p className="petunjuk">Alamat ini satu-satunya cara membuka kembali status donasi Anda.</p>
+        <SalinTeks gunakanUrlSekarang label="Salin link" labelSelesai="Link tersalin" className="mt-2 block" />
       </section>
     </div>
   );

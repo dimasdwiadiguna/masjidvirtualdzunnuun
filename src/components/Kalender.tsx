@@ -121,8 +121,8 @@ export default function Kalender({ daftar }: { daftar: Item[] }) {
         {dipilih ? (
           acaraTerpilih.length > 0 ? (
             <>
-              <h2 className="text-[1.05rem]">Acara pada {tanggalPanjang(`${dipilih}T00:00:00+07:00`)}</h2>
-              <div className="mt-2 grid gap-3">
+              <h2 className="text-base">Acara pada {tanggalPanjang(`${dipilih}T00:00:00+07:00`)}</h2>
+              <div className="mt-2 grid gap-2">
                 {acaraTerpilih.map((item) => (
                   <BarisAcara key={item.acara.id} acara={item.acara} sisaKuota={item.sisaKuota} />
                 ))}

@@ -20,7 +20,7 @@ export default async function TataLetakAdmin({ children }: { children: React.Rea
 
   return (
     <div className="flex min-h-dvh flex-col">
-      <header className="border-b-2 border-ink bg-paper">
+      <header className="border-b border-garis bg-paper">
         <div className="mx-auto w-full max-w-[900px] px-4 py-3">
           <div className="flex items-center justify-between gap-3">
             <Link href="/admin" className="font-[family-name:var(--font-judul)] text-lg font-bold">
@@ -54,7 +54,7 @@ export default async function TataLetakAdmin({ children }: { children: React.Rea
         </div>
       </header>
       <main className="flex-1">{children}</main>
-      <footer className="border-t-2 border-ink bg-paper">
+      <footer className="border-t border-garis bg-paper">
         <div className="mx-auto w-full max-w-[900px] px-4 py-4 text-sm">
           <Link href="/" className="underline underline-offset-4">
             Buka halaman publik

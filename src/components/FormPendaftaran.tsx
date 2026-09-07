@@ -9,7 +9,7 @@ function TombolKirim({ berbayar }: { berbayar: boolean }) {
   const { pending } = useFormStatus();
   return (
     <button type="submit" className="tombol-utama w-full" disabled={pending}>
-      {pending ? "Menyiapkan tiket Anda..." : berbayar ? "Lanjut ke cara bayar" : "Ambil tiket gratis"}
+      {pending ? "Menyiapkan..." : berbayar ? "Lanjut ke cara bayar" : "Ambil tiket gratis"}
     </button>
   );
 }
@@ -25,30 +25,38 @@ export default function FormPendaftaran({ slug, berbayar, harga, sisaKuota }: Pr
   const [hasil, aksi] = useActionState<HasilFormDaftar, FormData>(kirimPendaftaran, {});
   const [jumlah, setJumlah] = useState(1);
 
-  // Sama seperti form donasi: perpindahan ke halaman tiket dilakukan peramban,
-  // bukan pengalihan dari dalam server action.
   useEffect(() => {
     if (hasil.kode) window.location.assign(`/tiket/${hasil.kode}`);
   }, [hasil]);
+
   const maksimal = sisaKuota === null ? 10 : Math.max(1, Math.min(10, sisaKuota));
 
   return (
-    <form action={aksi} className="mt-6 grid gap-5" noValidate>
+    <form action={aksi} className="mt-5 grid gap-4" noValidate>
       <input type="hidden" name="slug" value={slug} />
 
       {hasil.pesan ? (
-        <p role="alert" className="rounded-[4px] border-2 border-bahaya bg-paper p-3 text-bahaya">
+        <p role="alert" className="rounded-[8px] border border-bahaya bg-paper p-3 text-sm text-bahaya">
           {hasil.pesan}
         </p>
       ) : null}
 
       <div>
         <label className="label-isian" htmlFor="nama">
-          Nama Anda
+          Nama
         </label>
-        <input id="nama" name="nama" type="text" autoComplete="name" required maxLength={60} className="isian" placeholder="Nama yang biasa dipakai" />
+        <input
+          id="nama"
+          name="nama"
+          type="text"
+          autoComplete="name"
+          required
+          maxLength={60}
+          className="isian"
+          placeholder="Nama yang biasa dipakai"
+        />
         {hasil.galat?.nama ? (
-          <p role="alert" className="mt-1 text-sm font-semibold text-bahaya">
+          <p role="alert" className="galat-isian">
             {hasil.galat.nama}
           </p>
         ) : null}
@@ -69,11 +77,11 @@ export default function FormPendaftaran({ slug, berbayar, harga, sisaKuota }: Pr
           placeholder="081234567890"
           aria-describedby="bantuan-wa"
         />
-        <p id="bantuan-wa" className="mt-1 text-sm text-ink-soft">
-          Dipakai kalau ada perubahan jadwal. Tidak ditampilkan utuh di halaman mana pun.
+        <p id="bantuan-wa" className="petunjuk">
+          Dipakai kalau ada perubahan jadwal.
         </p>
         {hasil.galat?.whatsapp ? (
-          <p role="alert" className="mt-1 text-sm font-semibold text-bahaya">
+          <p role="alert" className="galat-isian">
             {hasil.galat.whatsapp}
           </p>
         ) : null}
@@ -97,14 +105,14 @@ export default function FormPendaftaran({ slug, berbayar, harga, sisaKuota }: Pr
           aria-describedby="hitung-bayar"
         />
         {hasil.galat?.jumlah ? (
-          <p role="alert" className="mt-1 text-sm font-semibold text-bahaya">
+          <p role="alert" className="galat-isian">
             {hasil.galat.jumlah}
           </p>
         ) : null}
-        <p id="hitung-bayar" aria-live="polite" className="mt-2 rounded-[4px] border-l-4 border-teal bg-paper p-3 font-semibold">
+        <p id="hitung-bayar" aria-live="polite" className="mt-2 rounded-[8px] bg-teal/10 px-3 py-2 text-sm font-semibold">
           {berbayar
             ? `${jumlah > 0 ? jumlah : 0} orang = ${rupiah(Math.max(0, jumlah) * harga)} sebelum angka pembeda`
-            : "Acara ini gratis. Tiket langsung jadi setelah tombol ditekan."}
+            : "Acara ini gratis. Tiket langsung jadi."}
         </p>
       </div>
 

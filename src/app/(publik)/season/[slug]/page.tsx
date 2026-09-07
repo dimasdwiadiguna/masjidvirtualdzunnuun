@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import Bagikan from "@/components/Bagikan";
 import KartuKabar from "@/components/KartuKabar";
 import Markdown from "@/components/Markdown";
 import ProgressSeason from "@/components/ProgressSeason";
@@ -17,14 +18,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const season = await (await db()).getSeasonBySlug(slug);
   if (!season) return { title: "Season tidak ditemukan" };
+  const deskripsi = season.tagline ?? ringkas(season.description ?? "");
   return {
     title: judulSeason(season),
-    description: season.tagline ?? ringkas(season.description ?? ""),
-    openGraph: {
-      title: judulSeason(season),
-      description: season.tagline ?? ringkas(season.description ?? ""),
-      type: "website",
-    },
+    description: deskripsi,
+    openGraph: { title: judulSeason(season), description: deskripsi, type: "website" },
   };
 }
 
@@ -49,48 +47,52 @@ export default async function HalamanSeason({ params }: Props) {
           width={1200}
           height={675}
           priority
-          sizes="100vw"
-          className="h-[200px] w-full border-b-2 border-ink object-cover sm:h-[280px]"
+          sizes="(max-width: 640px) 100vw, 600px"
+          className="h-[180px] w-full object-cover sm:h-[240px]"
         />
       ) : null}
 
-      <div className="kolom-isi py-8">
+      <div className="kolom-isi py-5">
         <h1>{judulSeason(season)}</h1>
-        {season.tagline ? <p className="mt-2 max-w-[42ch] text-ink-soft">{season.tagline}</p> : null}
+        {season.tagline ? <p className="mt-1.5 text-[0.95rem] text-ink-soft">{season.tagline}</p> : null}
 
-        <div className="mt-5">
+        <div className="kartu mt-4 p-4">
           <ProgressSeason season={season} progress={progress} />
+          <p className="petunjuk">1 paket {rupiah(season.package_price)} untuk merangkul satu jamaah.</p>
+          <div className="mt-3 flex gap-2">
+            <Link href="/donasi" className="tombol-utama flex-1">
+              Ikut patungan
+            </Link>
+            <Bagikan
+              judul={judulSeason(season)}
+              teks={`${judulSeason(season)}, ${rupiah(progress.collected)} dari ${rupiah(season.target_amount)}`}
+              jalurCadangan={`/season/${season.slug}`}
+            />
+          </div>
         </div>
 
-        <p className="mt-4 rounded-[4px] border-l-4 border-teal bg-paper p-3">
-          1 paket = {rupiah(season.package_price)} = biaya merangkul satu jamaah yang singgah ke masjid, agar amal
-          ibadahnya mengalir.
-        </p>
+        {season.description ? <Markdown sumber={season.description} className="mt-5" /> : null}
 
-        {season.description ? <Markdown sumber={season.description} className="mt-6 max-w-[60ch]" /> : null}
-
-        <Link href="/donasi" className="tombol-utama mt-4 hidden md:inline-flex">
-          Ikut patungan sekarang
-        </Link>
-
-        <section className="mt-10">
-          <h2>Kabar Aksi season ini</h2>
+        <section className="mt-8">
+          <div className="judul-bagian">
+            <h2>Kabar Aksi season ini</h2>
+          </div>
           {kabar.length > 0 ? (
-            <div className="mt-3 grid gap-3">
+            <div className="mt-3 grid gap-2">
               {kabar.map((item) => (
                 <KartuKabar key={item.id} kabar={item} />
               ))}
             </div>
           ) : (
-            <p className="mt-2 text-ink-soft">
-              Belum ada kabar untuk season ini. Catatan pertama ditulis begitu kegiatannya jalan.
-            </p>
+            <p className="mt-2 text-sm text-ink-soft">Belum ada kabar untuk season ini.</p>
           )}
         </section>
 
         {sponsor.length > 0 ? (
-          <section className="mt-10">
-            <h2>Didukung oleh</h2>
+          <section className="mt-8">
+            <div className="judul-bagian">
+              <h2>Didukung oleh</h2>
+            </div>
             <ul className="mt-3 flex flex-wrap items-center gap-4">
               {sponsor.map((item) => {
                 const isi = item.logo_url ? (
@@ -99,11 +101,11 @@ export default async function HalamanSeason({ params }: Props) {
                     alt={item.name}
                     width={240}
                     height={120}
-                    sizes="140px"
-                    className={item.tier === "utama" ? "h-14 w-auto" : "h-9 w-auto"}
+                    sizes="120px"
+                    className={item.tier === "utama" ? "h-11 w-auto" : "h-8 w-auto"}
                   />
                 ) : (
-                  <span className={item.tier === "utama" ? "text-lg font-semibold" : "font-semibold"}>{item.name}</span>
+                  <span className={item.tier === "utama" ? "font-semibold" : "text-sm font-semibold"}>{item.name}</span>
                 );
                 return (
                   <li key={item.id}>
@@ -127,10 +129,12 @@ export default async function HalamanSeason({ params }: Props) {
         ) : null}
       </div>
 
-      <div className="fixed bottom-[64px] left-0 right-0 z-30 border-t-2 border-ink bg-paper p-3 md:hidden">
-        <Link href="/donasi" className="tombol-utama w-full">
-          Ikut patungan sekarang
-        </Link>
+      <div className="fixed bottom-[54px] left-0 right-0 z-30 border-t border-garis bg-paper p-3 md:hidden">
+        <div className="kolom-isi">
+          <Link href="/donasi" className="tombol-utama w-full">
+            Ikut patungan
+          </Link>
+        </div>
       </div>
     </div>
   );

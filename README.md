@@ -95,7 +95,7 @@ Kabar Aksi adalah alasan orang membuka app ini lagi. Satu kabar pendek yang ruti
    - Kalau angkanya belum ada, tulis kalimat tanpa angka. Jangan mengarang jumlah.
    - Sebut satu orang atau satu kejadian nyata, bukan kata `banyak`.
    - Tidak perlu ajakan bertingkat dan emoji berderet.
-5. **Foto** satu saja, maksimal 3 MB. Foto dari kamera HP biasanya perlu dikecilkan dulu lewat aplikasi galeri.
+5. **Foto** satu saja. Foto dari kamera HP otomatis dikecilkan di HP Anda sebelum dikirim, jadi tidak perlu diedit dulu.
 6. Biarkan **Tampilkan di halaman publik** tercentang, lalu tekan **Terbitkan kabar**.
 
 Pengunjung yang pernah membuka halaman Kabar akan melihat angka kecil di menu Kabar saat ada kabar baru yang belum dia baca.
@@ -117,6 +117,10 @@ Menu **Check-in** punya dua cara yang sama sahnya:
 - **Pindai QR** lewat kamera. Sebagian HP, termasuk iPhone, belum mendukung pemindaian bawaan peramban. Kalau begitu, pakai cara ketik kode.
 
 Hasilnya muncul besar: nama, jumlah orang, dan status. Kalau tiket sudah pernah dipakai, muncul peringatan berikut waktu check-in sebelumnya, bukan tanda merah menakutkan.
+
+### Membagikan halaman ke WhatsApp
+
+Tombol **Bagikan** di halaman acara, kabar, dan season membuka lembar bagikan bawaan HP. Dari situ pilih WhatsApp, lalu pilih kontak atau grupnya seperti biasa.
 
 ### Kalau app menampilkan pesan galat
 

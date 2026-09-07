@@ -7,12 +7,11 @@ import { IkonWhatsApp } from "./Ikon";
 import type { Settings } from "@/lib/data/types";
 
 const HALAMAN = [
-  { href: "/", label: "Beranda" },
   { href: "/donasi", label: "Ikut patungan" },
   { href: "/kabar", label: "Kabar Aksi" },
   { href: "/acara", label: "Acara" },
-  { href: "/arsip", label: "Arsip season" },
-  { href: "/tentang", label: "Tentang kami" },
+  { href: "/arsip", label: "Arsip" },
+  { href: "/tentang", label: "Tentang" },
 ];
 
 /**
@@ -39,18 +38,18 @@ export default async function FooterSitus() {
   ].filter((item): item is { url: string; label: string } => Boolean(item.url));
 
   return (
-    <footer className="di-gelap blok-gelap mt-12 border-t-2 border-ink">
-      <div className="kolom-isi py-8 md:max-w-[900px]">
+    <footer className="di-gelap blok-gelap mt-10">
+      <div className="kolom-lebar py-7">
         <Image
           src="/logo-terang.png"
           alt="Dzun Nuun, masjid virtual"
           width={304}
           height={159}
-          sizes="76px"
-          className="h-10 w-[76px]"
+          sizes="72px"
+          className="h-[38px] w-[72px]"
         />
-        <p className="mt-3 max-w-[34ch] text-cream/90">
-          Teman Beriman dan Bertumbuh. Dikelola relawan Dzun Nuun untuk Masjid Fathul Ummah.
+        <p className="mt-2 max-w-[32ch] text-sm text-cream/90">
+          Teman Beriman dan Bertumbuh. Dikelola relawan untuk Masjid Fathul Ummah.
         </p>
 
         {pengaturan.whatsapp_channel_url ? (
@@ -58,50 +57,44 @@ export default async function FooterSitus() {
             href={pengaturan.whatsapp_channel_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="tombol-utama bayang-padat-terang mt-5 bg-teal text-paper"
+            className="tombol-utama mt-4"
           >
             <IkonWhatsApp />
-            Ikuti Saluran WhatsApp kami
+            Ikuti Saluran WhatsApp
           </a>
         ) : null}
 
-        <nav aria-label="Peta halaman" className="mt-6">
-          <ul className="flex flex-wrap gap-x-5 gap-y-1">
+        <nav aria-label="Peta halaman" className="mt-5">
+          <ul className="flex flex-wrap gap-x-4 gap-y-0.5 text-sm">
             {HALAMAN.map((halaman) => (
               <li key={halaman.href}>
                 <Link
                   href={halaman.href}
-                  className="inline-flex min-h-[44px] items-center text-cream underline underline-offset-4"
+                  className="inline-flex min-h-[40px] items-center text-cream underline underline-offset-4"
                 >
                   {halaman.label}
                 </Link>
               </li>
             ))}
-          </ul>
-        </nav>
-
-        {sosial.length > 0 ? (
-          <ul className="mt-2 flex flex-wrap gap-x-5 gap-y-1">
             {sosial.map((item) => (
               <li key={item.label}>
                 <a
                   href={item.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex min-h-[44px] items-center text-gold underline underline-offset-4"
+                  className="inline-flex min-h-[40px] items-center text-gold underline underline-offset-4"
                 >
                   {item.label}
                 </a>
               </li>
             ))}
+            <li>
+              <Link href="/admin" className="inline-flex min-h-[40px] items-center text-cream/80 underline underline-offset-4">
+                Masuk pengurus
+              </Link>
+            </li>
           </ul>
-        ) : null}
-
-        <p className="mt-6 text-sm text-cream/80">
-          <Link href="/admin" className="underline underline-offset-4">
-            Masuk pengurus
-          </Link>
-        </p>
+        </nav>
       </div>
     </footer>
   );

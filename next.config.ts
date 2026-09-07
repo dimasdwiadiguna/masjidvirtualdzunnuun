@@ -23,6 +23,12 @@ const nextConfig: NextConfig = {
     formats: ["image/webp"],
   },
   poweredByHeader: false,
+  experimental: {
+    // Gambar sudah dikecilkan di perangkat sebelum dikirim, tetapi batas bawaan
+    // 1 MB tetap terlalu ketat untuk foto poster. Vercel sendiri membatasi
+    // badan permintaan di sekitar 4,5 MB, jadi 4 MB dipakai sebagai batas aman.
+    serverActions: { bodySizeLimit: "4mb" },
+  },
   // Metadata dikirim di dalam <head>, bukan dialirkan menyusul di akhir dokumen.
   // Pengambil pratinjau tautan WhatsApp membaca HTML mentah dan sering berhenti
   // di bagian kepala, jadi judul dan deskripsi harus sudah ada di sana.

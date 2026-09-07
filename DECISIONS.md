@@ -284,6 +284,49 @@ Alasan: React di produksi menyembunyikan pesan galat asli dari peramban demi kea
 
 ---
 
+## K. Perubahan dari masukan pengurus setelah app dipakai
+
+### D-51 Foto dikecilkan di perangkat sebelum diunggah
+
+Gejala: membuat acara baru dengan poster selalu gagal. Sebabnya batas bawaan Next untuk kiriman server action hanya 1 MB, sedangkan foto dari kamera HP biasanya 3 sampai 8 MB.
+
+Perbaikannya dua lapis. Pertama, batas kiriman dinaikkan ke 4 MB, mengikuti batas badan permintaan Vercel yang sekitar 4,5 MB. Kedua, dan ini yang lebih penting, gambar sekarang dikecilkan di perangkat sebelum dikirim: sisi terpanjang 1400 piksel, kualitas diturunkan bertahap sampai ukurannya di bawah 900 KB. Poster uji 6 MB menjadi 845 KB. QRIS tetap PNG dan tidak diturunkan kualitasnya supaya polanya tajam saat dipindai.
+
+Efek sampingnya bagus: foto HEIC dari iPhone ikut diubah jadi JPEG, sehingga tidak lagi ditolak server, dan unggahan jauh lebih cepat di jaringan seluler. Kalau pengurus sempat memilih berkas sebelum halaman selesai dihidupkan, berkas itu tetap diolah karena isian diperiksa ulang saat komponen terpasang.
+
+### D-52 Tombol bagikan memakai lembar bagikan bawaan sistem
+
+Gejala: tombol bagikan hanya membuka wa.me, tidak memunculkan pilihan kontak atau grup.
+
+Sekarang tombolnya memakai Web Share API kalau perangkat mendukung: yang terbuka adalah lembar bagikan bawaan sistem, dan dari situ pengguna memilih WhatsApp lalu memilih kontak atau grup, persis seperti membagikan tautan dari app lain. Tautan `api.whatsapp.com/send` tetap dipasang sebagai href aslinya, jadi tombol ini masih berfungsi di peramban lama dan saat JavaScript gagal dimuat.
+
+### D-53 Tampilan diarahkan ulang jadi compact dan clean
+
+Pengurus meminta tampilan seperti app penggalangan dana yang sudah mapan. Permintaan itu mengubah dua keputusan visual sebelumnya:
+
+- Motif bayangan padat tanpa blur dilepas. Penggantinya garis pendek teal di atas judul bagian, yang lebih tenang dan tetap khas.
+- Kartu memakai garis tipis, ukuran teks dasar turun ke 15px, padding dan jarak antar kartu dirapatkan, dan radius disederhanakan.
+
+Larangan BRIEF §9 tetap dijaga: latar tetap krem hangat, bukan abu-abu, dan tidak ada kartu putih melayang dengan bayangan. Aturan antislop R-30 yang melarang meniru produk lain punya pengecualian untuk permintaan pemilik produk, dan ini termasuk pengecualian itu.
+
+### D-54 Hero memakai foto asli yang berganti pelan
+
+Foto latar hero diambil dari gambar yang benar-benar diunggah pengurus: foto header season, foto Kabar Aksi, lalu poster acara, maksimal lima. Tidak ada foto stok, sesuai R-38.
+
+Di atas foto ada lapisan gelap bergradasi. Teks hero hanya diletakkan di area yang lapisan gelapnya minimal 0,88, dan di titik itu kontras teks krem tetap 7,8 banding 1 sekalipun fotonya putih polos. Angkanya dihitung, bukan dikira-kira.
+
+Kalau belum ada satu pun foto, hero tampil sebagai blok warna tanpa carousel. Foto pertama diambil segera, sisanya menyusul, supaya jaringan seluler tidak dipakai untuk gambar yang belum terlihat. Tanpa penundaan itu, skor performa beranda turun ke 82 dan muncul galat konsol; setelah diperbaiki, kembali ke 95 tanpa galat.
+
+### D-55 Navigasi bawah memakai ikon
+
+Empat ikon digambar sendiri (rumah, kabar, kalender, orang), tetap berdampingan dengan labelnya. Ikon yang aktif diisi penuh, yang tidak aktif hanya garis. Jumlah kabar yang belum dibaca muncul sebagai titik angka merah di sudut ikon Kabar.
+
+### D-56 Teks dipendekkan di seluruh halaman
+
+Kalimat penjelas yang panjang dipangkas jadi satu baris atau dihapus kalau isinya sudah jelas dari tampilan. Contohnya keterangan nomor unik di halaman status, penjelasan tampilan kalender, dan pengantar setiap halaman. Aturan copywriting BRIEF §8 tidak berubah, yang berubah hanya panjangnya.
+
+---
+
 ## I. Yang sengaja tidak dibuat
 
 Sesuai BRIEF §12: tidak ada payment gateway, tidak ada akun pengguna, tidak ada sistem role, tidak ada notifikasi push atau email, tidak ada dashboard analitik, tidak ada dark mode, tidak ada i18n, tidak ada animasi scroll, tidak ada chatbot, dan tidak ada leaderboard donatur.

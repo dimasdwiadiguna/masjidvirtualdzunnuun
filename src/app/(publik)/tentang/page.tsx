@@ -21,57 +21,48 @@ export default async function HalamanTentang() {
   ].filter((item): item is { url: string; label: string } => Boolean(item.url));
 
   return (
-    <div className="kolom-isi py-8">
+    <div className="kolom-isi py-6">
       <Image
         src="/logo-gelap.png"
         alt="Dzun Nuun, masjid virtual"
         width={420}
         height={223}
-        sizes="105px"
-        className="h-14 w-[105px]"
+        sizes="96px"
+        className="h-[50px] w-[96px]"
       />
-      <h1 className="mt-4">Tentang Dzun Nuun</h1>
-      <Markdown sumber={pengaturan.about_markdown} className="mt-4 max-w-[60ch]" />
+      <h1 className="mt-3">Tentang Dzun Nuun</h1>
+      <Markdown sumber={pengaturan.about_markdown} className="mt-3" />
 
-      <section className="mt-8">
-        <h2>Cara menghubungi kami</h2>
-        <p className="mt-2 max-w-[52ch] text-ink-soft">
-          App ini dikelola beberapa relawan, jadi balasan tidak selalu langsung. Untuk urusan donasi, sebutkan kode
-          donasi Anda supaya lebih cepat kami cocokkan.
+      <section className="mt-7">
+        <div className="judul-bagian">
+          <h2>Hubungi kami</h2>
+        </div>
+        <p className="mt-2 text-[0.95rem] text-ink-soft">
+          Untuk urusan donasi, sebutkan kode donasi Anda supaya cepat kami cocokkan.
         </p>
-        <div className="mt-4 flex flex-wrap gap-3">
+        <div className="mt-3 flex flex-wrap gap-2">
           {pengaturan.whatsapp_channel_url ? (
-            <a
-              href={pengaturan.whatsapp_channel_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="tombol-utama"
-            >
+            <a href={pengaturan.whatsapp_channel_url} target="_blank" rel="noopener noreferrer" className="tombol-utama">
               <IkonWhatsApp />
-              Ikuti Saluran WhatsApp
+              Saluran WhatsApp
             </a>
           ) : null}
           {sosial.map((item) => (
-            <a
-              key={item.label}
-              href={item.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="tombol-kedua"
-            >
+            <a key={item.label} href={item.url} target="_blank" rel="noopener noreferrer" className="tombol-kedua">
               {item.label}
             </a>
           ))}
         </div>
       </section>
 
-      <section className="mt-8">
-        <h2>Laporan yang bisa Anda periksa</h2>
-        <p className="mt-2 max-w-[52ch]">
-          Setiap season punya halaman sendiri berisi angka yang sudah kami terima, dan setiap kegiatan dicatat di Kabar
-          Aksi. Season yang sudah selesai tetap bisa dibuka di halaman arsip.
+      <section className="mt-7">
+        <div className="judul-bagian">
+          <h2>Laporan yang bisa diperiksa</h2>
+        </div>
+        <p className="mt-2 text-[0.95rem]">
+          Setiap season punya halaman sendiri, dan setiap kegiatan dicatat di Kabar Aksi.
         </p>
-        <div className="mt-4 flex flex-wrap gap-3">
+        <div className="mt-3 flex flex-wrap gap-2">
           <Link href="/arsip" className="tombol-kedua">
             Arsip season
           </Link>

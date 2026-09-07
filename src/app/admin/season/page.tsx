@@ -55,7 +55,7 @@ export default async function AdminSeason({ searchParams }: Props) {
                     </p>
                   </div>
                   {season.is_active ? (
-                    <p className="rounded-[4px] border-2 border-sukses px-2 py-1 text-sm font-semibold text-sukses">
+                    <p className="rounded-[4px] border border-sukses px-2 py-1 text-sm font-semibold text-sukses">
                       Aktif
                     </p>
                   ) : null}
