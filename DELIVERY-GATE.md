@@ -179,6 +179,7 @@ Diminta BRIEF §13.
 | Metadata pratinjau tautan | Judul, deskripsi, dan `og:image` diperiksa benar-benar berada di dalam `<head>` pada HTML mentah, bukan menyusul di akhir dokumen (D-45). |
 | Kunci rahasia di bundle klien | Build dijalankan dengan nilai rahasia penanda, lalu `grep` pada `.next/static/` dan seluruh `.next/`: tidak ditemukan sama sekali. |
 | Build dengan env var kosong atau salah bentuk | Diuji empat keadaan: `NEXT_PUBLIC_SITE_URL` kosong, berisi spasi, tanpa protokol, dan tidak ada sama sekali. Semuanya berhasil dibangun (D-47). |
+| Ketahanan saat database bermasalah | Diuji dua keadaan pada build produksi: kredensial Supabase kosong, dan alamat project yang tidak bisa dihubungi. Keduanya tetap merender kerangka situs berikut pesan galat yang jelas, bukan halaman galat kosong, dan halaman `/admin/diagnosa` menyebutkan penyebabnya (D-48 sampai D-50). |
 | `tsc --noEmit` | Bersih. |
 | `next lint` | Bersih, tanpa peringatan. |
 | Teks Inggris yang terlihat pengguna | Tidak ada. Seluruh antarmuka Bahasa Indonesia. |

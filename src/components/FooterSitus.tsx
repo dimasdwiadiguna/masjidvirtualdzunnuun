@@ -1,7 +1,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { db } from "@/lib/data";
+import { SEED_SETTINGS } from "@/lib/data/seed";
+import { denganBatasWaktu } from "@/lib/waktu";
 import { IkonWhatsApp } from "./Ikon";
+import type { Settings } from "@/lib/data/types";
 
 const HALAMAN = [
   { href: "/", label: "Beranda" },
@@ -12,8 +15,23 @@ const HALAMAN = [
   { href: "/tentang", label: "Tentang kami" },
 ];
 
+/**
+ * Footer ikut dirender di setiap halaman lewat layout. Galat di dalam layout
+ * tidak bisa ditangkap error boundary halaman, jadi kegagalan membaca database
+ * di sini akan mematikan seluruh situs. Karena itu bacaannya dijaga: kalau
+ * gagal, footer tetap tampil dengan nilai bawaan dan tanpa tautan sosial.
+ */
+async function ambilPengaturan(): Promise<Settings> {
+  try {
+    return await denganBatasWaktu((await db()).getSettings(), 5000);
+  } catch (galat) {
+    console.error("Footer gagal membaca pengaturan", galat);
+    return { ...SEED_SETTINGS, instagram_url: null };
+  }
+}
+
 export default async function FooterSitus() {
-  const pengaturan = await (await db()).getSettings();
+  const pengaturan = await ambilPengaturan();
   const sosial = [
     { url: pengaturan.instagram_url, label: "Instagram" },
     { url: pengaturan.tiktok_url, label: "TikTok" },

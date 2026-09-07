@@ -71,27 +71,44 @@ export interface DataDriver {
 
 let driver: DataDriver | null = null;
 
-/**
- * Driver Supabase dipakai kalau kredensialnya ada. Kalau tidak, app jatuh ke
- * driver file lokal supaya pratinjau dan pengujian klik tetap bisa dijalankan
- * tanpa Supabase. Vercel selalu memakai Supabase karena env var-nya terisi.
- */
-export async function db(): Promise<DataDriver> {
-  if (driver) return driver;
-  const pakaiSupabase =
-    process.env.DATA_DRIVER !== "local" &&
-    Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL) &&
-    Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY);
-  driver = pakaiSupabase
-    ? (await import("./supabase")).createSupabaseDriver()
-    : (await import("./local")).createLocalDriver();
-  return driver;
+function terisi(nilai: string | undefined): boolean {
+  return Boolean(nilai?.trim());
+}
+
+export function kredensialSupabaseAda(): boolean {
+  return terisi(process.env.NEXT_PUBLIC_SUPABASE_URL) && terisi(process.env.SUPABASE_SERVICE_ROLE_KEY);
+}
+
+export function memintaDriverLokal(): boolean {
+  return process.env.DATA_DRIVER === "local";
 }
 
 export function memakaiSupabase(): boolean {
-  return (
-    process.env.DATA_DRIVER !== "local" &&
-    Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL) &&
-    Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY)
-  );
+  return !memintaDriverLokal() && kredensialSupabaseAda();
+}
+
+/**
+ * Driver lokal hanya dipakai kalau diminta lewat DATA_DRIVER, atau saat
+ * menjalankan app di komputer sendiri tanpa kredensial Supabase.
+ *
+ * Di produksi, kredensial yang kurang tidak boleh diam-diam jatuh ke driver
+ * lokal: filesystem Vercel hanya bisa dibaca, jadi penyimpanan file akan gagal
+ * dengan pesan yang menyesatkan. Lebih baik satu pesan yang jelas.
+ */
+export async function db(): Promise<DataDriver> {
+  if (driver) return driver;
+
+  if (memintaDriverLokal() || (process.env.NODE_ENV !== "production" && !kredensialSupabaseAda())) {
+    driver = (await import("./local")).createLocalDriver();
+    return driver;
+  }
+
+  if (!kredensialSupabaseAda()) {
+    throw new Error(
+      "Kredensial Supabase belum lengkap. Isi NEXT_PUBLIC_SUPABASE_URL dan SUPABASE_SERVICE_ROLE_KEY di env var, lalu deploy ulang.",
+    );
+  }
+
+  driver = (await import("./supabase")).createSupabaseDriver();
+  return driver;
 }

@@ -12,6 +12,7 @@ const MENU = [
   { href: "/admin/kabar", label: "Kabar" },
   { href: "/admin/sponsor", label: "Sponsor" },
   { href: "/admin/pengaturan", label: "Pengaturan" },
+  { href: "/admin/diagnosa", label: "Diagnosa" },
 ];
 
 export default async function TataLetakAdmin({ children }: { children: React.ReactNode }) {

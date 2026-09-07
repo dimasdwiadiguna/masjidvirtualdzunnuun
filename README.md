@@ -41,7 +41,8 @@ Contohnya ada di `.env.example`.
 2. Di Vercel, **Add New, Project**, pilih repo ini. Framework terdeteksi otomatis sebagai Next.js, biarkan pengaturan build apa adanya.
 3. Buka **Settings, Environment Variables**, isi variabel di tabel atas untuk environment Production dan Preview. Yang wajib hanya `ADMIN_PASSWORD`, `NEXT_PUBLIC_SUPABASE_URL`, dan `SUPABASE_SERVICE_ROLE_KEY`. Variabel yang dibuat tetapi dibiarkan kosong diperlakukan sebagai tidak diisi, jadi tidak menggagalkan build.
 4. Klik **Deploy**.
-5. Setelah live, buka `https://alamat-anda/admin`, masuk dengan `ADMIN_PASSWORD`, lalu isi halaman **Pengaturan**. Selama nomor WhatsApp masih berisi nilai contoh, halaman ringkasan admin menampilkan peringatan merah dan tombol konfirmasi donasi belum bisa dipakai jamaah.
+5. Kalau situs menampilkan pesan galat setelah deploy, buka `https://alamat-anda/admin/diagnosa`. Halaman itu menyebutkan bagian mana yang bermasalah, misalnya tabel belum dibuat atau kunci Supabase yang dipakai keliru.
+6. Setelah live, buka `https://alamat-anda/admin`, masuk dengan `ADMIN_PASSWORD`, lalu isi halaman **Pengaturan**. Selama nomor WhatsApp masih berisi nilai contoh, halaman ringkasan admin menampilkan peringatan merah dan tombol konfirmasi donasi belum bisa dipakai jamaah.
 
 Menjalankan di komputer sendiri:
 
@@ -116,6 +117,10 @@ Menu **Check-in** punya dua cara yang sama sahnya:
 - **Pindai QR** lewat kamera. Sebagian HP, termasuk iPhone, belum mendukung pemindaian bawaan peramban. Kalau begitu, pakai cara ketik kode.
 
 Hasilnya muncul besar: nama, jumlah orang, dan status. Kalau tiket sudah pernah dipakai, muncul peringatan berikut waktu check-in sebelumnya, bukan tanda merah menakutkan.
+
+### Kalau app menampilkan pesan galat
+
+Buka menu **Diagnosa** di panel pengurus. Halaman itu memeriksa sambungan ke database dan penyimpanan gambar, lalu menyebutkan bagian mana yang bermasalah berikut langkah perbaikannya. Kalau semuanya bertanda Baik tetapi situs tetap bermasalah, kirim isi halaman itu ke yang memasang app.
 
 ### Mengganti QRIS, nomor WhatsApp, dan link sosial
 
