@@ -1,6 +1,7 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { TANDA } from "@/lib/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { db } from "@/lib/data";
 import { pastikanAdmin } from "@/lib/admin";
 
@@ -10,6 +11,8 @@ async function ubahStatus(formData: FormData, status: "verified" | "rejected"): 
   const catatan = String(formData.get("catatan") ?? "").trim();
   if (!id) return;
   await (await db()).setDonationStatus(id, status, catatan || null);
+  // Progress publik dihitung dari donasi terverifikasi.
+  revalidateTag(TANDA.season);
   revalidatePath("/admin/donasi");
   revalidatePath("/admin");
 }

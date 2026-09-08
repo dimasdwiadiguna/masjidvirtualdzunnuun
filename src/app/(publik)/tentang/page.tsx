@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Markdown from "@/components/Markdown";
 import { IkonWhatsApp } from "@/components/Ikon";
-import { db } from "@/lib/data";
+import { pengaturanPublik } from "@/lib/cache";
 
 export const metadata: Metadata = {
   title: "Tentang kami",
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function HalamanTentang() {
-  const pengaturan = await (await db()).getSettings();
+  const pengaturan = await pengaturanPublik();
   const sosial = [
     { url: pengaturan.instagram_url, label: "Instagram" },
     { url: pengaturan.tiktok_url, label: "TikTok" },

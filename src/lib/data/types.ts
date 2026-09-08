@@ -71,6 +71,9 @@ export type Registration = {
 export type Update = {
   id: string;
   season_id: string | null;
+  /** Penanda tipe kegiatan yang diisi bebas pengurus, misalnya "Tahsin Pertemuan 13". */
+  activity_label: string | null;
+  /** Kolom lama dari hitungan hari. Masih ada di database, tidak lagi dipakai app. */
   day_number: number | null;
   title: string;
   body: string;
@@ -87,6 +90,15 @@ export type Sponsor = {
   link_url: string | null;
   tier: SponsorTier;
   sort_order: number;
+};
+
+export type HeroPhoto = {
+  id: string;
+  image_url: string;
+  caption: string | null;
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
 };
 
 export type Settings = {

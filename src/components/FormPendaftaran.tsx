@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { kirimPendaftaran, type HasilFormDaftar } from "@/app/(publik)/acara/[slug]/daftar/actions";
 import { rupiah } from "@/lib/format";
@@ -24,10 +24,6 @@ type Props = {
 export default function FormPendaftaran({ slug, berbayar, harga, sisaKuota }: Props) {
   const [hasil, aksi] = useActionState<HasilFormDaftar, FormData>(kirimPendaftaran, {});
   const [jumlah, setJumlah] = useState(1);
-
-  useEffect(() => {
-    if (hasil.kode) window.location.assign(`/tiket/${hasil.kode}`);
-  }, [hasil]);
 
   const maksimal = sisaKuota === null ? 10 : Math.max(1, Math.min(10, sisaKuota));
 

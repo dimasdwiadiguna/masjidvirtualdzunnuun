@@ -8,8 +8,9 @@ export type FotoHero = { url: string; keterangan: string };
 const JEDA_MS = 6000;
 
 /**
- * Latar hero berupa foto kegiatan yang benar-benar diunggah pengurus: foto
- * header season, foto Kabar Aksi, dan poster acara. Tidak ada foto stok.
+ * Latar hero berupa daftar foto khusus yang diunggah pengurus lewat menu Foto
+ * Hero. Poster acara dan foto Kabar Aksi tidak ikut dipungut, supaya isi hero
+ * sepenuhnya dipilih pengurus. Tidak ada foto stok.
  * Pergantiannya berhenti sendiri kalau perangkat meminta gerak minimal.
  */
 export default function HeroCarousel({ foto }: { foto: FotoHero[] }) {

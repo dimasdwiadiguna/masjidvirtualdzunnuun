@@ -4,6 +4,7 @@ import type {
   DonationStatus,
   EventCapacityInfo,
   EventItem,
+  HeroPhoto,
   Registration,
   RegistrationStatus,
   Season,
@@ -17,6 +18,7 @@ export type SeasonInput = Omit<Season, "id" | "created_at"> & { id?: string };
 export type EventInput = Omit<EventItem, "id" | "created_at"> & { id?: string };
 export type UpdateInput = Omit<Update, "id"> & { id?: string };
 export type SponsorInput = Omit<Sponsor, "id"> & { id?: string };
+export type HeroPhotoInput = Omit<HeroPhoto, "id" | "created_at"> & { id?: string };
 export type DonationInput = Omit<Donation, "id" | "created_at" | "verified_at" | "admin_note" | "status"> & {
   status?: DonationStatus;
 };
@@ -49,6 +51,8 @@ export interface DataDriver {
   saveEvent(input: EventInput): Promise<EventItem>;
   deleteEvent(id: string): Promise<void>;
   eventCapacity(eventId: string, capacity: number | null): Promise<EventCapacityInfo>;
+  /** Hitung kuota beberapa acara sekaligus, satu kueri untuk semuanya. */
+  eventCapacities(eventIds: string[]): Promise<Map<string, number>>;
 
   listRegistrations(eventId?: string): Promise<Registration[]>;
   getRegistrationByCode(code: string): Promise<Registration | null>;
@@ -61,6 +65,10 @@ export interface DataDriver {
   getUpdateById(id: string): Promise<Update | null>;
   saveUpdate(input: UpdateInput): Promise<Update>;
   deleteUpdate(id: string): Promise<void>;
+
+  listHeroPhotos(opts?: { hanyaAktif?: boolean }): Promise<HeroPhoto[]>;
+  saveHeroPhoto(input: HeroPhotoInput): Promise<HeroPhoto>;
+  deleteHeroPhoto(id: string): Promise<void>;
 
   listSponsors(seasonId: string): Promise<Sponsor[]>;
   saveSponsor(input: SponsorInput): Promise<Sponsor>;

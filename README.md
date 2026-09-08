@@ -17,6 +17,8 @@ Bagian 1 sampai 4 untuk yang memasang app. Bagian 5 ditulis untuk pengurus yang 
 1. Buat project baru di Supabase, pilih region Singapore supaya dekat dengan Indonesia.
 2. Buka **SQL Editor**, tempel seluruh isi `supabase/schema.sql`, jalankan.
 3. Masih di SQL Editor, tempel seluruh isi `supabase/seed.sql`, jalankan. Ini membuat Season 1 dan satu baris pengaturan berisi nilai contoh.
+
+   **Kalau database Anda sudah dibuat sebelum September 2026** dan sudah berisi data, jalankan juga `supabase/migrasi-01-hero-dan-penanda-kabar.sql` sekali. Berkas itu menambah tabel foto hero dan kolom penanda kegiatan tanpa menyentuh data yang sudah ada, dan aman dijalankan berulang. Tanpa itu, menu Foto Hero dan penanda kegiatan belum berfungsi.
 4. Buka **Project Settings, API**, catat dua nilai ini:
    - Project URL, misalnya `https://abcdefgh.supabase.co`
    - `service_role` key (bukan `anon` key)
@@ -88,7 +90,7 @@ Kalau salah verifikasi, buka lagi donasi tersebut dan tekan **Tolak**. Angkanya 
 Kabar Aksi adalah alasan orang membuka app ini lagi. Satu kabar pendek yang rutin lebih baik daripada satu laporan panjang setahun sekali.
 
 1. Buka menu **Kabar**, lalu isi form **Tulis kabar baru**.
-2. **Hari ke berapa** sudah terisi otomatis, dihitung dari tanggal mulai season aktif. Boleh diubah, boleh dikosongkan.
+2. **Penanda kegiatan** boleh dikosongkan. Isinya bebas, dipakai untuk menandai kegiatan apa yang dilaporkan, misalnya `MBKM Pekan ke-12` atau `Tahsin Pertemuan 13`. Tulis pendek, maksimal 60 huruf. Kalau dikosongkan, yang tampil hanya tanggalnya.
 3. **Judul** sebaiknya pendek dan konkret. Contoh yang bagus: `Air minum untuk jamaah Subuh`. Contoh yang lemah: `Update kegiatan`.
 4. **Isi kabar** cukup dua sampai empat kalimat. Beberapa aturan yang membuat kabar terasa jujur:
    - Tulis angka yang benar-benar terjadi. `Dari 15 orang di hari pertama, sekarang 40 orang` lebih kuat daripada `alhamdulillah ramai sekali`.
@@ -99,6 +101,18 @@ Kabar Aksi adalah alasan orang membuka app ini lagi. Satu kabar pendek yang ruti
 6. Biarkan **Tampilkan di halaman publik** tercentang, lalu tekan **Terbitkan kabar**.
 
 Pengunjung yang pernah membuka halaman Kabar akan melihat angka kecil di menu Kabar saat ada kabar baru yang belum dia baca.
+
+### Mengatur foto hero
+
+Foto besar di bagian atas beranda diambil dari menu **Foto Hero**, bukan dari poster acara. Jadi isinya sepenuhnya Anda yang pilih.
+
+1. Buka menu **Foto Hero**, tekan pilih foto. Foto dari kamera HP otomatis dikecilkan di HP Anda sebelum dikirim.
+2. **Keterangan** dipakai sebagai teks alternatif untuk yang memakai pembaca layar, misalnya `Kajian Ahad pagi`. Boleh dikosongkan.
+3. **Urutan** menentukan foto mana yang tampil lebih dulu. Angka kecil tampil duluan.
+4. Foto berganti sendiri setiap 6 detik. Kalau HP pengunjung disetel meminta gerak minimal, fotonya diam dan tidak berganti.
+5. Tombol **Sembunyikan** membuat foto berhenti tampil tanpa menghapusnya. Pakai itu kalau ragu, hapus kalau sudah pasti tidak dipakai.
+
+Kalau belum ada satu pun foto, hero tampil sebagai blok warna. Itu keadaan yang wajar, bukan galat. Tiga sampai lima foto sudah cukup.
 
 ### Membuat acara dan menerima pendaftar
 
@@ -146,4 +160,6 @@ Season yang tidak aktif otomatis pindah ke halaman **Arsip** berikut total yang 
 - Tidak ada endpoint publik yang mengembalikan daftar donatur atau pendaftar. Halaman `/donasi/[kode]` dan `/tiket/[kode]` hanya mengembalikan satu baris sesuai kode.
 - Nomor WhatsApp tidak pernah tampil utuh di halaman publik, hanya tersamar seperti `0812••••789`.
 - RLS menyala di semua tabel tanpa policy publik. Seluruh baca dan tulis lewat route server yang memakai service role key.
+- `vercel.json` menaruh fungsi di region `sin1` (Singapore) supaya duduk dekat dengan database. Kalau project Supabase Anda ada di region lain, ganti nilai itu supaya keduanya sekota.
+- Bacaan halaman publik di-cache 300 detik lewat `src/lib/cache.ts`, dan aksi pengurus memanggil `revalidateTag` supaya angkanya langsung ikut berubah setelah disimpan. Halaman status donasi, tiket, dan form pendaftaran sengaja tidak di-cache.
 - Dokumen pendukung: `DESIGN.md` (arah visual), `PLAN.md` (urutan kerja dan asumsi), `DECISIONS.md` (semua keputusan berikut alasannya), `DELIVERY-GATE.md` (laporan pemeriksaan akhir).

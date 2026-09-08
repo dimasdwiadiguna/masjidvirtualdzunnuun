@@ -10,6 +10,7 @@ const MENU = [
   { href: "/admin/pendaftar", label: "Pendaftar" },
   { href: "/admin/scan", label: "Check-in" },
   { href: "/admin/kabar", label: "Kabar" },
+  { href: "/admin/hero", label: "Foto Hero" },
   { href: "/admin/sponsor", label: "Sponsor" },
   { href: "/admin/pengaturan", label: "Pengaturan" },
   { href: "/admin/diagnosa", label: "Diagnosa" },

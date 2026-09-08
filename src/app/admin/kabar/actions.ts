@@ -1,7 +1,8 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { db } from "@/lib/data";
+import { TANDA } from "@/lib/cache";
 import { pastikanAdmin, unggahGambar } from "@/lib/admin";
 import { dariInputWaktu } from "@/lib/format";
 import type { HasilAksi } from "@/components/admin/FormAksi";
@@ -16,10 +17,9 @@ export async function simpanKabar(_sebelumnya: HasilAksi, formData: FormData): P
   if (judul.length < 3) return { pesan: "Judul kabar minimal 3 huruf." };
   if (isi.length < 10) return { pesan: "Isi kabar terlalu pendek. Dua sampai empat kalimat sudah cukup." };
 
-  const hariMentah = String(formData.get("day_number") ?? "").trim();
-  const hari = hariMentah ? Number(hariMentah) : null;
-  if (hari !== null && (!Number.isInteger(hari) || hari < 0)) {
-    return { pesan: "Nomor hari harus bilangan bulat, atau dikosongkan." };
+  const penanda = String(formData.get("activity_label") ?? "").trim();
+  if (penanda.length > 60) {
+    return { pesan: "Penanda kegiatan terlalu panjang, maksimal 60 karakter." };
   }
 
   const lama = id ? await data.getUpdateById(id) : null;
@@ -40,13 +40,15 @@ export async function simpanKabar(_sebelumnya: HasilAksi, formData: FormData): P
   await data.saveUpdate({
     id,
     season_id: seasonId,
-    day_number: hari,
+    activity_label: penanda || null,
+    day_number: null,
     title: judul,
     body: isi,
     image_url: formData.get("hapus_gambar") === "ya" ? null : (unggahan.url ?? lama?.image_url ?? null),
     published_at: terbitPada,
     is_published: formData.get("is_published") === "ya",
   });
+  revalidateTag(TANDA.kabar);
   return { pesan: id ? "Kabar diperbarui." : `Kabar "${judul}" terbit.`, sukses: true };
 }
 
@@ -55,5 +57,6 @@ export async function hapusKabar(formData: FormData): Promise<void> {
   const id = String(formData.get("id") ?? "");
   if (!id) return;
   await (await db()).deleteUpdate(id);
+  revalidateTag(TANDA.kabar);
   revalidatePath("/admin/kabar");
 }

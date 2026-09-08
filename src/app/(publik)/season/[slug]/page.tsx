@@ -6,7 +6,7 @@ import Bagikan from "@/components/Bagikan";
 import KartuKabar from "@/components/KartuKabar";
 import Markdown from "@/components/Markdown";
 import ProgressSeason from "@/components/ProgressSeason";
-import { db } from "@/lib/data";
+import { kabarSeason, progressSeason, seasonLewatSlug, sponsorSeason } from "@/lib/cache";
 import { judulSeason, rupiah } from "@/lib/format";
 import { ringkas } from "@/lib/markdown";
 
@@ -16,7 +16,7 @@ type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const season = await (await db()).getSeasonBySlug(slug);
+  const season = await seasonLewatSlug(slug);
   if (!season) return { title: "Season tidak ditemukan" };
   const deskripsi = season.tagline ?? ringkas(season.description ?? "");
   return {
@@ -28,14 +28,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function HalamanSeason({ params }: Props) {
   const { slug } = await params;
-  const data = await db();
-  const season = await data.getSeasonBySlug(slug);
+  const season = await seasonLewatSlug(slug);
   if (!season) notFound();
 
   const [progress, kabar, sponsor] = await Promise.all([
-    data.seasonProgress(season.id),
-    data.listUpdates({ hanyaTerbit: true, seasonId: season.id }),
-    data.listSponsors(season.id),
+    progressSeason(season.id),
+    kabarSeason(season.id),
+    sponsorSeason(season.id),
   ]);
 
   return (
@@ -57,7 +56,7 @@ export default async function HalamanSeason({ params }: Props) {
         {season.tagline ? <p className="mt-1.5 text-[0.95rem] text-ink-soft">{season.tagline}</p> : null}
 
         <div className="kartu mt-4 p-4">
-          <ProgressSeason season={season} progress={progress} />
+          <ProgressSeason season={season} progress={progress} label="Patungan berjalan" />
           <p className="petunjuk">1 paket {rupiah(season.package_price)} untuk merangkul satu jamaah.</p>
           <div className="mt-3 flex gap-2">
             <Link href="/donasi" className="tombol-utama flex-1">
@@ -129,7 +128,7 @@ export default async function HalamanSeason({ params }: Props) {
         ) : null}
       </div>
 
-      <div className="fixed bottom-[54px] left-0 right-0 z-30 border-t border-garis bg-paper p-3 md:hidden">
+      <div className="fixed bottom-[92px] left-0 right-0 z-30 border-t border-garis bg-paper p-3 md:hidden">
         <div className="kolom-isi">
           <Link href="/donasi" className="tombol-utama w-full">
             Ikut patungan

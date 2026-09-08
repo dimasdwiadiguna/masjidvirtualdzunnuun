@@ -16,7 +16,7 @@ export default async function Gambar({ params }: { params: Promise<{ id: string 
   return new ImageResponse(
     (
       <KartuOg
-        label={kabar.day_number ? `Kabar Aksi, hari ke-${kabar.day_number}` : "Kabar Aksi"}
+        label={kabar.activity_label ? `Kabar Aksi, ${kabar.activity_label}` : "Kabar Aksi"}
         judul={kabar.title}
         catatan={tanggalPendek(kabar.published_at)}
       />

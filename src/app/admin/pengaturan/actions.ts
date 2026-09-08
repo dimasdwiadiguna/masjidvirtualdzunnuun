@@ -1,6 +1,8 @@
 "use server";
 
+import { revalidateTag } from "next/cache";
 import { db } from "@/lib/data";
+import { TANDA } from "@/lib/cache";
 import { pastikanAdmin, unggahGambar } from "@/lib/admin";
 import { normalkanWa } from "@/lib/wa";
 import type { HasilAksi } from "@/components/admin/FormAksi";
@@ -36,5 +38,6 @@ export async function simpanPengaturan(_sebelumnya: HasilAksi, formData: FormDat
     about_markdown: String(formData.get("about_markdown") ?? "").trim(),
   });
 
+  revalidateTag(TANDA.pengaturan);
   return { pesan: "Pengaturan tersimpan.", sukses: true };
 }

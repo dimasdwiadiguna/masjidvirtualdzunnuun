@@ -20,8 +20,14 @@ export default function KartuKabar({ kabar, tingkat = "h3" }: { kabar: Update; t
         ) : null}
         <div className="min-w-0 flex-1">
           <p className="text-xs font-semibold text-gold-ink">
-            {kabar.day_number ? `Hari ke-${kabar.day_number}` : "Kabar"}
-            <span className="text-ink-soft"> · {tanggalPendek(kabar.published_at)}</span>
+            {kabar.activity_label ? (
+              <>
+                {kabar.activity_label}
+                <span className="text-ink-soft"> · {tanggalPendek(kabar.published_at)}</span>
+              </>
+            ) : (
+              <span className="text-ink-soft">{tanggalPendek(kabar.published_at)}</span>
+            )}
           </p>
           <Judul className="mt-1 line-clamp-2 text-[0.98rem] leading-snug">{kabar.title}</Judul>
         </div>

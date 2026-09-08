@@ -1,7 +1,8 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { db } from "@/lib/data";
+import { TANDA } from "@/lib/cache";
 import { pastikanAdmin, unggahGambar } from "@/lib/admin";
 import type { HasilAksi } from "@/components/admin/FormAksi";
 import type { SponsorTier } from "@/lib/data/types";
@@ -30,6 +31,7 @@ export async function simpanSponsor(_sebelumnya: HasilAksi, formData: FormData):
     sort_order: Number.isFinite(urutan) ? Math.round(urutan) : 0,
   });
 
+  revalidateTag(TANDA.season);
   return { pesan: `Sponsor ${nama} tersimpan.`, sukses: true };
 }
 
@@ -38,5 +40,6 @@ export async function hapusSponsor(formData: FormData): Promise<void> {
   const id = String(formData.get("id") ?? "");
   if (!id) return;
   await (await db()).deleteSponsor(id);
+  revalidateTag(TANDA.season);
   revalidatePath("/admin/sponsor");
 }

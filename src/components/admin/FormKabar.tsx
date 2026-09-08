@@ -8,10 +8,9 @@ import type { Season, Update } from "@/lib/data/types";
 type Props = {
   kabar?: Update;
   season: Season | null;
-  hariOtomatis: number | null;
 };
 
-export default function FormKabar({ kabar, season, hariOtomatis }: Props) {
+export default function FormKabar({ kabar, season }: Props) {
   const kunci = kabar?.id ?? "baru";
   return (
     <FormAksi aksi={simpanKabar} labelKirim={kabar ? "Simpan perubahan kabar" : "Terbitkan kabar"} className="max-w-[560px]">
@@ -19,21 +18,20 @@ export default function FormKabar({ kabar, season, hariOtomatis }: Props) {
       <input type="hidden" name="season_id" value={kabar?.season_id ?? season?.id ?? ""} />
 
       <div>
-        <label className="label-isian" htmlFor={`hari-${kunci}`}>
-          Hari ke berapa
+        <label className="label-isian" htmlFor={`penanda-${kunci}`}>
+          Penanda kegiatan (boleh dikosongkan)
         </label>
         <input
-          id={`hari-${kunci}`}
-          name="day_number"
-          type="number"
-          min={0}
-          defaultValue={kabar?.day_number ?? hariOtomatis ?? ""}
+          id={`penanda-${kunci}`}
+          name="activity_label"
+          maxLength={60}
+          defaultValue={kabar?.activity_label ?? ""}
           className="isian"
+          placeholder="Tahsin Pertemuan 13"
         />
-        <p className="mt-1 text-sm text-ink-soft">
-          {hariOtomatis
-            ? `Terisi otomatis dari tanggal mulai season aktif. Hari ini hari ke-${hariOtomatis}. Boleh diubah.`
-            : "Belum ada season aktif, jadi nomor hari tidak terisi otomatis. Boleh dikosongkan."}
+        <p className="petunjuk">
+          Isi bebas sesuai jenis kegiatannya, misalnya MBKM Pekan ke-12 atau Kajian Ahad. Kalau dikosongkan, yang tampil
+          hanya tanggalnya.
         </p>
       </div>
 

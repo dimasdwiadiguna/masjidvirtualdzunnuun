@@ -40,7 +40,7 @@ Palet aktif: **2 warna inti (teal, teal gelap) + 1 aksen (emas)**, di atas netra
 | `--success` | `#1E6B3A` | Status terverifikasi, tiket terkonfirmasi. |
 | `--danger` | `#8A1F1F` | Status ditolak, error form. |
 
-Aksen emas dipakai **hanya di dua tempat**: kalimat pembuka di hero (emas di atas foto gelap) dan label "Hari ke-N" di Kabar Aksi (memakai `--gold-ink` karena label itu duduk di atas krem). Progress bar memakai teal karena barnya kini duduk di kartu terang, dan emas tidak lolos kontras di sana.
+Aksen emas dipakai **hanya di tiga tempat**: kalimat pembuka di hero (emas di atas foto gelap), penanda kegiatan di Kabar Aksi (memakai `--gold-ink` karena label itu duduk di atas krem), dan latar bar sosial yang menempel di atas navigasi bawah (tinta gelap di atas emas, rasio 7,65 banding 1). Progress bar memakai teal karena barnya kini duduk di kartu terang, dan emas tidak lolos kontras di sana.
 
 Garis kartu memakai `--garis` (`#DED5C2`) yang sengaja tipis dan tenang, sedangkan garis isian memakai `--garis-isian` (`#7B8886`, rasio 3.62 terhadap kertas) karena batas komponen yang bisa diisi wajib memenuhi kontras non-teks 3:1.
 
@@ -90,12 +90,15 @@ Motif bayangan padat tanpa blur yang sebelumnya dipakai sudah dilepas atas permi
 
 Setiap halaman punya komposisi berbeda, bukan pengulangan "judul di tengah + grid kartu":
 
-- **Beranda**: hero berupa foto kegiatan yang berganti pelan dengan lapisan gelap di atasnya, judul pendek di bagian bawah foto, lalu kartu progress yang sedikit menumpuk ke atas foto, lalu feed kabar, daftar acara, dan paragraf tentang kami.
+- **Beranda**: hero berupa foto kegiatan pilihan pengurus yang berganti pelan dengan lapisan gelap di atasnya, judul pendek di bagian bawah foto, lalu kartu progress yang sedikit menumpuk ke atas foto, lalu agenda terdekat sebagai carousel kartu, feed kabar, dan paragraf tentang kami.
+- **Kartu progress**: label "Patungan berjalan" dan badge persentase di baris atas, rupiah sebagai angka utama dengan target sebagai baris kecil di bawahnya (urutan BRIEF §4), bar setebal 10px berujung membulat, lalu tiga kolom dipisah garis tipis: Jamaah dirangkul, Donasi masuk, Sisa hari. Tombol "Ikut patungan" penuh lebar di dalam kartu, dan "Rincian season" sebagai tautan teks di bawahnya supaya tidak ada dua tombol yang bersaing. Saat belum ada donasi, ketiga kolom tetap tampil berisi nol, tidak disembunyikan.
+- **Kartu acara di carousel**: poster jadi header rasio 4:3, separuh bawah berisi tanggal, judul dua baris, lokasi, harga, sisa kuota, dan tombol Daftar penuh lebar. Acara tanpa poster memakai blok teal gelap berisi tanggal besar. Kuota penuh atau tenggat lewat diganti keterangan, bukan tombol mati.
 - **Season**: foto header lebar, judul, progress besar di kartu gelap, deskripsi mengalir, feed kabar, logo sponsor sebagai baris sederhana.
 - **Donasi**: form satu kolom, chip paket sebagai grid 2x2 di 360px, konversi hidup tepat di bawah input.
 - **Status donasi**: nominal sebagai angka terbesar di halaman, sisanya menurun tajam. Ini satu-satunya halaman dengan satu fokus tunggal sebesar itu.
 - **Acara**: toggle dua tampilan. Tampilan kartu memakai blok tanggal gelap di kiri sebagai penanda cepat, tampilan kalender memakai grid bulanan buatan sendiri.
-- **Kabar**: feed kronologis, foto kecil di kiri, dan label "Hari ke-N" sebagai penanda hitungan hari yang naik terus.
+- **Kabar**: feed kronologis, foto kecil di kiri, dan penanda kegiatan yang diisi bebas oleh pengurus (misalnya `Tahsin Pertemuan 13`) sebagai konteks di atas judul. Kabar tanpa penanda hanya menampilkan tanggal.
+- **Bar sosial**: menempel tepat di atas navigasi bawah, tinggi 38px, hanya di layar HP. Latar emas dengan teks tinta, satu-satunya blok emas penuh di app, jadi mata langsung menemukannya tanpa perlu ukuran besar. Hanya muncul kalau tautannya memang diisi.
 - **Admin**: tabel dan form rapat, tanpa hero, tanpa kartu statistik hiasan. Layout dibangun dari satu keputusan yang diambil pengurus di layar itu.
 
 Satu focal point per layar: di beranda dan season itu angka rupiah, di halaman status itu nominal transfer, di detail acara itu tombol daftar.

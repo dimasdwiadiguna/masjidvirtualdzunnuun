@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Markdown from "@/components/Markdown";
-import { db } from "@/lib/data";
+import { progressSeason, semuaSeason } from "@/lib/cache";
 import { angka, judulSeason, persen, rupiah, tanggalPendek } from "@/lib/format";
 
 export const metadata: Metadata = {
@@ -12,11 +12,10 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function HalamanArsip() {
-  const data = await db();
-  const semua = await data.listSeasons();
+  const semua = await semuaSeason();
   const selesai = semua.filter((season) => !season.is_active);
   const rincian = await Promise.all(
-    selesai.map(async (season) => ({ season, progress: await data.seasonProgress(season.id) })),
+    selesai.map(async (season) => ({ season, progress: await progressSeason(season.id) })),
   );
 
   return (

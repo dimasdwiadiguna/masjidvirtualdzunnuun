@@ -1,9 +1,9 @@
 import Link from "next/link";
-import BarisAcara from "@/components/BarisAcara";
+import CarouselAcara from "@/components/CarouselAcara";
 import HeroCarousel from "@/components/HeroCarousel";
 import KartuKabar from "@/components/KartuKabar";
 import ProgressSeason from "@/components/ProgressSeason";
-import { db } from "@/lib/data";
+import { kabarTerbit, pengaturanPublik, progressSeason, seasonAktif } from "@/lib/cache";
 import { rupiah } from "@/lib/format";
 import { ringkas } from "@/lib/markdown";
 import { acaraTerdekat, fotoHero } from "@/lib/tampilan";
@@ -11,12 +11,11 @@ import { acaraTerdekat, fotoHero } from "@/lib/tampilan";
 export const dynamic = "force-dynamic";
 
 export default async function Beranda() {
-  const data = await db();
-  const [season, pengaturan] = await Promise.all([data.getActiveSeason(), data.getSettings()]);
+  const [season, pengaturan] = await Promise.all([seasonAktif(), pengaturanPublik()]);
   const [progress, kabar, acara, foto] = await Promise.all([
-    season ? data.seasonProgress(season.id) : Promise.resolve(null),
-    data.listUpdates({ hanyaTerbit: true, limit: 3 }),
-    acaraTerdekat(3),
+    season ? progressSeason(season.id) : Promise.resolve(null),
+    kabarTerbit(3),
+    acaraTerdekat(5),
     fotoHero(),
   ]);
 
@@ -36,19 +35,16 @@ export default async function Beranda() {
       <div className="kolom-lebar -mt-5 relative z-10">
         {season && progress ? (
           <div className="kartu p-4">
-            <p className="text-xs font-semibold uppercase tracking-wide text-teal-ink">Patungan berjalan</p>
-            <div className="mt-2">
-              <ProgressSeason season={season} progress={progress} />
-            </div>
-            <div className="mt-4 flex gap-2">
-              <Link href="/donasi" className="tombol-utama flex-1">
-                Ikut patungan
+            <ProgressSeason season={season} progress={progress} label="Patungan berjalan" />
+            <Link href="/donasi" className="tombol-utama mt-4 w-full">
+              Ikut patungan
+            </Link>
+            <p className="mt-2 flex flex-wrap items-center justify-between gap-2 text-sm">
+              <span className="text-ink-soft">1 paket {rupiah(season.package_price)}, satu jamaah dirangkul.</span>
+              <Link href={`/season/${season.slug}`} className="font-semibold text-teal-ink underline underline-offset-4">
+                Rincian season
               </Link>
-              <Link href={`/season/${season.slug}`} className="tombol-kedua">
-                Rincian
-              </Link>
-            </div>
-            <p className="petunjuk">1 paket {rupiah(season.package_price)} untuk merangkul satu jamaah.</p>
+            </p>
           </div>
         ) : (
           <div className="kartu p-4">
@@ -76,7 +72,7 @@ export default async function Beranda() {
         )}
       </section>
 
-      <section className="kolom-lebar mt-8">
+      <section className="kolom-lebar mt-8 overflow-hidden">
         <div className="judul-bagian">
           <h2>Acara terdekat</h2>
           <Link href="/acara" className="text-sm font-semibold text-teal-ink underline underline-offset-4">
@@ -84,10 +80,8 @@ export default async function Beranda() {
           </Link>
         </div>
         {acara.length > 0 ? (
-          <div className="mt-3 grid gap-2">
-            {acara.map((item) => (
-              <BarisAcara key={item.acara.id} acara={item.acara} sisaKuota={item.sisaKuota} />
-            ))}
+          <div className="mt-3">
+            <CarouselAcara daftar={acara} />
           </div>
         ) : (
           <p className="mt-2 text-sm text-ink-soft">Belum ada acara yang dijadwalkan.</p>

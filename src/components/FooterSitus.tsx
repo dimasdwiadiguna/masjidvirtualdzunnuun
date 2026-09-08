@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { db } from "@/lib/data";
+import { pengaturanPublik } from "@/lib/cache";
 import { SEED_SETTINGS } from "@/lib/data/seed";
 import { denganBatasWaktu } from "@/lib/waktu";
 import { IkonWhatsApp } from "./Ikon";
@@ -22,7 +22,7 @@ const HALAMAN = [
  */
 async function ambilPengaturan(): Promise<Settings> {
   try {
-    return await denganBatasWaktu((await db()).getSettings(), 5000);
+    return await denganBatasWaktu(pengaturanPublik(), 5000);
   } catch (galat) {
     console.error("Footer gagal membaca pengaturan", galat);
     return { ...SEED_SETTINGS, instagram_url: null };
@@ -77,7 +77,7 @@ export default async function FooterSitus() {
               </li>
             ))}
             {sosial.map((item) => (
-              <li key={item.label}>
+              <li key={item.label} className="hidden md:block">
                 <a
                   href={item.url}
                   target="_blank"

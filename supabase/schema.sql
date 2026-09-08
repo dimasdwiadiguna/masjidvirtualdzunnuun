@@ -90,6 +90,9 @@ create unique index if not exists registrations_pending_nominal_unik
 create table if not exists updates (
   id uuid primary key default gen_random_uuid(),
   season_id uuid references seasons (id) on delete set null,
+  -- Penanda tipe kegiatan yang diisi bebas pengurus, misalnya "Tahsin Pertemuan 13".
+  activity_label text,
+  -- Kolom lama dari hitungan hari, dipertahankan supaya data lama tidak hilang.
   day_number integer,
   title text not null,
   body text not null,
@@ -112,6 +115,19 @@ create table if not exists sponsors (
 
 create index if not exists sponsors_season on sponsors (season_id, sort_order);
 
+-- Foto latar hero di beranda. Sengaja tabel sendiri supaya pengurus memilih
+-- foto mana yang tampil, bukan dipungut dari poster acara atau foto kabar.
+create table if not exists hero_photos (
+  id uuid primary key default gen_random_uuid(),
+  image_url text not null,
+  caption text,
+  sort_order integer not null default 0,
+  is_active boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists hero_photos_urutan on hero_photos (is_active, sort_order);
+
 create table if not exists settings (
   id text primary key default 'settings',
   qris_image_url text,
@@ -133,6 +149,7 @@ alter table events enable row level security;
 alter table registrations enable row level security;
 alter table updates enable row level security;
 alter table sponsors enable row level security;
+alter table hero_photos enable row level security;
 alter table settings enable row level security;
 
 -- Bucket penyimpanan gambar. Publik untuk dibaca karena isinya foto header,
