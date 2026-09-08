@@ -4,6 +4,7 @@ import { unstable_cache } from "next/cache";
 import { db } from "@/lib/data";
 import type {
   Announcement,
+  SocialPost,
   EventItem,
   HeroPhoto,
   Season,
@@ -36,6 +37,8 @@ export const TANDA = {
   acara: "acara",
   hero: "hero",
   pengumuman: "pengumuman",
+  sosmed: "sosmed",
+  polling: "polling",
 } as const;
 
 const UMUR = 300;
@@ -134,4 +137,18 @@ export const satuPengumuman = unstable_cache(
   async (slug: string): Promise<Announcement | null> => (await db()).getAnnouncementBySlug(slug),
   ["pengumuman-slug"],
   { tags: [TANDA.pengumuman], revalidate: UMUR },
+);
+
+export const postSosmedAktif = unstable_cache(
+  async (): Promise<SocialPost[]> => (await db()).listSocialPosts({ hanyaAktif: true }),
+  ["sosmed-aktif"],
+  { tags: [TANDA.sosmed], revalidate: UMUR },
+);
+
+/** Tally berubah tiap ada suara masuk, jadi umurnya pendek seperti kuota acara. */
+export const hasilPollingTerkini = unstable_cache(
+  async (kunci: string, jumlahPilihan: number): Promise<number[]> =>
+    (await db()).hasilPolling(kunci, jumlahPilihan),
+  ["hasil-polling"],
+  { tags: [TANDA.polling], revalidate: 30 },
 );

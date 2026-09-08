@@ -5,6 +5,8 @@ import type {
   EventCapacityInfo,
   EventItem,
   Announcement,
+  Kehadiran,
+  SocialPost,
   HeroPhoto,
   Registration,
   RegistrationStatus,
@@ -21,6 +23,7 @@ export type UpdateInput = Omit<Update, "id"> & { id?: string };
 export type SponsorInput = Omit<Sponsor, "id"> & { id?: string };
 export type HeroPhotoInput = Omit<HeroPhoto, "id" | "created_at"> & { id?: string };
 export type AnnouncementInput = Omit<Announcement, "id" | "created_at"> & { id?: string };
+export type SocialPostInput = Omit<SocialPost, "id" | "created_at"> & { id?: string };
 export type DonationInput = Omit<Donation, "id" | "created_at" | "verified_at" | "admin_note" | "status"> & {
   status?: DonationStatus;
 };
@@ -76,6 +79,28 @@ export interface DataDriver {
   getAnnouncementBySlug(slug: string): Promise<Announcement | null>;
   saveAnnouncement(input: AnnouncementInput): Promise<Announcement>;
   deleteAnnouncement(id: string): Promise<void>;
+
+  listSocialPosts(opts?: { hanyaAktif?: boolean }): Promise<SocialPost[]>;
+  saveSocialPost(input: SocialPostInput): Promise<SocialPost>;
+  deleteSocialPost(id: string): Promise<void>;
+
+  /** Berapa kali nomor ini hadir, dihitung dari tiket berstatus checked_in. */
+  hitungKehadiran(whatsapp: string): Promise<number>;
+  ringkasanKehadiran(): Promise<Kehadiran[]>;
+  /** Membuat token kartu baru untuk satu nomor. Token lama ikut dihapus. */
+  buatTautanKartu(whatsapp: string): Promise<string>;
+  kartuLewatToken(token: string): Promise<string | null>;
+  /** Semua token yang sudah ada, dipetakan dari nomor. Satu kueri, bukan per baris. */
+  semuaTautanKartu(): Promise<Map<string, string>>;
+
+  hitungPemenangHariIni(): Promise<number>;
+  hitungKemenangan(whatsapp: string): Promise<number>;
+  catatPemenang(whatsapp: string, nama: string): Promise<"tercatat" | "sudah-menang">;
+
+  sudahMemilih(pollKey: string, penanda: string): Promise<boolean>;
+  catatSuara(pollKey: string, pilihan: number, penanda: string): Promise<"tercatat" | "sudah-memilih">;
+  /** Jumlah suara per indeks pilihan, panjangnya sesuai jumlah pilihan. */
+  hasilPolling(pollKey: string, jumlahPilihan: number): Promise<number[]>;
 
   listSponsors(seasonId: string): Promise<Sponsor[]>;
   saveSponsor(input: SponsorInput): Promise<Sponsor>;

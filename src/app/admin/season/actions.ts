@@ -7,7 +7,7 @@ import { buatSlug, pastikanAdmin, unggahGambar } from "@/lib/admin";
 import type { HasilAksi } from "@/components/admin/FormAksi";
 
 export async function simpanSeason(_sebelumnya: HasilAksi, formData: FormData): Promise<HasilAksi> {
-  await pastikanAdmin();
+  await pastikanAdmin("admin");
   const data = await db();
 
   const id = String(formData.get("id") ?? "").trim() || undefined;
@@ -53,7 +53,7 @@ export async function simpanSeason(_sebelumnya: HasilAksi, formData: FormData): 
 }
 
 export async function aktifkanSeason(formData: FormData): Promise<void> {
-  await pastikanAdmin();
+  await pastikanAdmin("admin");
   const id = String(formData.get("id") ?? "");
   if (!id) return;
   await (await db()).setActiveSeason(id);

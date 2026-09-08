@@ -26,7 +26,7 @@ export default async function DonasiSelesai() {
           penerimaannya kami kirim lewat WhatsApp ke nomor yang Anda isi.
         </p>
         <Link href="/donasi" className="tombol-utama mt-4">
-          Isi formulir patungan
+          Isi formulir donasi
         </Link>
       </div>
     );

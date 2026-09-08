@@ -6,7 +6,7 @@ import { db } from "@/lib/data";
 import { pastikanAdmin } from "@/lib/admin";
 
 async function ubahStatus(formData: FormData, status: "verified" | "rejected"): Promise<void> {
-  await pastikanAdmin();
+  await pastikanAdmin("admin");
   const id = String(formData.get("id") ?? "");
   const catatan = String(formData.get("catatan") ?? "").trim();
   if (!id) return;

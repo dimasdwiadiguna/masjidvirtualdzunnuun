@@ -3,10 +3,13 @@ import { randomUUID } from "crypto";
 import { mkdir, readFile, rename, writeFile } from "fs/promises";
 import path from "path";
 import { SEED_SEASON, SEED_SETTINGS } from "./seed";
+import { buatTokenKartu } from "@/lib/kode";
+import { hariIniJakarta, hitungSuara, kumpulkanKehadiran } from "./kehadiran";
 import type {
   DataDriver,
   DonationFilter,
   AnnouncementInput,
+  SocialPostInput,
   HeroPhotoInput,
   DonationInput,
   EventInput,
@@ -21,6 +24,9 @@ import type {
   EventCapacityInfo,
   EventItem,
   Announcement,
+  LoyaltyLink,
+  QuizWinner,
+  SocialPost,
   HeroPhoto,
   Registration,
   RegistrationStatus,
@@ -35,6 +41,10 @@ type Isi = {
   settings: Settings;
   heroPhotos: HeroPhoto[];
   announcements: Announcement[];
+  socialPosts: SocialPost[];
+  loyaltyLinks: LoyaltyLink[];
+  quizWinners: QuizWinner[];
+  pollVotes: { id: string; poll_key: string; pilihan: number; penanda: string; created_at: string }[];
   seasons: Season[];
   donations: Donation[];
   events: EventItem[];
@@ -51,6 +61,10 @@ function isiAwal(): Isi {
     settings: { ...SEED_SETTINGS },
     heroPhotos: [],
     announcements: [],
+    socialPosts: [],
+    loyaltyLinks: [],
+    quizWinners: [],
+    pollVotes: [],
     seasons: [{ ...SEED_SEASON }],
     donations: [],
     events: [],
@@ -371,6 +385,146 @@ export function createLocalDriver(): DataDriver {
         const isi = await bacaMentah();
         isi.announcements = (isi.announcements ?? []).filter((satu) => satu.id !== id);
         await tulisMentah(isi);
+      });
+    },
+
+    async listSocialPosts(opts = {}) {
+      return berurutan(async () => {
+        const isi = await bacaMentah();
+        return (isi.socialPosts ?? [])
+          .filter((satu) => (opts.hanyaAktif ? satu.is_active : true))
+          .sort((a, b) => a.sort_order - b.sort_order || a.created_at.localeCompare(b.created_at));
+      });
+    },
+    async saveSocialPost(input: SocialPostInput) {
+      return berurutan(async () => {
+        const isi = await bacaMentah();
+        isi.socialPosts = isi.socialPosts ?? [];
+        if (input.id) {
+          const idx = isi.socialPosts.findIndex((satu) => satu.id === input.id);
+          if (idx < 0) throw new Error("Post sosmed tidak ditemukan");
+          isi.socialPosts[idx] = { ...isi.socialPosts[idx], ...input, id: input.id };
+          await tulisMentah(isi);
+          return isi.socialPosts[idx];
+        }
+        const baru: SocialPost = { ...input, id: randomUUID(), created_at: new Date().toISOString() };
+        isi.socialPosts.push(baru);
+        await tulisMentah(isi);
+        return baru;
+      });
+    },
+    async deleteSocialPost(id) {
+      return berurutan(async () => {
+        const isi = await bacaMentah();
+        isi.socialPosts = (isi.socialPosts ?? []).filter((satu) => satu.id !== id);
+        await tulisMentah(isi);
+      });
+    },
+
+    async hitungKehadiran(whatsapp) {
+      return berurutan(async () => {
+        const isi = await bacaMentah();
+        return isi.registrations.filter((r) => r.whatsapp === whatsapp && r.status === "checked_in").length;
+      });
+    },
+    async ringkasanKehadiran() {
+      return berurutan(async () => {
+        const isi = await bacaMentah();
+        return kumpulkanKehadiran(
+          isi.registrations
+            .filter((r) => r.status === "checked_in")
+            .map((r) => ({ whatsapp: r.whatsapp, name: r.name, checked_in_at: r.checked_in_at })),
+        );
+      });
+    },
+    async buatTautanKartu(whatsapp) {
+      return berurutan(async () => {
+        const isi = await bacaMentah();
+        isi.loyaltyLinks = (isi.loyaltyLinks ?? []).filter((satu) => satu.whatsapp !== whatsapp);
+        const token = buatTokenKartu();
+        isi.loyaltyLinks.push({ token, whatsapp, created_at: new Date().toISOString() });
+        await tulisMentah(isi);
+        return token;
+      });
+    },
+    async kartuLewatToken(token) {
+      return berurutan(async () => {
+        const isi = await bacaMentah();
+        return (isi.loyaltyLinks ?? []).find((satu) => satu.token === token)?.whatsapp ?? null;
+      });
+    },
+
+    async semuaTautanKartu() {
+      return berurutan(async () => {
+        const isi = await bacaMentah();
+        return new Map((isi.loyaltyLinks ?? []).map((satu) => [satu.whatsapp, satu.token]));
+      });
+    },
+
+    async hitungPemenangHariIni() {
+      return berurutan(async () => {
+        const isi = await bacaMentah();
+        const hari = hariIniJakarta();
+        return (isi.quizWinners ?? []).filter((satu) => satu.won_on === hari).length;
+      });
+    },
+    async hitungKemenangan(whatsapp) {
+      return berurutan(async () => {
+        const isi = await bacaMentah();
+        return (isi.quizWinners ?? []).filter((satu) => satu.whatsapp === whatsapp).length;
+      });
+    },
+    async catatPemenang(whatsapp, nama) {
+      return berurutan(async () => {
+        const isi = await bacaMentah();
+        isi.quizWinners = isi.quizWinners ?? [];
+        const hari = hariIniJakarta();
+        if (isi.quizWinners.some((satu) => satu.whatsapp === whatsapp && satu.won_on === hari)) {
+          return "sudah-menang" as const;
+        }
+        isi.quizWinners.push({
+          id: randomUUID(),
+          whatsapp,
+          nama,
+          won_on: hari,
+          created_at: new Date().toISOString(),
+        });
+        await tulisMentah(isi);
+        return "tercatat" as const;
+      });
+    },
+
+    async sudahMemilih(pollKey, penanda) {
+      return berurutan(async () => {
+        const isi = await bacaMentah();
+        return (isi.pollVotes ?? []).some((satu) => satu.poll_key === pollKey && satu.penanda === penanda);
+      });
+    },
+    async catatSuara(pollKey, pilihan, penanda) {
+      return berurutan(async () => {
+        const isi = await bacaMentah();
+        isi.pollVotes = isi.pollVotes ?? [];
+        if (isi.pollVotes.some((satu) => satu.poll_key === pollKey && satu.penanda === penanda)) {
+          return "sudah-memilih" as const;
+        }
+        isi.pollVotes.push({
+          id: randomUUID(),
+          poll_key: pollKey,
+          pilihan,
+          penanda,
+          created_at: new Date().toISOString(),
+        });
+        await tulisMentah(isi);
+        return "tercatat" as const;
+      });
+    },
+    async hasilPolling(pollKey, jumlahPilihan) {
+      return berurutan(async () => {
+        const isi = await bacaMentah();
+        return hitungSuara(
+          (isi.pollVotes ?? []).filter((satu) => satu.poll_key === pollKey),
+          jumlahPilihan,
+        );
       });
     },
 

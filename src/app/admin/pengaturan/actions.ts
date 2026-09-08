@@ -14,7 +14,7 @@ function tautanBersih(nilai: FormDataEntryValue | null): string | null {
 }
 
 export async function simpanPengaturan(_sebelumnya: HasilAksi, formData: FormData): Promise<HasilAksi> {
-  await pastikanAdmin();
+  await pastikanAdmin("admin");
   const data = await db();
 
   const waMentah = String(formData.get("admin_whatsapp") ?? "").trim();

@@ -28,3 +28,14 @@ export function pilihSuffix(nominalDasar: number, terpakai: Set<number>): number
   if (kandidat.length === 0) return null;
   return kandidat[randomInt(kandidat.length)];
 }
+
+/**
+ * Token acak untuk tautan kartu loyalitas. Panjang 16 dari alfabet 31 huruf,
+ * jadi ruang tebakannya sekitar 10 pangkat 24. Bukan kode yang perlu diketik
+ * ulang orang, jadi boleh jauh lebih panjang dari kode tiket.
+ */
+export function buatTokenKartu(): string {
+  let hasil = "";
+  for (let i = 0; i < 16; i += 1) hasil += ALFABET[randomInt(ALFABET.length)];
+  return hasil;
+}

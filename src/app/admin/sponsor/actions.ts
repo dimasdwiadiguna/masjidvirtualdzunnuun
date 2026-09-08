@@ -8,7 +8,7 @@ import type { HasilAksi } from "@/components/admin/FormAksi";
 import type { SponsorTier } from "@/lib/data/types";
 
 export async function simpanSponsor(_sebelumnya: HasilAksi, formData: FormData): Promise<HasilAksi> {
-  await pastikanAdmin();
+  await pastikanAdmin("admin");
   const data = await db();
 
   const seasonId = String(formData.get("season_id") ?? "").trim();
@@ -36,7 +36,7 @@ export async function simpanSponsor(_sebelumnya: HasilAksi, formData: FormData):
 }
 
 export async function hapusSponsor(formData: FormData): Promise<void> {
-  await pastikanAdmin();
+  await pastikanAdmin("admin");
   const id = String(formData.get("id") ?? "");
   if (!id) return;
   await (await db()).deleteSponsor(id);

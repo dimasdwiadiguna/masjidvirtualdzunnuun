@@ -119,6 +119,48 @@ export type Announcement = {
   created_at: string;
 };
 
+/**
+ * Kartu loyalitas dibuka lewat token acak, bukan lewat nomor WhatsApp di
+ * alamat halaman. Nomor utuh tidak boleh muncul di halaman publik, dan alamat
+ * halaman ikut tercatat di riwayat peramban.
+ */
+export type LoyaltyLink = {
+  token: string;
+  whatsapp: string;
+  created_at: string;
+};
+
+/** Satu baris ringkasan kehadiran per nomor WhatsApp. */
+export type Kehadiran = {
+  whatsapp: string;
+  /** Nama yang dipakai paling terakhir. Nama bebas diketik ulang tiap daftar. */
+  nama: string;
+  hadir: number;
+  terakhir: string | null;
+};
+
+export type SocialPlatform = "instagram" | "tiktok";
+
+export type SocialPost = {
+  id: string;
+  platform: SocialPlatform;
+  post_url: string;
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
+};
+
+export type QuizWinner = {
+  id: string;
+  whatsapp: string;
+  nama: string;
+  won_on: string;
+  created_at: string;
+};
+
+/** Mode bagian interaksi di beranda. Dipilih pengurus di menu Kuis. */
+export type InteraksiMode = "mati" | "kuis" | "polling";
+
 export type Settings = {
   id: string;
   qris_image_url: string | null;
@@ -128,6 +170,15 @@ export type Settings = {
   tiktok_url: string | null;
   youtube_url: string | null;
   about_markdown: string;
+  interaksi_mode: InteraksiMode;
+  /** Bank soal kuis dalam teks berformat. Lihat src/lib/kuis.ts. */
+  kuis_bank: string;
+  kuis_kuota_harian: number;
+  polling_pertanyaan: string;
+  /** Satu pilihan per baris. */
+  polling_pilihan: string;
+  /** Berganti tiap pertanyaan diubah, supaya suara lama tidak tercampur. */
+  polling_kunci: string;
 };
 
 export type SeasonProgress = {

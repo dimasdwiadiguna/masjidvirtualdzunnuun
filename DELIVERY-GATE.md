@@ -146,6 +146,34 @@ Dijalankan pada lebar 360px, mode sentuh, pada data yang baru dibuat dari nol. *
 | Buka baris tabel dengan keyboard | Enter membuka baris, Enter pada Hapus membuka dialog, fokus pindah ke dalamnya, Escape menutup |
 | Lebar dokumen di seluruh tabel pengurus | Tetap 360px, tidak ada geser mendatar di `body` |
 
+**Perubahan putaran keempat**
+
+| Elemen yang diklik | Yang benar-benar terjadi |
+|---|---|
+| Masuk dengan password panitia | Menu yang muncul hanya Ringkasan, Acara, Pendaftar, Check-in, Laporan, Foto Hero, Pengumuman, Pesan WhatsApp. Angka donasi tidak tampil di ringkasan |
+| Panitia membuka `/admin/donasi`, `/admin/season`, `/admin/sponsor`, `/admin/pengaturan`, `/admin/diagnosa` lewat alamat langsung | Kelimanya dialihkan ke `/admin?akses=terbatas`, bukan diminta masuk ulang |
+| Panitia membuka `/admin/pendaftar/csv` | Lolos middleware (404 karena acaranya memang tidak ada), jadi ekspor CSV tetap bisa dipakai panitia |
+| Superadmin membuka kelima halaman itu | Terbuka semua, 13 menu tampil |
+| Satu nomor mendaftar tiga acara lalu di-check-in ketiganya | Kartu kehadiran menunjukkan 3, stempel terisi 3 dari 10 |
+| Satu tiket untuk 5 orang | Tetap dihitung satu kehadiran, bukan lima |
+| Satu tiket yang sudah check-in lalu dibatalkan pengurus | Hitungan turun jadi 2. Dihitung dari status, bukan dari `checked_in_at` yang memang tidak ikut dikosongkan |
+| Alamat kartu loyalitas | Hanya token acak, nomor WhatsApp tidak muncul di alamat |
+| `/kartu/TOKENNGAWUR12345` | "Kartu ini tidak ditemukan" berikut jalan keluarnya, bukan galat |
+| Simpan bank soal yang rusak dengan mode kuis | Tetap tersimpan sebagai draf, dan kuisnya tidak tampil di beranda. Pesannya menyebutkan soal ke berapa yang bermasalah |
+| Bank 9 soal, mode kuis | Beranda menampilkan 7 soal |
+| Payload halaman diperiksa | Tidak ada properti `kunci` maupun `benar`. Kunci jawaban tidak pernah sampai ke peramban |
+| Tanda tangan percobaan diubah lewat DOM lalu dikirim | "Kuisnya perlu dimuat ulang", modal menang tidak muncul |
+| Benih diubah lewat DOM lalu dikirim | Ditolak dengan pesan yang sama |
+| Jawab asal | "Benar 0 dari 7", identitas tidak diminta |
+| Jawab benar semua | Diminta nama dan nomor, lalu modal "Selamat, jawaban Anda benar semua" |
+| Pemenang kedua saat kuota harian 1 | "kuota pemenang hari ini sudah penuh", jujur, bukan hadiah palsu |
+| Polling: pilih satu jawaban | Batang muncul dengan angka dan persen di tiap baris |
+| Muat ulang setelah memilih | Form pilihan hilang, yang tampil hasilnya |
+| Suara kedua dari perangkat lain | Tally jadi 2, persentase ikut berubah |
+| Ganti pertanyaan polling | Suara lama tidak terbawa, perangkat yang sudah memilih bisa memilih lagi |
+| Carousel pengumuman | Slide selebar kartu donasi, rasio 2:1, tanpa teks sama sekali, titik penanda posisi tetap ada |
+| Bar sosial di HP | Ikon Instagram dan TikTok, tiap tautan punya `aria-label`, sasaran tap 44 kali 38 piksel |
+
 Yang belum bisa diklik di lingkungan ini dan perlu dicek pengurus sekali sebelum live: kamera check-in di HP fisik, tampilan pratinjau tautan di dalam aplikasi WhatsApp, dan koneksi ke instance Supabase sungguhan. Ketiganya dicatat terbuka di `DECISIONS.md` bagian J.
 
 ---
@@ -216,7 +244,7 @@ Diminta BRIEF §13.
 
 | Pemeriksaan | Hasil |
 |---|---|
-| Lighthouse mobile, performa | Setelah perubahan putaran ketiga: `/` 92 sampai 93, `/acara` 98, `/kabar` 99, `/donasi` 100. Ambang brief 85. Angka diambil pada build produksi, bukan `next dev`, dan tidak pada render pertama setelah server hidup. Beranda turun dari 99 karena halamannya bertambah satu bagian gambar; gambar carousel pengumuman dibuat menyusul belakangan supaya tidak berebut jalur dengan foto hero. |
+| Lighthouse mobile, performa | Setelah perubahan putaran keempat: `/` 91 tanpa embed dan 93 dengan embed, `/acara` 99, `/kabar` 100, `/donasi` 98. Ambang brief 85. Ongkos embed sosmed diukur berdua sengaja, dan ternyata tidak terukur: skripnya memang tidak dimuat sampai bagian itu mendekati layar, dan HTML awal diperiksa tidak memuat `embed.js` sama sekali. Sebelumnya, putaran ketiga: `/` 92 sampai 93, `/acara` 98, `/kabar` 99, `/donasi` 100. Ambang brief 85. Angka diambil pada build produksi, bukan `next dev`, dan tidak pada render pertama setelah server hidup. Beranda turun dari 99 karena halamannya bertambah satu bagian gambar; gambar carousel pengumuman dibuat menyusul belakangan supaya tidak berebut jalur dengan foto hero. |
 | Lighthouse mobile, aksesibilitas | 100 di keempat halaman itu. Ambang brief 95. |
 | Lighthouse mobile, praktik terbaik dan SEO | 100 di semua halaman yang diukur, tanpa galat konsol. |
 | Cumulative Layout Shift | 0 di `/`, `/acara`, `/kabar`, dan `/donasi` setelah carousel dan bar sosial dipasang. Sebelumnya 0 di enam halaman, 0.061 di halaman season. Batas "baik" menurut Core Web Vitals adalah 0.1. Dicapai setelah ukuran logo dipasang pasti (D-42) dan keadaan memuat diberi tinggi minimal (D-44). |
@@ -225,8 +253,10 @@ Diminta BRIEF §13.
 | Build dengan env var kosong atau salah bentuk | Diuji empat keadaan: `NEXT_PUBLIC_SITE_URL` kosong, berisi spasi, tanpa protokol, dan tidak ada sama sekali. Semuanya berhasil dibangun (D-47). |
 | Ketahanan saat database bermasalah | Diuji dua keadaan pada build produksi: kredensial Supabase kosong, dan alamat project yang tidak bisa dihubungi. Keduanya tetap merender kerangka situs berikut pesan galat yang jelas, bukan halaman galat kosong, dan halaman `/admin/diagnosa` menyebutkan penyebabnya (D-48 sampai D-50). |
 | Kueri database per render beranda | Diukur dengan pembungkus penghitung pada driver data: 7 kueri saat cache dingin, 0 pada render berikutnya selama cache masih hangat. Sebelum bacaan pengaturan dibungkus `cache()` React, render dingin memakai 9 kueri karena layout, footer, dan bar sosial meleset berbarengan (D-58, D-59). |
+| Kontras warna kuis, polling, dan kartu | Dihitung, bukan dikira: batang polling teal di atas rel cream 4,36:1 (ambang 3:1 untuk elemen bukan teks); teks pilihan 16,11:1; angka suara 6,57:1; pilihan terpilih 14,15:1; stempel kartu terisi 4,74:1; stempel kosong 3,62:1; ikon bar sosial 7,65:1. Semuanya lolos. |
 | Kontras warna tabel dan laci | Dihitung, bukan dikira: chip status hijau 5,36:1; kuning 5,69:1; merah 7,55:1; abu 5,52:1; judul kolom 6,57:1; isi sel 16,11:1; baris rincian 6,03:1; teks laci 16,11:1. Semuanya lolos WCAG AA. Batang penarik laci 3,62:1, di atas ambang 3:1 untuk elemen bukan teks. |
 | Kontras warna komponen putaran kedua | Dihitung, bukan dikira: bar sosial tinta di atas emas 7,65:1; judul kartu acara 16,11:1; keterangan 6,57:1; chip 7,42:1; tombol Daftar 4,74:1; blok tanggal tanpa poster 12,21:1. Semuanya lolos WCAG AA. |
+| Kunci jawaban kuis di sisi klien | HTML beranda diperiksa: tidak ada properti `kunci` maupun `benar`. Tanda tangan percobaan diubah lewat DOM lalu dikirim dengan form sungguhan, dan benih juga diubah terpisah; keduanya ditolak. |
 | `tsc --noEmit` | Bersih. |
 | `next lint` | Bersih, tanpa peringatan. |
 | Teks Inggris yang terlihat pengguna | Tidak ada. Seluruh antarmuka Bahasa Indonesia. |

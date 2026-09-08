@@ -57,7 +57,7 @@ export default async function DetailKabar({ params }: Props) {
 
       <div className="mt-6 flex flex-wrap gap-2 border-t border-garis pt-4">
         <Link href="/donasi" className="tombol-utama">
-          Ikut patungan
+          Ikut donasi
         </Link>
         <Bagikan judul={kabar.title} teks={kabar.title} jalurCadangan={`/kabar/${kabar.id}`} />
         <Link href="/kabar" className="tombol-kedua">
