@@ -1,9 +1,10 @@
 import Link from "next/link";
 import CarouselAcara from "@/components/CarouselAcara";
+import CarouselPengumuman from "@/components/CarouselPengumuman";
 import HeroCarousel from "@/components/HeroCarousel";
 import KartuKabar from "@/components/KartuKabar";
 import ProgressSeason from "@/components/ProgressSeason";
-import { kabarTerbit, pengaturanPublik, progressSeason, seasonAktif } from "@/lib/cache";
+import { kabarTerbit, pengaturanPublik, pengumumanAktif, progressSeason, seasonAktif } from "@/lib/cache";
 import { rupiah } from "@/lib/format";
 import { ringkas } from "@/lib/markdown";
 import { acaraTerdekat, fotoHero } from "@/lib/tampilan";
@@ -12,11 +13,12 @@ export const dynamic = "force-dynamic";
 
 export default async function Beranda() {
   const [season, pengaturan] = await Promise.all([seasonAktif(), pengaturanPublik()]);
-  const [progress, kabar, acara, foto] = await Promise.all([
+  const [progress, kabar, acara, foto, pengumuman] = await Promise.all([
     season ? progressSeason(season.id) : Promise.resolve(null),
     kabarTerbit(3),
     acaraTerdekat(5),
     fotoHero(),
+    pengumumanAktif(),
   ]);
 
   return (
@@ -49,14 +51,20 @@ export default async function Beranda() {
         ) : (
           <div className="kartu p-4">
             <p className="font-semibold">Belum ada patungan yang berjalan.</p>
-            <p className="petunjuk">Kabar season berikutnya kami tulis di halaman Kabar Aksi.</p>
+            <p className="petunjuk">Kegiatan season berikutnya kami tulis di halaman Laporan Kegiatan.</p>
           </div>
         )}
       </div>
 
+      {pengumuman.length > 0 ? (
+        <div className="kolom-lebar mt-8 overflow-hidden">
+          <CarouselPengumuman daftar={pengumuman} />
+        </div>
+      ) : null}
+
       <section className="kolom-lebar mt-8">
         <div className="judul-bagian">
-          <h2>Kabar Aksi</h2>
+          <h2>Laporan Kegiatan</h2>
           <Link href="/kabar" className="text-sm font-semibold text-teal-ink underline underline-offset-4">
             Semua
           </Link>
@@ -68,7 +76,7 @@ export default async function Beranda() {
             ))}
           </div>
         ) : (
-          <p className="mt-2 text-sm text-ink-soft">Belum ada kabar yang terbit.</p>
+          <p className="mt-2 text-sm text-ink-soft">Belum ada laporan yang terbit.</p>
         )}
       </section>
 

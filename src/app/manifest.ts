@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Dzun Nuun, komunitas pemuda Masjid Fathul Ummah",
     short_name: "Dzun Nuun",
-    description: "Patungan, acara, dan kabar kegiatan komunitas Dzun Nuun.",
+    description: "Patungan, acara, dan laporan kegiatan komunitas Dzun Nuun.",
     start_url: "/",
     display: "standalone",
     background_color: "#F7F3EA",

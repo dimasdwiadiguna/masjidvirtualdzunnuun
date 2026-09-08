@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import BannerTersimpan from "@/components/admin/BannerTersimpan";
+import BarisTabel from "@/components/admin/BarisTabel";
 import FormAcara from "@/components/admin/FormAcara";
 import KonfirmasiAksi from "@/components/admin/KonfirmasiAksi";
+import LaciForm from "@/components/admin/LaciForm";
+import TabelAdmin from "@/components/admin/TabelAdmin";
 import { db } from "@/lib/data";
 import { rupiah, tanggalDanJam } from "@/lib/format";
 import { hapusAcara } from "./actions";
@@ -28,67 +31,114 @@ export default async function AdminAcara({ searchParams }: Props) {
 
       <BannerTersimpan tampil={Boolean(tersimpan)} />
 
-      <section className="mt-6">
-        <h2>{diedit ? `Ubah: ${diedit.title}` : "Buat acara baru"}</h2>
-        <div className="mt-3">
-          <FormAcara acara={diedit ?? undefined} />
-        </div>
-        {diedit ? (
-          <Link prefetch={false} href="/admin/acara" className="tombol-kecil mt-3">
-            Batal mengubah, kembali ke form acara baru
-          </Link>
-        ) : null}
-      </section>
+      <div className="mt-5">
+        <LaciForm
+          labelPemicu="Buat acara baru"
+          judul="Acara baru"
+          penjelasan="Semua waktu dibaca sebagai waktu Jakarta."
+        >
+          <FormAcara />
+        </LaciForm>
+      </div>
 
-      <section className="mt-10">
+      {diedit ? (
+        <LaciForm
+          labelPemicu="Lanjut mengubah"
+          judul={`Ubah: ${diedit.title}`}
+          terbukaAwal
+          alamatTutup="/admin/acara"
+        >
+          <FormAcara acara={diedit} />
+        </LaciForm>
+      ) : null}
+
+      <section className="mt-8">
         <h2>Daftar acara</h2>
         {daftar.length === 0 ? (
-          <p className="mt-2 text-ink-soft">Belum ada acara yang dibuat.</p>
-        ) : (
-          <div className="mt-3 grid gap-3">
-            {daftar.map((acara) => (
-              <article key={acara.id} className="kartu p-4">
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div>
-                    <h3 className="text-[1.05rem]">{acara.title}</h3>
-                    <p className="text-sm text-ink-soft">
-                      {tanggalDanJam(acara.starts_at)}, {acara.is_paid ? rupiah(acara.price) : "gratis"}
-                      {acara.capacity ? `, kuota ${acara.capacity}` : ", tanpa batas kuota"}
-                    </p>
-                  </div>
-                  <p
-                    className={`rounded-[4px] border-2 px-2 py-1 text-sm font-semibold ${
-                      acara.is_published ? "border-sukses text-sukses" : "border-garis text-ink-soft"
-                    }`}
-                  >
-                    {acara.is_published ? "Terbit" : "Draf"}
-                  </p>
-                </div>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <Link prefetch={false} href={`/admin/acara?edit=${acara.id}`} className="tombol-kecil">
-                    Ubah
-                  </Link>
-                  <Link prefetch={false} href={`/admin/pendaftar?acara=${acara.id}`} className="tombol-kecil">
-                    Lihat pendaftar
-                  </Link>
-                  {acara.is_published ? (
-                    <Link prefetch={false} href={`/acara/${acara.slug}`} className="tombol-kecil">
-                      Lihat halaman publik
-                    </Link>
-                  ) : null}
-                  <KonfirmasiAksi
-                    aksi={hapusAcara}
-                    tersembunyi={{ id: acara.id }}
-                    labelPemicu="Hapus"
-                    judul={`Hapus acara ${acara.title}`}
-                    penjelasan="Acara dan seluruh pendaftarnya ikut terhapus, dan tidak bisa dikembalikan."
-                    labelKonfirmasi="Ya, hapus acara ini"
-                    nadaBahaya
-                  />
-                </div>
-              </article>
-            ))}
+          <div className="kartu mt-3 p-4">
+            <p className="font-semibold">Belum ada acara yang dibuat.</p>
+            <p className="petunjuk">Tekan Buat acara baru di atas untuk mulai.</p>
           </div>
+        ) : (
+          <TabelAdmin
+            className="mt-3"
+            keterangan="Daftar acara berikut status terbitnya"
+            kepala={
+              <tr>
+                <th scope="col">Acara</th>
+                <th scope="col">Status</th>
+                <th scope="col" className="hidden sm:table-cell">
+                  Waktu
+                </th>
+                <th scope="col" className="hidden sm:table-cell">
+                  Biaya
+                </th>
+                <th scope="col" className="sel-aksi">
+                  Aksi
+                </th>
+              </tr>
+            }
+          >
+            {daftar.map((acara) => (
+              <BarisTabel
+                key={acara.id}
+                kolom={5}
+                judulBaris={acara.title}
+                ringkas={
+                  <>
+                    <td>
+                      <span className="font-semibold">{acara.title}</span>
+                      <span className="block text-xs text-ink-soft sm:hidden">{tanggalDanJam(acara.starts_at)}</span>
+                    </td>
+                    <td>
+                      <span className={`label-status ${acara.is_published ? "status-baik" : "status-diam"}`}>
+                        {acara.is_published ? "Terbit" : "Draf"}
+                      </span>
+                    </td>
+                  </>
+                }
+                tambahan={
+                  <>
+                    <td className="hidden whitespace-nowrap sm:table-cell">{tanggalDanJam(acara.starts_at)}</td>
+                    <td className="hidden whitespace-nowrap sm:table-cell">
+                      {acara.is_paid ? rupiah(acara.price) : "Gratis"}
+                    </td>
+                  </>
+                }
+                rincian={
+                  <>
+                    <p>{acara.is_paid ? `${rupiah(acara.price)} per orang` : "Gratis"}</p>
+                    <p>Kuota {acara.capacity ?? "tanpa batas"}</p>
+                    {acara.location_name ? <p>{acara.location_name}</p> : null}
+                  </>
+                }
+                aksi={
+                  <>
+                    <Link prefetch={false} href={`/admin/acara?edit=${acara.id}`} className="tombol-kecil">
+                      Ubah
+                    </Link>
+                    <Link prefetch={false} href={`/admin/pendaftar?acara=${acara.id}`} className="tombol-kecil">
+                      Pendaftar
+                    </Link>
+                    {acara.is_published ? (
+                      <Link prefetch={false} href={`/acara/${acara.slug}`} className="tombol-kecil">
+                        Lihat
+                      </Link>
+                    ) : null}
+                    <KonfirmasiAksi
+                      aksi={hapusAcara}
+                      tersembunyi={{ id: acara.id }}
+                      labelPemicu="Hapus"
+                      judul={`Hapus acara ${acara.title}`}
+                      penjelasan="Acara ini hilang dari halaman publik dan tidak bisa dikembalikan. Pendaftar yang sudah masuk ikut hilang."
+                      labelKonfirmasi="Ya, hapus acara ini"
+                      nadaBahaya
+                    />
+                  </>
+                }
+              />
+            ))}
+          </TabelAdmin>
         )}
       </section>
     </div>

@@ -98,8 +98,11 @@ Setiap halaman punya komposisi berbeda, bukan pengulangan "judul di tengah + gri
 - **Status donasi**: nominal sebagai angka terbesar di halaman, sisanya menurun tajam. Ini satu-satunya halaman dengan satu fokus tunggal sebesar itu.
 - **Acara**: toggle dua tampilan. Tampilan kartu memakai blok tanggal gelap di kiri sebagai penanda cepat, tampilan kalender memakai grid bulanan buatan sendiri.
 - **Kabar**: feed kronologis, foto kecil di kiri, dan penanda kegiatan yang diisi bebas oleh pengurus (misalnya `Tahsin Pertemuan 13`) sebagai konteks di atas judul. Kabar tanpa penanda hanya menampilkan tanggal.
+- **Pengumuman**: carousel gambar persegi tepat di bawah kartu progress, berjalan sendiri tiap 5 detik dan berhenti begitu disentuh, di-hover, atau ada tautan di dalamnya yang menerima fokus keyboard. Judulnya duduk di bawah gambar, bukan di atasnya, supaya gambar buatan pengurus tidak tertutup teks. Kalau belum ada pengumuman, seluruh bagian ini tidak dirender.
 - **Bar sosial**: menempel tepat di atas navigasi bawah, tinggi 38px, hanya di layar HP. Latar emas dengan teks tinta, satu-satunya blok emas penuh di app, jadi mata langsung menemukannya tanpa perlu ukuran besar. Hanya muncul kalau tautannya memang diisi.
 - **Admin**: tabel dan form rapat, tanpa hero, tanpa kartu statistik hiasan. Layout dibangun dari satu keputusan yang diambil pengurus di layar itu.
+- **Tabel pengurus**: satu tabel melayani HP dan laptop. Kolom sekunder disembunyikan di bawah `sm`, dan baris bisa dibuka untuk menampilkan sisanya. Tombol aksi dirender sekali saja lalu ditampilkan atau disembunyikan, bukan digandakan, supaya id di dalamnya tidak pernah dobel. Chip status memakai `.label-status` plus satu kelas warna, menggantikan pil yang dulu ditulis ulang sendiri-sendiri di tiap halaman.
+- **Laci formulir**: formulir "buat baru" naik dari bawah layar sebagai `<dialog>` bawaan peramban, jadi Escape, jebakan fokus, dan lapisan paling atas didapat gratis. Ada batang penarik kecil di atasnya sebagai penanda bahwa ini lembar yang bisa ditutup, dan padding bawah mengikuti `env(safe-area-inset-bottom)` supaya tombol simpan tidak tertutup garis home iPhone.
 
 Satu focal point per layar: di beranda dan season itu angka rupiah, di halaman status itu nominal transfer, di detail acara itu tombol daftar.
 

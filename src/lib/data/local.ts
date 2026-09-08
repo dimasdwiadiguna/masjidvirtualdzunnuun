@@ -6,6 +6,7 @@ import { SEED_SEASON, SEED_SETTINGS } from "./seed";
 import type {
   DataDriver,
   DonationFilter,
+  AnnouncementInput,
   HeroPhotoInput,
   DonationInput,
   EventInput,
@@ -19,6 +20,7 @@ import type {
   DonationStatus,
   EventCapacityInfo,
   EventItem,
+  Announcement,
   HeroPhoto,
   Registration,
   RegistrationStatus,
@@ -32,6 +34,7 @@ import type {
 type Isi = {
   settings: Settings;
   heroPhotos: HeroPhoto[];
+  announcements: Announcement[];
   seasons: Season[];
   donations: Donation[];
   events: EventItem[];
@@ -47,6 +50,7 @@ function isiAwal(): Isi {
   return {
     settings: { ...SEED_SETTINGS },
     heroPhotos: [],
+    announcements: [],
     seasons: [{ ...SEED_SEASON }],
     donations: [],
     events: [],
@@ -331,6 +335,45 @@ export function createLocalDriver(): DataDriver {
       });
     },
 
+    async listAnnouncements(opts = {}) {
+      return berurutan(async () => {
+        const isi = await bacaMentah();
+        return (isi.announcements ?? [])
+          .filter((satu) => (opts.hanyaAktif ? satu.is_active : true))
+          .sort((a, b) => a.sort_order - b.sort_order || a.created_at.localeCompare(b.created_at));
+      });
+    },
+    async getAnnouncementBySlug(slug) {
+      return berurutan(async () => {
+        const isi = await bacaMentah();
+        return (isi.announcements ?? []).find((satu) => satu.slug === slug) ?? null;
+      });
+    },
+    async saveAnnouncement(input: AnnouncementInput) {
+      return berurutan(async () => {
+        const isi = await bacaMentah();
+        isi.announcements = isi.announcements ?? [];
+        if (input.id) {
+          const idx = isi.announcements.findIndex((satu) => satu.id === input.id);
+          if (idx < 0) throw new Error("Pengumuman tidak ditemukan");
+          isi.announcements[idx] = { ...isi.announcements[idx], ...input, id: input.id };
+          await tulisMentah(isi);
+          return isi.announcements[idx];
+        }
+        const baru: Announcement = { ...input, id: randomUUID(), created_at: new Date().toISOString() };
+        isi.announcements.push(baru);
+        await tulisMentah(isi);
+        return baru;
+      });
+    },
+    async deleteAnnouncement(id) {
+      return berurutan(async () => {
+        const isi = await bacaMentah();
+        isi.announcements = (isi.announcements ?? []).filter((satu) => satu.id !== id);
+        await tulisMentah(isi);
+      });
+    },
+
     async listRegistrations(eventId) {
       return berurutan(async () => {
         const isi = await bacaMentah();
@@ -411,7 +454,7 @@ export function createLocalDriver(): DataDriver {
         const isi = await bacaMentah();
         if (input.id) {
           const idx = isi.updates.findIndex((u) => u.id === input.id);
-          if (idx < 0) throw new Error("Kabar tidak ditemukan");
+          if (idx < 0) throw new Error("Laporan tidak ditemukan");
           isi.updates[idx] = { ...isi.updates[idx], ...input, id: input.id };
           await tulisMentah(isi);
           return isi.updates[idx];

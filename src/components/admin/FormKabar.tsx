@@ -13,7 +13,7 @@ type Props = {
 export default function FormKabar({ kabar, season }: Props) {
   const kunci = kabar?.id ?? "baru";
   return (
-    <FormAksi aksi={simpanKabar} labelKirim={kabar ? "Simpan perubahan kabar" : "Terbitkan kabar"} className="max-w-[560px]">
+    <FormAksi aksi={simpanKabar} labelKirim={kabar ? "Simpan perubahan laporan" : "Terbitkan laporan"} className="max-w-[560px]">
       {kabar ? <input type="hidden" name="id" value={kabar.id} /> : null}
       <input type="hidden" name="season_id" value={kabar?.season_id ?? season?.id ?? ""} />
 
@@ -51,7 +51,7 @@ export default function FormKabar({ kabar, season }: Props) {
 
       <div>
         <label className="label-isian" htmlFor={`isi-${kunci}`}>
-          Isi kabar
+          Isi laporan
         </label>
         <textarea
           id={`isi-${kunci}`}
@@ -70,7 +70,7 @@ export default function FormKabar({ kabar, season }: Props) {
           <>
             <Image
               src={kabar.image_url}
-              alt="Foto kabar yang sedang dipakai"
+              alt="Foto laporan yang sedang dipakai"
               width={320}
               height={240}
               className="h-auto w-[180px] rounded-[4px] border border-garis"

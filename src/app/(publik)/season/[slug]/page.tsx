@@ -74,7 +74,7 @@ export default async function HalamanSeason({ params }: Props) {
 
         <section className="mt-8">
           <div className="judul-bagian">
-            <h2>Kabar Aksi season ini</h2>
+            <h2>Laporan Kegiatan season ini</h2>
           </div>
           {kabar.length > 0 ? (
             <div className="mt-3 grid gap-2">
@@ -83,7 +83,7 @@ export default async function HalamanSeason({ params }: Props) {
               ))}
             </div>
           ) : (
-            <p className="mt-2 text-sm text-ink-soft">Belum ada kabar untuk season ini.</p>
+            <p className="mt-2 text-sm text-ink-soft">Belum ada laporan untuk season ini.</p>
           )}
         </section>
 

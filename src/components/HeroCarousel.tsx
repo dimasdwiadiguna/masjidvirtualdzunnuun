@@ -9,7 +9,7 @@ const JEDA_MS = 6000;
 
 /**
  * Latar hero berupa daftar foto khusus yang diunggah pengurus lewat menu Foto
- * Hero. Poster acara dan foto Kabar Aksi tidak ikut dipungut, supaya isi hero
+ * Hero. Poster acara dan foto Laporan Kegiatan tidak ikut dipungut, supaya isi
  * sepenuhnya dipilih pengurus. Tidak ada foto stok.
  * Pergantiannya berhenti sendiri kalau perangkat meminta gerak minimal.
  */

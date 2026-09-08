@@ -11,7 +11,7 @@ export default async function Gambar() {
       <KartuOg
         label="Teman Beriman dan Bertumbuh"
         judul="Masjid jadi tempat anak muda betah singgah"
-        catatan="Patungan, acara, dan kabar kegiatan komunitas Dzun Nuun."
+        catatan="Patungan, acara, dan laporan kegiatan komunitas Dzun Nuun."
       />
     ),
     size,

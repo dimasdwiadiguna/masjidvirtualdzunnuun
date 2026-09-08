@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import TabelAdmin from "@/components/admin/TabelAdmin";
 import { db, kredensialSupabaseAda, memakaiSupabase, memintaDriverLokal } from "@/lib/data";
 import { alamatSitus } from "@/lib/situs";
 import { denganBatasWaktu } from "@/lib/waktu";
@@ -105,7 +106,11 @@ export default async function HalamanDiagnosa() {
     }),
     periksa("Tabel updates", async () => {
       const jumlah = (await (await db()).listUpdates()).length;
-      return { nama: "Tabel updates", keadaan: "baik", pesan: `Terbaca, berisi ${jumlah} kabar.` };
+      return { nama: "Tabel updates", keadaan: "baik", pesan: `Terbaca, berisi ${jumlah} laporan.` };
+    }),
+    periksa("Tabel announcements", async () => {
+      const jumlah = (await (await db()).listAnnouncements()).length;
+      return { nama: "Tabel announcements", keadaan: "baik", pesan: `Terbaca, berisi ${jumlah} pengumuman.` };
     }),
     periksa("Tabel sponsors", async () => {
       const data = await db();
@@ -157,27 +162,42 @@ export default async function HalamanDiagnosa() {
             : "Semua pemeriksaan lolos."}
       </p>
 
-      <ul className="mt-5 grid gap-3">
+      <TabelAdmin
+        className="mt-5"
+        keterangan="Hasil pemeriksaan sambungan database dan penyimpanan gambar"
+        kepala={
+          <tr>
+            <th scope="col">Pemeriksaan</th>
+            <th scope="col">Keadaan</th>
+            <th scope="col" className="hidden sm:table-cell">
+              Keterangan
+            </th>
+          </tr>
+        }
+      >
         {hasil.map((item) => (
-          <li key={item.nama} className="kartu p-4">
-            <div className="flex flex-wrap items-start justify-between gap-2">
-              <h2 className="text-[1.05rem]">{item.nama}</h2>
+          <tr key={item.nama}>
+            <td>
+              <span className="font-semibold">{item.nama}</span>
+              <span className="mt-1 block break-words text-sm text-ink-soft sm:hidden">{item.pesan}</span>
+            </td>
+            <td>
               <span
-                className={`rounded-[4px] border-2 px-2 py-1 text-sm font-semibold ${
+                className={`label-status ${
                   item.keadaan === "gagal"
-                    ? "border-bahaya text-bahaya"
+                    ? "status-bahaya"
                     : item.keadaan === "perhatian"
-                      ? "border-gold-ink text-gold-ink"
-                      : "border-sukses text-sukses"
+                      ? "status-tunggu"
+                      : "status-baik"
                 }`}
               >
                 {item.keadaan === "gagal" ? "Gagal" : item.keadaan === "perhatian" ? "Perlu dilengkapi" : "Baik"}
               </span>
-            </div>
-            <p className="mt-2 break-words text-[0.95rem]">{item.pesan}</p>
-          </li>
+            </td>
+            <td className="hidden break-words sm:table-cell">{item.pesan}</td>
+          </tr>
         ))}
-      </ul>
+      </TabelAdmin>
 
       <div className="mt-6 flex flex-wrap gap-3">
         <Link href="/admin" className="tombol-kedua" prefetch={false}>

@@ -9,6 +9,7 @@ import { ipDari, lewatBatas } from "@/lib/ratelimit";
 import { sudahLewat } from "@/lib/format";
 import { normalkanWa } from "@/lib/wa";
 import { TANDA } from "@/lib/cache";
+import { KUKI_TIKET, simpanKodeHasil } from "@/lib/kuki-hasil";
 
 export type HasilFormDaftar = {
   pesan?: string;
@@ -79,7 +80,8 @@ export async function kirimPendaftaran(
       status: "confirmed",
     });
     revalidateTag(TANDA.acara);
-    redirect(`/tiket/${gratis.code}`);
+    await simpanKodeHasil(KUKI_TIKET, gratis.code);
+    redirect("/acara/selesai");
   }
 
   const nominalDasar = acara.price * jumlah;
@@ -101,5 +103,6 @@ export async function kirimPendaftaran(
   });
 
   revalidateTag(TANDA.acara);
-  redirect(`/tiket/${berbayar.code}`);
+  await simpanKodeHasil(KUKI_TIKET, berbayar.code);
+  redirect("/acara/selesai");
 }

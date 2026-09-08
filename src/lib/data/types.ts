@@ -101,6 +101,24 @@ export type HeroPhoto = {
   created_at: string;
 };
 
+/**
+ * Pengumuman berbentuk gambar untuk carousel beranda, misalnya "Aturan Masjid
+ * Ngopi-Ngopi" atau ucapan hari besar. Berbeda dari Laporan Kegiatan: laporan
+ * menceritakan kegiatan yang sudah terlaksana, pengumuman memberi tahu sesuatu
+ * dan bentuk utamanya gambar.
+ */
+export type Announcement = {
+  id: string;
+  slug: string;
+  title: string;
+  image_url: string;
+  /** Keterangan tambahan di halaman detail. Boleh kosong kalau gambarnya sudah cukup. */
+  body: string | null;
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
+};
+
 export type Settings = {
   id: string;
   qris_image_url: string | null;

@@ -249,6 +249,118 @@ h3 {
     font-weight: 600;
   }
 
+  /* Varian warna label status. Sebelumnya tiap halaman pengurus menulis ulang
+     pil statusnya sendiri, jadi bentuknya berbeda-beda antar halaman. */
+  .status-baik {
+    background-color: color-mix(in srgb, var(--color-sukses) 12%, transparent);
+    color: var(--color-sukses);
+  }
+  .status-tunggu {
+    background-color: color-mix(in srgb, var(--color-gold-ink) 14%, transparent);
+    color: var(--color-gold-ink);
+  }
+  .status-bahaya {
+    background-color: color-mix(in srgb, var(--color-bahaya) 10%, transparent);
+    color: var(--color-bahaya);
+  }
+  .status-diam {
+    background-color: color-mix(in srgb, var(--color-ink-soft) 12%, transparent);
+    color: var(--color-ink-soft);
+  }
+
+  /* Tabel panel pengurus.
+     Pembungkusnya wajib punya overflow sendiri: body memasang
+     overflow-x: hidden, jadi tabel yang meluber tanpa pembungkus tidak akan
+     bisa digeser sama sekali. */
+  .bungkus-tabel {
+    overflow-x: auto;
+    border: 1px solid var(--color-garis);
+    border-radius: var(--radius-kartu);
+    background-color: var(--color-paper);
+  }
+
+  .tabel-admin {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.92rem;
+  }
+
+  .tabel-admin th {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--color-garis);
+    font-family: var(--font-judul);
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--color-ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+
+  .tabel-admin td {
+    padding: 10px 12px;
+    vertical-align: top;
+    border-bottom: 1px solid var(--color-garis);
+  }
+
+  .tabel-admin tbody tr:last-child > td {
+    border-bottom: 0;
+  }
+
+  .tabel-admin .sel-aksi {
+    white-space: nowrap;
+    text-align: right;
+  }
+
+  /* Baris rincian yang muncul saat baris ringkas dibuka di layar sempit. */
+  .baris-rincian > td {
+    background-color: var(--color-cream);
+    padding-top: 8px;
+  }
+
+  /* Laci formulir yang naik dari bawah layar. Memakai <dialog> bawaan
+     peramban, jadi Escape, jebakan fokus, dan lapisan paling atas gratis. */
+  .laci {
+    width: 100%;
+    max-width: none;
+    margin: auto auto 0 auto;
+    max-height: 88dvh;
+    overflow-y: auto;
+    border: 0;
+    border-top: 1px solid var(--color-garis);
+    border-radius: var(--radius-kartu) var(--radius-kartu) 0 0;
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    padding: 0;
+  }
+
+  .laci::backdrop {
+    background-color: color-mix(in srgb, var(--color-ink) 50%, transparent);
+  }
+
+  .laci[open] {
+    animation: laci-naik 180ms ease-out;
+  }
+
+  @keyframes laci-naik {
+    from {
+      transform: translateY(12px);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+
+  /* Batang penarik kecil di atas laci, penanda bahwa ini lembar yang bisa
+     ditutup. Bukan hiasan: tanpa itu laci terlihat seperti halaman baru. */
+  .pegangan-laci {
+    width: 36px;
+    height: 4px;
+    border-radius: 999px;
+    background-color: var(--color-garis-isian);
+  }
+
   .kode-besar {
     font-family: var(--font-judul);
     font-weight: 700;

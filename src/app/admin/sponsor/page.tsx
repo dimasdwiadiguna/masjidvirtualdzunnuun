@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import BannerTersimpan from "@/components/admin/BannerTersimpan";
+import BarisTabel from "@/components/admin/BarisTabel";
 import FormAksi from "@/components/admin/FormAksi";
+import LaciForm from "@/components/admin/LaciForm";
 import PilihGambar from "@/components/admin/PilihGambar";
 import KonfirmasiAksi from "@/components/admin/KonfirmasiAksi";
+import TabelAdmin from "@/components/admin/TabelAdmin";
 import { db } from "@/lib/data";
 import { judulSeason } from "@/lib/format";
 import { hapusSponsor, simpanSponsor } from "./actions";
@@ -34,9 +37,13 @@ export default async function AdminSponsor({ searchParams }: Props) {
         <p className="mt-4 text-ink-soft">Buat season lebih dulu sebelum menambahkan sponsor.</p>
       ) : (
         <>
-          <section className="mt-6">
-            <h2>Tambah sponsor</h2>
-            <FormAksi aksi={simpanSponsor} labelKirim="Simpan sponsor" className="mt-3 max-w-[520px]">
+          <div className="mt-5">
+            <LaciForm
+              labelPemicu="Tambah sponsor baru"
+              judul="Sponsor baru"
+              penjelasan="Bagian sponsor hanya muncul di halaman season kalau ada isinya."
+            >
+            <FormAksi aksi={simpanSponsor} labelKirim="Simpan sponsor">
               <div>
                 <label className="label-isian" htmlFor="season_id">
                   Season
@@ -85,45 +92,78 @@ export default async function AdminSponsor({ searchParams }: Props) {
                 bantuan="Kalau logonya belum ada, nama sponsor yang ditampilkan sebagai teks."
               />
             </FormAksi>
-          </section>
+            </LaciForm>
+          </div>
 
-          <section className="mt-10">
+          <section className="mt-8">
             <h2>Sponsor {aktif ? judulSeason(aktif) : ""}</h2>
             {sponsor.length === 0 ? (
-              <p className="mt-2 text-ink-soft">Belum ada sponsor untuk season ini.</p>
+              <div className="kartu mt-3 p-4">
+                <p className="font-semibold">Belum ada sponsor untuk season ini.</p>
+                <p className="petunjuk">Halaman season tetap rapi tanpa kotak kosong selama bagian ini kosong.</p>
+              </div>
             ) : (
-              <ul className="mt-3 grid gap-3">
+              <TabelAdmin
+                className="mt-3"
+                keterangan="Daftar sponsor season ini"
+                kepala={
+                  <tr>
+                    <th scope="col">Sponsor</th>
+                    <th scope="col">Jenis</th>
+                    <th scope="col" className="hidden sm:table-cell">
+                      Urutan
+                    </th>
+                    <th scope="col" className="sel-aksi">
+                      Aksi
+                    </th>
+                  </tr>
+                }
+              >
                 {sponsor.map((item) => (
-                  <li key={item.id} className="kartu flex flex-wrap items-center justify-between gap-3 p-4">
-                    <div className="flex items-center gap-3">
-                      {item.logo_url ? (
-                        <Image
-                          src={item.logo_url}
-                          alt={item.name}
-                          width={160}
-                          height={80}
-                          className="h-10 w-auto"
-                        />
-                      ) : null}
-                      <div>
-                        <p className="font-semibold">{item.name}</p>
-                        <p className="text-sm text-ink-soft">
-                          {item.tier === "utama" ? "Utama" : "Pendukung"}, urutan {item.sort_order}
-                        </p>
-                      </div>
-                    </div>
-                    <KonfirmasiAksi
-                      aksi={hapusSponsor}
-                      tersembunyi={{ id: item.id }}
-                      labelPemicu="Hapus"
-                      judul={`Hapus sponsor ${item.name}`}
-                      penjelasan="Sponsor ini hilang dari halaman season."
-                      labelKonfirmasi="Ya, hapus"
-                      nadaBahaya
-                    />
-                  </li>
+                  <BarisTabel
+                    key={item.id}
+                    kolom={4}
+                    judulBaris={item.name}
+                    ringkas={
+                      <>
+                        <td>
+                          <div className="flex items-center gap-3">
+                            {item.logo_url ? (
+                              <Image
+                                src={item.logo_url}
+                                alt=""
+                                width={160}
+                                height={80}
+                                sizes="80px"
+                                className="h-8 w-auto shrink-0"
+                              />
+                            ) : null}
+                            <span className="font-semibold">{item.name}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <span className={`label-status ${item.tier === "utama" ? "status-baik" : "status-diam"}`}>
+                            {item.tier === "utama" ? "Utama" : "Pendukung"}
+                          </span>
+                        </td>
+                      </>
+                    }
+                    tambahan={<td className="hidden sm:table-cell">{item.sort_order}</td>}
+                    rincian={<p>Urutan {item.sort_order}</p>}
+                    aksi={
+                      <KonfirmasiAksi
+                        aksi={hapusSponsor}
+                        tersembunyi={{ id: item.id }}
+                        labelPemicu="Hapus"
+                        judul={`Hapus sponsor ${item.name}`}
+                        penjelasan="Sponsor ini hilang dari halaman season."
+                        labelKonfirmasi="Ya, hapus sponsor ini"
+                        nadaBahaya
+                      />
+                    }
+                  />
                 ))}
-              </ul>
+              </TabelAdmin>
             )}
           </section>
         </>

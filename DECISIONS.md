@@ -381,6 +381,171 @@ Aksi sekarang memanggil `redirect()` dari server, jadi perpindahannya tidak berg
 
 ---
 
+## M. Masukan pengurus putaran ketiga
+
+Enam masukan, tiga untuk sisi jamaah dan tiga untuk sisi pengurus. Yang
+mendasari sisi jamaah: habitat sebenarnya jamaah ada di WhatsApp, bukan di web
+app ini.
+
+### D-65 Halaman status pribadi dihapus
+
+`/donasi/[kode]` dan `/tiket/[kode]` mengandaikan orang menyimpan sebuah alamat
+lalu kembali membukanya. Dalam pemakaian nyata itu tidak terjadi. Keduanya
+dihapus, dan seluruh kabar penerimaan berikut QR tiket dikirim pengurus lewat
+nomor WhatsApp yang diisi jamaah.
+
+Efek sampingnya bagus: nomor WhatsApp jadi punya alasan yang jelas untuk diisi
+dengan benar, karena di situlah tiketnya datang.
+
+Perlu dicatat terbuka bahwa ini mencabut BRIEF §6 butir 3, yang menyebut
+halaman status donasi sebagai mekanisme retensi dan menandainya "jangan
+dipangkas". Pencabutan itu keputusan pemilik produk berdasarkan pemakaian
+nyata, bukan kelalaian. Retensi sekarang bersandar pada tiga mekanisme sisanya
+(Laporan Kegiatan, badge belum dibaca, Saluran WhatsApp) ditambah percakapan
+WhatsApp yang justru lebih personal daripada satu halaman status.
+
+Ikut hilang bersamanya: mode salin alamat halaman di `SalinTeks`, dan blok
+ucapan terima kasih pada donasi terverifikasi. Yang terakhir pindah ke template
+pesan WhatsApp (D-70), bukan dibuang.
+
+### D-66 Layar hasil dipegang kuki, bukan state klien
+
+Donatur tetap butuh nominal unik dan QRIS untuk bisa transfer. Layar hasil
+sekali tampil menggantikan halaman status: `/donasi/selesai` dan
+`/acara/selesai`, tanpa kode di alamatnya, jadi tidak bisa ditebak, dibagikan,
+atau di-bookmark.
+
+Kodenya dititipkan di kuki `httpOnly` berumur 2 jam, bukan di state klien.
+Alasannya konkret: jamaah akan berpindah ke aplikasi bank untuk transfer, dan
+saat kembali, tab peramban di HP sering sudah dimuat ulang. Kalau nominalnya
+hanya hidup di state klien, nominal itu lenyap justru pada saat paling
+dibutuhkan, dan transfernya jadi tidak bisa dicocokkan pengurus. Ini bentuk
+kegagalan yang sama dengan D-21 dan D-64.
+
+Diuji: kirim donasi, catat nominal, muat ulang halaman, nominal tetap sama.
+Tanpa kuki, halamannya menampilkan kalimat jujur berikut jalan keluarnya,
+bukan galat.
+
+### D-67 QR tiket jadi gambar ber-alamat yang tidak menyentuh database
+
+wa.me hanya bisa mengisi teks, tidak bisa melampirkan berkas. Supaya QR tetap
+bisa dikirim, dibuat rute `/api/qr/[kode]` yang mengembalikan PNG.
+
+Rute ini sengaja **tidak menyentuh database**. Kodenya hanya diperiksa
+bentuknya lalu digambar. Jadi tidak ada yang bisa memakai alamat ini untuk
+menebak kode mana yang benar-benar ada, dan tidak ada nama atau nominal yang
+bisa bocor lewat sini. Kode yang tidak terdaftar pun tetap digambar, dan itu
+justru yang membuatnya aman.
+
+Isi QR tetap kode telanjang `DZN-XXXX`, bukan alamat halaman. Ini wajib:
+`PapanCheckIn` menulis hasil pindaian kamera langsung ke kolom kode, jadi
+mengisinya dengan URL akan merusak check-in. Diuji dengan membaca ulang PNG
+yang dihasilkan memakai pembaca QR terpisah, lalu memasukkan nilai hasil
+bacaannya ke check-in sungguhan sampai berhasil.
+
+### D-68 "Kabar Aksi" jadi "Laporan Kegiatan", alamatnya tetap
+
+Yang dimasukkan pengurus adalah laporan dari kegiatan yang sudah terlaksana,
+jadi namanya disesuaikan. Hanya teks yang dilihat pengguna yang berubah.
+Alamat `/kabar`, `/admin/kabar`, `/api/kabar-terbaru`, nama tabel `updates`,
+dan seluruh nama variabel dibiarkan, supaya tautan yang sudah disebar di grup
+WhatsApp tidak mati. Nama folder di kode jadi tidak sama dengan labelnya, dan
+itu diterima: yang melihatnya hanya yang menggarap kode.
+
+Satu jebakan yang hampir terlewat: `NavBawah` memasang badge belum dibaca
+dengan membandingkan `label === "Kabar"`. Mengganti labelnya saja akan
+mematikan badge itu diam-diam. Perbandingannya diubah memakai `href`, yang
+memang tidak ikut berubah.
+
+Kunci `localStorage` penanda sudah dibaca juga dibiarkan. Menggantinya akan
+mereset penanda semua pengunjung tanpa alasan.
+
+### D-69 Pengumuman jadi jenis isi tersendiri
+
+Pengumuman bergambar seperti "Aturan Masjid Ngopi-Ngopi" atau ucapan hari besar
+tidak cocok dimasukkan ke Laporan Kegiatan: laporan menceritakan kegiatan yang
+sudah terlaksana, pengumuman memberi tahu sesuatu dan bentuk utamanya gambar.
+Jadi dibuat tabel `announcements` sendiri.
+
+Carousel-nya menggabungkan dua pola yang sudah ada: rel geser dari
+`CarouselAcara` supaya di HP tetap bisa digeser jari, dan pergantian otomatis
+dari `HeroCarousel`. Jalannya berhenti kalau perangkat meminta gerak minimal,
+saat disentuh, saat kursor di atasnya, dan saat ada tautan di dalamnya yang
+menerima fokus keyboard. Carousel yang berjalan terus tanpa bisa dihentikan
+menyulitkan orang yang membaca pelan atau memakai keyboard, dan itu bukan soal
+selera.
+
+Kalau belum ada pengumuman, seluruh bagian itu tidak dirender sama sekali.
+
+### D-70 Pesan WhatsApp punya satu sumber kata-kata
+
+`src/lib/pesan-wa.ts` memuat lima template. Dipakai dua kali: oleh halaman
+contoh `/admin/pesan`, dan oleh tombol WhatsApp per baris di `/admin/donasi`
+dan `/admin/pendaftar`. Satu sumber, jadi contoh dan yang benar-benar terkirim
+tidak pernah berbeda.
+
+Tombolnya sekarang mengikuti status baris. Donasi terverifikasi memakai pesan
+penerimaan lengkap dengan jumlah jamaah yang dirangkul, donasi ditolak memakai
+pesan yang memuat catatan pengurus, pendaftar terkonfirmasi memakai pesan yang
+memuat tautan gambar QR. Sebelumnya tombol itu hanya menulis satu kalimat
+pembuka dan pengurus mengetik sisanya sendiri.
+
+Catatan penolakan (`admin_note`) dulunya hanya pernah tampil di
+`/donasi/[kode]`. Tanpa template ini, alasan penolakan tidak akan pernah sampai
+ke donatur.
+
+Template tidak bisa disunting dari panel. Itu disengaja: pengurus masih bisa
+mengubah kalimatnya di WhatsApp sebelum menekan kirim, dan menyimpan template
+di database menambah satu tabel dan satu formulir untuk manfaat yang belum
+tentu dipakai. Kalau nanti ternyata sering diubah, memindahkannya ke pengaturan
+itu pekerjaan kecil.
+
+Tidak ada pengiriman otomatis. wa.me hanya membuka WhatsApp dengan teks terisi,
+pengurus sendiri yang menekan kirim, sesuai BRIEF §1.
+
+### D-71 Daftar di panel pengurus jadi tabel
+
+Tujuh daftar yang dulunya kartu bertumpuk sekarang tabel. Kartu boros tempat
+saat pengurus mencocokkan puluhan baris donasi dengan mutasi rekening.
+
+Karena panel dibuka dari HP dan laptop sama seringnya, satu tabel melayani
+keduanya: kolom sekunder disembunyikan di bawah `sm`, dan baris bisa dibuka
+untuk menampilkan sisanya berikut tombol aksinya. Di layar lebar semua kolom
+dan semua tombol langsung terlihat.
+
+Pembungkus `overflow-x-auto` bukan hiasan: `body` memasang
+`overflow-x: hidden`, jadi tabel yang meluber tanpa pembungkus sendiri tidak
+akan bisa digeser sama sekali.
+
+Sekalian dirapikan: chip status dulu ditulis ulang sendiri-sendiri di tiap
+halaman sehingga bentuknya berbeda-beda, padahal `.label-status` sudah ada dan
+justru tidak dipakai panel pengurus. Sekarang semuanya memakai kelas itu
+ditambah satu kelas warna.
+
+### D-72 Formulir "buat baru" masuk laci bawah
+
+Formulir yang selalu terbuka di atas daftar mendorong daftarnya jauh ke bawah,
+padahal yang paling sering dilihat pengurus adalah daftarnya. Formulir sekarang
+di balik tombol, muncul sebagai laci dari bawah layar.
+
+Memakai `<dialog>` bawaan peramban seperti `KonfirmasiAksi`, jadi Escape untuk
+menutup, jebakan fokus, dan lapisan paling atas didapat gratis, bukan
+ditiru-tiru dengan `div`. Laci tidak punya `<form>` sendiri karena `FormAksi`
+sudah merender `<form>` dan form bersarang akan rusak.
+
+Mode ubah tetap satu formulir saja lewat `?edit=`, sekarang di dalam laci yang
+terbuka sendiri. Menutupnya memindahkan peramban ke alamat tanpa `?edit=`,
+supaya lacinya tidak terbuka lagi.
+
+Dua hal yang harus dijaga dan sudah ditangani: `PilihGambar` dulu memakai id
+yang tidak dibedakan per record, jadi laci "buat baru" berdampingan dengan
+formulir ubah akan menghasilkan `#gambar-poster` ganda; sekarang ada prop
+`kunci`. Dan tombol pemicu laci foto hero dulu punya nama yang sama persis
+dengan tombol simpan di dalamnya, dua tombol satu nama dalam satu halaman;
+tombol simpannya diganti jadi "Simpan foto hero".
+
+---
+
 ## I. Yang sengaja tidak dibuat
 
 Sesuai BRIEF §12: tidak ada payment gateway, tidak ada akun pengguna, tidak ada sistem role, tidak ada notifikasi push atau email, tidak ada dashboard analitik, tidak ada dark mode, tidak ada i18n, tidak ada animasi scroll, tidak ada chatbot, dan tidak ada leaderboard donatur.

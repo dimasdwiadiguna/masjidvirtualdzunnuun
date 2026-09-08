@@ -4,9 +4,7 @@ import { useState } from "react";
 import { IkonSalin } from "./Ikon";
 
 type Props = {
-  teks?: string;
-  /** Halaman status memakai alamat yang sedang dibuka, bukan alamat hasil render server. */
-  gunakanUrlSekarang?: boolean;
+  teks: string;
   label: string;
   labelSelesai?: string;
   className?: string;
@@ -14,7 +12,6 @@ type Props = {
 
 export default function SalinTeks({
   teks,
-  gunakanUrlSekarang = false,
   label,
   labelSelesai = "Tersalin",
   className,
@@ -22,7 +19,7 @@ export default function SalinTeks({
   const [status, setStatus] = useState<"diam" | "selesai" | "gagal">("diam");
 
   const salin = async () => {
-    const isi = gunakanUrlSekarang ? window.location.href : (teks ?? "");
+    const isi = teks;
     try {
       await navigator.clipboard.writeText(isi);
       setStatus("selesai");

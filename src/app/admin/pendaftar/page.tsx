@@ -1,9 +1,15 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import BarisTabel from "@/components/admin/BarisTabel";
 import KonfirmasiAksi from "@/components/admin/KonfirmasiAksi";
+import TabelAdmin from "@/components/admin/TabelAdmin";
 import { IkonUnduh, IkonWhatsApp } from "@/components/Ikon";
 import { db } from "@/lib/data";
 import { rupiah, tanggalDanJam, tanggalPendek } from "@/lib/format";
+import {
+  pesanPembayaranTiketDiterima,
+  pesanPembukaTiket,
+  pesanTiketSiap,
+} from "@/lib/pesan-wa";
 import { linkWa } from "@/lib/wa";
 import { batalkanPendaftar, konfirmasiPendaftar } from "./actions";
 import type { RegistrationStatus } from "@/lib/data/types";
@@ -16,6 +22,13 @@ const NAMA_STATUS: Record<RegistrationStatus, string> = {
   confirmed: "Terkonfirmasi",
   checked_in: "Sudah hadir",
   cancelled: "Dibatalkan",
+};
+
+const KELAS_STATUS: Record<RegistrationStatus, string> = {
+  pending: "status-tunggu",
+  confirmed: "status-baik",
+  checked_in: "status-baik",
+  cancelled: "status-bahaya",
 };
 
 type Props = { searchParams: Promise<{ acara?: string }> };
@@ -80,74 +93,122 @@ export default async function AdminPendaftar({ searchParams }: Props) {
                   </p>
                 </div>
               ) : (
-                <div className="mt-4 grid gap-3">
-                  {pendaftar.map((orang) => (
-                    <article key={orang.id} className="kartu p-4">
-                      <div className="flex flex-wrap items-start justify-between gap-2">
-                        <div>
-                          <p className="font-semibold">
-                            {orang.name}, {orang.quantity} orang
-                          </p>
-                          <p className="text-sm text-ink-soft">
-                            <span className="kode-besar text-sm">{orang.code}</span>
-                            {orang.total_amount > 0 ? `, ${rupiah(orang.total_amount)}` : ", gratis"}
-                            {`, daftar ${tanggalPendek(orang.created_at)}`}
-                          </p>
-                        </div>
-                        <p
-                          className={`rounded-[4px] border-2 px-2 py-1 text-sm font-semibold ${
-                            orang.status === "cancelled"
-                              ? "border-bahaya text-bahaya"
-                              : orang.status === "pending"
-                                ? "border-garis text-ink-soft"
-                                : "border-sukses text-sukses"
-                          }`}
-                        >
-                          {NAMA_STATUS[orang.status]}
-                        </p>
-                      </div>
+                <TabelAdmin
+                  className="mt-4"
+                  keterangan={`Daftar pendaftar acara ${terpilih.title}`}
+                  kepala={
+                    <tr>
+                      <th scope="col">Pendaftar</th>
+                      <th scope="col">Status</th>
+                      <th scope="col" className="hidden sm:table-cell">
+                        Kode
+                      </th>
+                      <th scope="col" className="hidden sm:table-cell">
+                        Bayar
+                      </th>
+                      <th scope="col" className="sel-aksi">
+                        Aksi
+                      </th>
+                    </tr>
+                  }
+                >
+                  {pendaftar.map((orang) => {
+                    const isi = {
+                      nama: orang.name,
+                      kode: orang.code,
+                      acara: terpilih.title,
+                      mulai: terpilih.starts_at,
+                      lokasi: terpilih.location_name,
+                      jumlah: orang.quantity,
+                      nominal: orang.total_amount,
+                    };
+                    const sudahBayar = orang.total_amount > 0;
+                    const teksWa =
+                      orang.status === "confirmed" || orang.status === "checked_in"
+                        ? sudahBayar
+                          ? pesanPembayaranTiketDiterima(isi)
+                          : pesanTiketSiap(isi)
+                        : pesanPembukaTiket(isi);
+                    const labelWa =
+                      orang.status === "confirmed" || orang.status === "checked_in"
+                        ? "Kirim tiket dan QR"
+                        : "WhatsApp";
 
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        <a
-                          href={linkWa(
-                            orang.whatsapp,
-                            `Assalamualaikum ${orang.name}, ini pengurus Dzun Nuun. Terkait pendaftaran acara ${terpilih.title} dengan kode ${orang.code}.`,
-                          )}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="tombol-kecil"
-                        >
-                          <IkonWhatsApp className="mr-2" />
-                          WhatsApp
-                        </a>
-                        {orang.status === "pending" ? (
-                          <KonfirmasiAksi
-                            aksi={konfirmasiPendaftar}
-                            tersembunyi={{ id: orang.id }}
-                            labelPemicu="Konfirmasi pembayaran"
-                            judul={`Konfirmasi ${orang.name}`}
-                            penjelasan={`Pastikan ${rupiah(orang.total_amount)} sudah masuk. Setelah dikonfirmasi, tiketnya bisa dipakai check-in.`}
-                            labelKonfirmasi="Ya, sudah dibayar"
-                          />
-                        ) : null}
-                        {orang.status !== "cancelled" ? (
-                          <KonfirmasiAksi
-                            aksi={batalkanPendaftar}
-                            tersembunyi={{ id: orang.id }}
-                            labelPemicu="Batalkan"
-                            judul={`Batalkan pendaftaran ${orang.name}`}
-                            penjelasan="Tempatnya dilepas kembali ke kuota, dan tiketnya tidak bisa dipakai check-in."
-                            labelKonfirmasi="Ya, batalkan"
-                            nadaBahaya
-                          />
-                        ) : null}
-                        <Link prefetch={false} href={`/tiket/${orang.code}`} className="tombol-kecil">
-                          Lihat tiket
-                        </Link>
-                      </div>
-                    </article>
-                  ))}
-                </div>
+                    return (
+                      <BarisTabel
+                        key={orang.id}
+                        kolom={5}
+                        judulBaris={`pendaftar ${orang.name}`}
+                        ringkas={
+                          <>
+                            <td>
+                              <span className="font-semibold">{orang.name}</span>
+                              <span className="block text-xs text-ink-soft">{orang.quantity} orang</span>
+                              <span className="block text-xs text-ink-soft sm:hidden">
+                                <span className="kode-besar text-xs">{orang.code}</span>
+                              </span>
+                            </td>
+                            <td>
+                              <span className={`label-status ${KELAS_STATUS[orang.status]}`}>
+                                {NAMA_STATUS[orang.status]}
+                              </span>
+                            </td>
+                          </>
+                        }
+                        tambahan={
+                          <>
+                            <td className="hidden sm:table-cell">
+                              <span className="kode-besar text-sm">{orang.code}</span>
+                            </td>
+                            <td className="hidden whitespace-nowrap sm:table-cell">
+                              {sudahBayar ? rupiah(orang.total_amount) : "Gratis"}
+                            </td>
+                          </>
+                        }
+                        rincian={
+                          <>
+                            <p>{sudahBayar ? rupiah(orang.total_amount) : "Gratis"}</p>
+                            <p>Daftar {tanggalPendek(orang.created_at)}</p>
+                          </>
+                        }
+                        aksi={
+                          <>
+                            <a
+                              href={linkWa(orang.whatsapp, teksWa)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="tombol-kecil"
+                            >
+                              <IkonWhatsApp className="mr-2" />
+                              {labelWa}
+                            </a>
+                            {orang.status === "pending" ? (
+                              <KonfirmasiAksi
+                                aksi={konfirmasiPendaftar}
+                                tersembunyi={{ id: orang.id }}
+                                labelPemicu="Konfirmasi pembayaran"
+                                judul={`Konfirmasi ${orang.name}`}
+                                penjelasan={`Pastikan ${rupiah(orang.total_amount)} sudah masuk. Setelah dikonfirmasi, tiketnya bisa dipakai check-in dan Anda bisa mengirim QR-nya lewat WhatsApp.`}
+                                labelKonfirmasi="Ya, sudah dibayar"
+                              />
+                            ) : null}
+                            {orang.status !== "cancelled" ? (
+                              <KonfirmasiAksi
+                                aksi={batalkanPendaftar}
+                                tersembunyi={{ id: orang.id }}
+                                labelPemicu="Batalkan"
+                                judul={`Batalkan pendaftaran ${orang.name}`}
+                                penjelasan="Tempatnya dilepas kembali ke kuota, dan tiketnya tidak bisa dipakai check-in."
+                                labelKonfirmasi="Ya, batalkan"
+                                nadaBahaya
+                              />
+                            ) : null}
+                          </>
+                        }
+                      />
+                    );
+                  })}
+                </TabelAdmin>
               )}
             </>
           ) : null}

@@ -4,6 +4,7 @@ import type {
   DonationStatus,
   EventCapacityInfo,
   EventItem,
+  Announcement,
   HeroPhoto,
   Registration,
   RegistrationStatus,
@@ -19,6 +20,7 @@ export type EventInput = Omit<EventItem, "id" | "created_at"> & { id?: string };
 export type UpdateInput = Omit<Update, "id"> & { id?: string };
 export type SponsorInput = Omit<Sponsor, "id"> & { id?: string };
 export type HeroPhotoInput = Omit<HeroPhoto, "id" | "created_at"> & { id?: string };
+export type AnnouncementInput = Omit<Announcement, "id" | "created_at"> & { id?: string };
 export type DonationInput = Omit<Donation, "id" | "created_at" | "verified_at" | "admin_note" | "status"> & {
   status?: DonationStatus;
 };
@@ -69,6 +71,11 @@ export interface DataDriver {
   listHeroPhotos(opts?: { hanyaAktif?: boolean }): Promise<HeroPhoto[]>;
   saveHeroPhoto(input: HeroPhotoInput): Promise<HeroPhoto>;
   deleteHeroPhoto(id: string): Promise<void>;
+
+  listAnnouncements(opts?: { hanyaAktif?: boolean }): Promise<Announcement[]>;
+  getAnnouncementBySlug(slug: string): Promise<Announcement | null>;
+  saveAnnouncement(input: AnnouncementInput): Promise<Announcement>;
+  deleteAnnouncement(id: string): Promise<void>;
 
   listSponsors(seasonId: string): Promise<Sponsor[]>;
   saveSponsor(input: SponsorInput): Promise<Sponsor>;

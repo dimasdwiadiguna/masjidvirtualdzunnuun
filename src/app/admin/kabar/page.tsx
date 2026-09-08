@@ -1,13 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import BannerTersimpan from "@/components/admin/BannerTersimpan";
+import BarisTabel from "@/components/admin/BarisTabel";
 import FormKabar from "@/components/admin/FormKabar";
 import KonfirmasiAksi from "@/components/admin/KonfirmasiAksi";
+import LaciForm from "@/components/admin/LaciForm";
+import TabelAdmin from "@/components/admin/TabelAdmin";
 import { db } from "@/lib/data";
 import { tanggalPendek } from "@/lib/format";
 import { hapusKabar } from "./actions";
 
-export const metadata: Metadata = { title: "Kabar Aksi", robots: { index: false } };
+export const metadata: Metadata = { title: "Laporan Kegiatan", robots: { index: false } };
 export const dynamic = "force-dynamic";
 
 type Props = { searchParams: Promise<{ edit?: string; tersimpan?: string }> };
@@ -20,72 +23,110 @@ export default async function AdminKabar({ searchParams }: Props) {
 
   return (
     <div className="mx-auto w-full max-w-[900px] px-4 py-6">
-      <h1>Kabar Aksi</h1>
+      <h1>Laporan Kegiatan</h1>
       <p className="mt-1 text-ink-soft">
-        Satu foto, judul pendek, dan dua sampai empat kalimat. Kabar yang rutin adalah alasan orang membuka app ini
-        lagi.
+        Laporan dari kegiatan yang sudah terlaksana di season ini. Satu foto, judul pendek, dan dua sampai empat
+        kalimat sudah cukup.
       </p>
 
       <BannerTersimpan tampil={Boolean(tersimpan)} />
 
-      <section className="mt-6">
-        <h2>{diedit ? `Ubah: ${diedit.title}` : "Tulis kabar baru"}</h2>
-        <div className="mt-3">
-          <FormKabar kabar={diedit ?? undefined} season={season} />
-        </div>
-        {diedit ? (
-          <Link prefetch={false} href="/admin/kabar" className="tombol-kecil mt-3">
-            Batal mengubah, kembali ke form kabar baru
-          </Link>
-        ) : null}
-      </section>
+      <div className="mt-5">
+        <LaciForm
+          labelPemicu="Tulis laporan baru"
+          judul="Laporan baru"
+          penjelasan="Tulis angka yang benar-benar terjadi. Kalau angkanya belum ada, tulis tanpa angka."
+        >
+          <FormKabar season={season} />
+        </LaciForm>
+      </div>
 
-      <section className="mt-10">
-        <h2>Kabar yang sudah ada</h2>
+      {diedit ? (
+        <LaciForm
+          labelPemicu="Lanjut mengubah"
+          judul={`Ubah: ${diedit.title}`}
+          terbukaAwal
+          alamatTutup="/admin/kabar"
+        >
+          <FormKabar kabar={diedit} season={season} />
+        </LaciForm>
+      ) : null}
+
+      <section className="mt-8">
+        <h2>Laporan yang sudah ada</h2>
         {daftar.length === 0 ? (
-          <p className="mt-2 text-ink-soft">Belum ada kabar yang ditulis.</p>
-        ) : (
-          <div className="mt-3 grid gap-3">
-            {daftar.map((kabar) => (
-              <article key={kabar.id} className="kartu p-4">
-                <div className="flex flex-wrap items-start justify-between gap-2">
-                  <div>
-                    <h3 className="text-[1.05rem]">
-                      {kabar.activity_label ? `${kabar.activity_label}: ` : ""}
-                      {kabar.title}
-                    </h3>
-                    <p className="text-sm text-ink-soft">{tanggalPendek(kabar.published_at)}</p>
-                  </div>
-                  <p
-                    className={`rounded-[4px] border-2 px-2 py-1 text-sm font-semibold ${
-                      kabar.is_published ? "border-sukses text-sukses" : "border-garis text-ink-soft"
-                    }`}
-                  >
-                    {kabar.is_published ? "Terbit" : "Draf"}
-                  </p>
-                </div>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <Link prefetch={false} href={`/admin/kabar?edit=${kabar.id}`} className="tombol-kecil">
-                    Ubah
-                  </Link>
-                  {kabar.is_published ? (
-                    <Link prefetch={false} href={`/kabar/${kabar.id}`} className="tombol-kecil">
-                      Lihat halaman publik
-                    </Link>
-                  ) : null}
-                  <KonfirmasiAksi
-                    aksi={hapusKabar}
-                    tersembunyi={{ id: kabar.id }}
-                    labelPemicu="Hapus"
-                    judul={`Hapus kabar ${kabar.title}`}
-                    penjelasan="Kabar ini hilang dari halaman publik dan tidak bisa dikembalikan."
-                    labelKonfirmasi="Ya, hapus kabar ini"
-                    nadaBahaya
-                  />
-                </div>
-              </article>
-            ))}
+          <div className="kartu mt-3 p-4">
+            <p className="font-semibold">Belum ada laporan yang ditulis.</p>
+            <p className="petunjuk">Laporan yang rutin adalah alasan orang membuka app ini lagi.</p>
           </div>
+        ) : (
+          <TabelAdmin
+            className="mt-3"
+            keterangan="Daftar laporan kegiatan berikut status terbitnya"
+            kepala={
+              <tr>
+                <th scope="col">Laporan</th>
+                <th scope="col">Status</th>
+                <th scope="col" className="hidden sm:table-cell">
+                  Tanggal
+                </th>
+                <th scope="col" className="sel-aksi">
+                  Aksi
+                </th>
+              </tr>
+            }
+          >
+            {daftar.map((kabar) => (
+              <BarisTabel
+                key={kabar.id}
+                kolom={4}
+                judulBaris={kabar.title}
+                ringkas={
+                  <>
+                    <td>
+                      {kabar.activity_label ? (
+                        <span className="block text-xs font-semibold text-gold-ink">{kabar.activity_label}</span>
+                      ) : null}
+                      <span className="font-semibold">{kabar.title}</span>
+                      <span className="block text-xs text-ink-soft sm:hidden">
+                        {tanggalPendek(kabar.published_at)}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={`label-status ${kabar.is_published ? "status-baik" : "status-diam"}`}>
+                        {kabar.is_published ? "Terbit" : "Draf"}
+                      </span>
+                    </td>
+                  </>
+                }
+                tambahan={
+                  <td className="hidden whitespace-nowrap sm:table-cell">{tanggalPendek(kabar.published_at)}</td>
+                }
+                rincian={<p>Terbit {tanggalPendek(kabar.published_at)}</p>}
+                aksi={
+                  <>
+                    <Link prefetch={false} href={`/admin/kabar?edit=${kabar.id}`} className="tombol-kecil">
+                      Ubah
+                    </Link>
+                    {kabar.is_published ? (
+                      <Link prefetch={false} href={`/kabar/${kabar.id}`} className="tombol-kecil">
+                        Lihat
+                      </Link>
+                    ) : null}
+                    <KonfirmasiAksi
+                      aksi={hapusKabar}
+                      tersembunyi={{ id: kabar.id }}
+                      labelPemicu="Hapus"
+                      judul={`Hapus laporan ${kabar.title}`}
+                      penjelasan="Laporan ini hilang dari halaman publik dan tidak bisa dikembalikan."
+                      labelKonfirmasi="Ya, hapus laporan ini"
+                      nadaBahaya
+                    />
+                  </>
+                }
+              />
+            ))}
+          </TabelAdmin>
         )}
       </section>
     </div>

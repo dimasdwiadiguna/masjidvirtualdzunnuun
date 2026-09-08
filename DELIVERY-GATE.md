@@ -36,7 +36,7 @@ Semua jawaban harus **tidak**.
 
 ### R-35: catatan klik, elemen per elemen
 
-Dijalankan pada lebar 360px, mode sentuh, pada data yang baru dibuat dari nol. **Tidak ada satu pun galat konsol pada kelima tahap.**
+Dijalankan pada lebar 360px, mode sentuh, pada data yang baru dibuat dari nol. **Tidak ada satu pun galat konsol**, kecuali dua permintaan 404 yang memang sengaja diminta skripnya untuk membuktikan halaman status lama sudah benar-benar hilang.
 
 **Alur donasi, dari sisi jamaah**
 
@@ -124,6 +124,28 @@ Dijalankan pada lebar 360px, mode sentuh, pada data yang baru dibuat dari nol. *
 | Tombol Instagram dan TikTok di bar sosial | Menuju `https://www.instagram.com/dzunnuun.id` dan `https://www.tiktok.com/@dzunnuun.id`; tautan yang sama sudah tidak dobel di footer |
 | Daftar acara berbayar yang membuat kuota jadi penuh | Tetap sampai ke halaman tiketnya. Ini yang dulu gagal karena perpindahannya bergantung pada state klien yang lenyap saat form berganti jadi "Kuota penuh" (D-64) |
 
+**Perubahan putaran ketiga**
+
+| Elemen yang diklik | Yang benar-benar terjadi |
+|---|---|
+| Buka `/donasi/DZN-XXXX` dan `/tiket/DZN-XXXX` langsung | Keduanya 404. Halaman status per kode benar-benar hilang, bukan sekadar tidak ditautkan |
+| Kirim formulir donasi | Menuju `/donasi/selesai`, tanpa kode di alamatnya. Nominal unik dan QRIS tampil |
+| Muat ulang `/donasi/selesai` | Nominalnya tetap sama persis. Ini yang membuat kuki dipilih, bukan state klien: jamaah pindah ke aplikasi bank lalu kembali ke tab yang sudah dimuat ulang |
+| Buka `/donasi/selesai` tanpa kuki | Judul "Halaman ini sudah lewat" berikut jalan keluarnya, bukan galat |
+| Daftar acara gratis | Menuju `/acara/selesai`, kode besar dan gambar QR tampil, dan kodenya tetap setelah muat ulang |
+| `GET /api/qr/DZN-XXXX` | 200 `image/png`, 3.430 bita |
+| `GET /api/qr/bukan-kode` | 400, tidak menggambar apa pun |
+| `GET /api/qr/DZN-ZZZZ` (kode yang tidak terdaftar) | 200, tetap digambar tanpa menyentuh database. Justru ini yang membuatnya tidak bisa dipakai menebak kode |
+| Baca ulang PNG hasil `/api/qr/` dengan pembaca QR terpisah | Isinya `DZN-YZNW`, kode telanjang, bukan URL |
+| Masukkan nilai hasil bacaan itu ke check-in | "Silakan masuk, Relawan Uji, 1 orang". Rantainya utuh dari gambar sampai check-in |
+| Verifikasi donasi lalu tekan Kirim kabar diterima | Pesannya memuat ucapan terima kasih, jumlah jamaah yang dirangkul, dan kode donasinya |
+| Buat pengumuman lewat laci | Laci terbuka dari tombol, tersimpan, dan tabelnya berisi 2 baris |
+| Beranda | Urutan bagian: Pengumuman, Laporan Kegiatan, Agenda terdekat, Tentang. Carousel berjalan sendiri, `scrollLeft` 16 jadi 248 |
+| Tap gambar pengumuman | Menuju `/pengumuman/aturan-masjid-ngopi-ngopi`, gambar pratinjau tautannya 200 PNG |
+| Buka baris tabel di 360px | Baris rincian muncul dan tombol aksinya terjangkau, di donasi maupun pendaftar |
+| Buka baris tabel dengan keyboard | Enter membuka baris, Enter pada Hapus membuka dialog, fokus pindah ke dalamnya, Escape menutup |
+| Lebar dokumen di seluruh tabel pengurus | Tetap 360px, tidak ada geser mendatar di `body` |
+
 Yang belum bisa diklik di lingkungan ini dan perlu dicek pengurus sekali sebelum live: kamera check-in di HP fisik, tampilan pratinjau tautan di dalam aplikasi WhatsApp, dan koneksi ke instance Supabase sungguhan. Ketiganya dicatat terbuka di `DECISIONS.md` bagian J.
 
 ---
@@ -194,7 +216,7 @@ Diminta BRIEF §13.
 
 | Pemeriksaan | Hasil |
 |---|---|
-| Lighthouse mobile, performa | Setelah perubahan putaran kedua: `/` 99, `/acara` 98, `/kabar` 100, `/donasi` 98. Ambang brief 85. Angka diambil pada build produksi, bukan `next dev`, dan tidak pada render pertama setelah server hidup. |
+| Lighthouse mobile, performa | Setelah perubahan putaran ketiga: `/` 92 sampai 93, `/acara` 98, `/kabar` 99, `/donasi` 100. Ambang brief 85. Angka diambil pada build produksi, bukan `next dev`, dan tidak pada render pertama setelah server hidup. Beranda turun dari 99 karena halamannya bertambah satu bagian gambar; gambar carousel pengumuman dibuat menyusul belakangan supaya tidak berebut jalur dengan foto hero. |
 | Lighthouse mobile, aksesibilitas | 100 di keempat halaman itu. Ambang brief 95. |
 | Lighthouse mobile, praktik terbaik dan SEO | 100 di semua halaman yang diukur, tanpa galat konsol. |
 | Cumulative Layout Shift | 0 di `/`, `/acara`, `/kabar`, dan `/donasi` setelah carousel dan bar sosial dipasang. Sebelumnya 0 di enam halaman, 0.061 di halaman season. Batas "baik" menurut Core Web Vitals adalah 0.1. Dicapai setelah ukuran logo dipasang pasti (D-42) dan keadaan memuat diberi tinggi minimal (D-44). |
@@ -203,7 +225,8 @@ Diminta BRIEF §13.
 | Build dengan env var kosong atau salah bentuk | Diuji empat keadaan: `NEXT_PUBLIC_SITE_URL` kosong, berisi spasi, tanpa protokol, dan tidak ada sama sekali. Semuanya berhasil dibangun (D-47). |
 | Ketahanan saat database bermasalah | Diuji dua keadaan pada build produksi: kredensial Supabase kosong, dan alamat project yang tidak bisa dihubungi. Keduanya tetap merender kerangka situs berikut pesan galat yang jelas, bukan halaman galat kosong, dan halaman `/admin/diagnosa` menyebutkan penyebabnya (D-48 sampai D-50). |
 | Kueri database per render beranda | Diukur dengan pembungkus penghitung pada driver data: 7 kueri saat cache dingin, 0 pada render berikutnya selama cache masih hangat. Sebelum bacaan pengaturan dibungkus `cache()` React, render dingin memakai 9 kueri karena layout, footer, dan bar sosial meleset berbarengan (D-58, D-59). |
-| Kontras warna komponen baru | Dihitung, bukan dikira: bar sosial tinta di atas emas 7,65:1; judul kartu acara 16,11:1; keterangan 6,57:1; chip 7,42:1; tombol Daftar 4,74:1; blok tanggal tanpa poster 12,21:1. Semuanya lolos WCAG AA. |
+| Kontras warna tabel dan laci | Dihitung, bukan dikira: chip status hijau 5,36:1; kuning 5,69:1; merah 7,55:1; abu 5,52:1; judul kolom 6,57:1; isi sel 16,11:1; baris rincian 6,03:1; teks laci 16,11:1. Semuanya lolos WCAG AA. Batang penarik laci 3,62:1, di atas ambang 3:1 untuk elemen bukan teks. |
+| Kontras warna komponen putaran kedua | Dihitung, bukan dikira: bar sosial tinta di atas emas 7,65:1; judul kartu acara 16,11:1; keterangan 6,57:1; chip 7,42:1; tombol Daftar 4,74:1; blok tanggal tanpa poster 12,21:1. Semuanya lolos WCAG AA. |
 | `tsc --noEmit` | Bersih. |
 | `next lint` | Bersih, tanpa peringatan. |
 | Teks Inggris yang terlihat pengguna | Tidak ada. Seluruh antarmuka Bahasa Indonesia. |
