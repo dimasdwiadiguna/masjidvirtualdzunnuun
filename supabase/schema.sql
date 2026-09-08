@@ -128,6 +128,22 @@ create table if not exists hero_photos (
 
 create index if not exists hero_photos_urutan on hero_photos (is_active, sort_order);
 
+-- Pengumuman bergambar untuk carousel beranda. Terpisah dari updates karena
+-- isinya bukan laporan kegiatan yang sudah terlaksana, melainkan pemberitahuan
+-- yang bentuk utamanya gambar.
+create table if not exists announcements (
+  id uuid primary key default gen_random_uuid(),
+  slug text not null unique,
+  title text not null,
+  image_url text not null,
+  body text,
+  sort_order integer not null default 0,
+  is_active boolean not null default true,
+  created_at timestamptz not null default now()
+);
+create index if not exists announcements_urutan on announcements (is_active, sort_order);
+
+
 create table if not exists settings (
   id text primary key default 'settings',
   qris_image_url text,
@@ -150,6 +166,7 @@ alter table registrations enable row level security;
 alter table updates enable row level security;
 alter table sponsors enable row level security;
 alter table hero_photos enable row level security;
+alter table announcements enable row level security;
 alter table settings enable row level security;
 
 -- Bucket penyimpanan gambar. Publik untuk dibaca karena isinya foto header,

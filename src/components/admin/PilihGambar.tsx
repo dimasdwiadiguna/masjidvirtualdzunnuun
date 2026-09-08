@@ -6,6 +6,11 @@ type Props = {
   name: string;
   label: string;
   bantuan?: string;
+  /**
+   * Pembeda id kalau lebih dari satu formulir bisa ada di DOM sekaligus,
+   * misalnya laci "buat baru" berdampingan dengan formulir ubah.
+   */
+  kunci?: string;
   /** QRIS dipertahankan sebagai PNG supaya polanya tetap tajam saat dipindai. */
   jenis?: "foto" | "qris";
 };
@@ -36,7 +41,7 @@ async function keGambar(berkas: File): Promise<HTMLImageElement> {
  * karena itu dikecilkan di perangkat sebelum dikirim. Sebagai bonus, foto
  * HEIC dari iPhone ikut berubah jadi JPEG yang bisa diterima server.
  */
-export default function PilihGambar({ name, label, bantuan, jenis = "foto" }: Props) {
+export default function PilihGambar({ name, label, bantuan, jenis = "foto", kunci }: Props) {
   const isian = useRef<HTMLInputElement>(null);
   const [status, setStatus] = useState<string | null>(null);
   const [pratinjau, setPratinjau] = useState<string | null>(null);
@@ -119,12 +124,12 @@ export default function PilihGambar({ name, label, bantuan, jenis = "foto" }: Pr
 
   return (
     <div>
-      <label className="label-isian" htmlFor={`gambar-${name}`}>
+      <label className="label-isian" htmlFor={`gambar-${kunci ? `${kunci}-` : ""}${name}`}>
         {label}
       </label>
       <input
         ref={isian}
-        id={`gambar-${name}`}
+        id={`gambar-${kunci ? `${kunci}-` : ""}${name}`}
         name={name}
         type="file"
         accept="image/*"

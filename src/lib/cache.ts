@@ -2,7 +2,16 @@ import "server-only";
 import { cache } from "react";
 import { unstable_cache } from "next/cache";
 import { db } from "@/lib/data";
-import type { EventItem, HeroPhoto, Season, SeasonProgress, Settings, Sponsor, Update } from "@/lib/data/types";
+import type {
+  Announcement,
+  EventItem,
+  HeroPhoto,
+  Season,
+  SeasonProgress,
+  Settings,
+  Sponsor,
+  Update,
+} from "@/lib/data/types";
 
 /**
  * Cache data untuk halaman publik.
@@ -26,6 +35,7 @@ export const TANDA = {
   kabar: "kabar",
   acara: "acara",
   hero: "hero",
+  pengumuman: "pengumuman",
 } as const;
 
 const UMUR = 300;
@@ -112,4 +122,16 @@ export const fotoHeroAktif = unstable_cache(
   async (): Promise<HeroPhoto[]> => (await db()).listHeroPhotos({ hanyaAktif: true }),
   ["foto-hero"],
   { tags: [TANDA.hero], revalidate: UMUR },
+);
+
+export const pengumumanAktif = unstable_cache(
+  async (): Promise<Announcement[]> => (await db()).listAnnouncements({ hanyaAktif: true }),
+  ["pengumuman-aktif"],
+  { tags: [TANDA.pengumuman], revalidate: UMUR },
+);
+
+export const satuPengumuman = unstable_cache(
+  async (slug: string): Promise<Announcement | null> => (await db()).getAnnouncementBySlug(slug),
+  ["pengumuman-slug"],
+  { tags: [TANDA.pengumuman], revalidate: UMUR },
 );

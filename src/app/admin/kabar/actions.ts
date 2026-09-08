@@ -14,8 +14,8 @@ export async function simpanKabar(_sebelumnya: HasilAksi, formData: FormData): P
   const id = String(formData.get("id") ?? "").trim() || undefined;
   const judul = String(formData.get("title") ?? "").trim();
   const isi = String(formData.get("body") ?? "").trim();
-  if (judul.length < 3) return { pesan: "Judul kabar minimal 3 huruf." };
-  if (isi.length < 10) return { pesan: "Isi kabar terlalu pendek. Dua sampai empat kalimat sudah cukup." };
+  if (judul.length < 3) return { pesan: "Judul laporan minimal 3 huruf." };
+  if (isi.length < 10) return { pesan: "Isi laporan terlalu pendek. Dua sampai empat kalimat sudah cukup." };
 
   const penanda = String(formData.get("activity_label") ?? "").trim();
   if (penanda.length > 60) {
@@ -49,7 +49,7 @@ export async function simpanKabar(_sebelumnya: HasilAksi, formData: FormData): P
     is_published: formData.get("is_published") === "ya",
   });
   revalidateTag(TANDA.kabar);
-  return { pesan: id ? "Kabar diperbarui." : `Kabar "${judul}" terbit.`, sukses: true };
+  return { pesan: id ? "Laporan diperbarui." : `Laporan "${judul}" terbit.`, sukses: true };
 }
 
 export async function hapusKabar(formData: FormData): Promise<void> {

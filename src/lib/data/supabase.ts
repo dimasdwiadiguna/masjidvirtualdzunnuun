@@ -2,6 +2,7 @@ import "server-only";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { SEED_SETTINGS } from "./seed";
 import type {
+  AnnouncementInput,
   DataDriver,
   DonationFilter,
   HeroPhotoInput,
@@ -13,6 +14,7 @@ import type {
   UpdateInput,
 } from "./index";
 import type {
+  Announcement,
   Donation,
   EventCapacityInfo,
   EventItem,
@@ -272,6 +274,34 @@ export function createSupabaseDriver(): DataDriver {
       lempar("Gagal menghapus foto hero", error);
     },
 
+    async listAnnouncements(opts = {}) {
+      let q = sb.from("announcements").select("*").order("sort_order", { ascending: true });
+      if (opts.hanyaAktif) q = q.eq("is_active", true);
+      const { data, error } = await q;
+      lempar("Gagal membaca pengumuman", error);
+      return (data ?? []) as Announcement[];
+    },
+    async getAnnouncementBySlug(slug) {
+      const { data, error } = await sb.from("announcements").select("*").eq("slug", slug).maybeSingle();
+      lempar("Gagal membaca pengumuman", error);
+      return (data as Announcement) ?? null;
+    },
+    async saveAnnouncement(input: AnnouncementInput) {
+      const { id, ...isi } = input;
+      if (id) {
+        const { data, error } = await sb.from("announcements").update(isi).eq("id", id).select("*").single();
+        lempar("Gagal menyimpan pengumuman", error);
+        return data as Announcement;
+      }
+      const { data, error } = await sb.from("announcements").insert(isi).select("*").single();
+      lempar("Gagal membuat pengumuman", error);
+      return data as Announcement;
+    },
+    async deleteAnnouncement(id) {
+      const { error } = await sb.from("announcements").delete().eq("id", id);
+      lempar("Gagal menghapus pengumuman", error);
+    },
+
     async listRegistrations(eventId) {
       let q = sb.from("registrations").select("*").order("created_at", { ascending: false });
       if (eventId) q = q.eq("event_id", eventId);
@@ -329,28 +359,28 @@ export function createSupabaseDriver(): DataDriver {
       if (opts.seasonId) q = q.eq("season_id", opts.seasonId);
       if (opts.limit) q = q.limit(opts.limit);
       const { data, error } = await q;
-      lempar("Gagal membaca kabar", error);
+      lempar("Gagal membaca laporan", error);
       return (data ?? []) as Update[];
     },
     async getUpdateById(id) {
       const { data, error } = await sb.from("updates").select("*").eq("id", id).maybeSingle();
-      lempar("Gagal membaca kabar", error);
+      lempar("Gagal membaca laporan", error);
       return (data as Update) ?? null;
     },
     async saveUpdate(input: UpdateInput) {
       const { id, ...isi } = input;
       if (id) {
         const { data, error } = await sb.from("updates").update(isi).eq("id", id).select("*").single();
-        lempar("Gagal menyimpan kabar", error);
+        lempar("Gagal menyimpan laporan", error);
         return data as Update;
       }
       const { data, error } = await sb.from("updates").insert(isi).select("*").single();
-      lempar("Gagal membuat kabar", error);
+      lempar("Gagal membuat laporan", error);
       return data as Update;
     },
     async deleteUpdate(id) {
       const { error } = await sb.from("updates").delete().eq("id", id);
-      lempar("Gagal menghapus kabar", error);
+      lempar("Gagal menghapus laporan", error);
     },
 
     async listSponsors(seasonId) {

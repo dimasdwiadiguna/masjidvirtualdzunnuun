@@ -60,14 +60,14 @@ export default async function HalamanTentang() {
           <h2>Laporan yang bisa diperiksa</h2>
         </div>
         <p className="mt-2 text-[0.95rem]">
-          Setiap season punya halaman sendiri, dan setiap kegiatan dicatat di Kabar Aksi.
+          Setiap season punya halaman sendiri, dan setiap kegiatan dicatat di Laporan Kegiatan.
         </p>
         <div className="mt-3 flex flex-wrap gap-2">
           <Link href="/arsip" className="tombol-kedua">
             Arsip season
           </Link>
           <Link href="/kabar" className="tombol-kedua">
-            Kabar Aksi
+            Laporan Kegiatan
           </Link>
         </div>
       </section>

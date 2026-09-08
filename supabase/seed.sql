@@ -28,7 +28,7 @@ values (
 
 Satu paket bernilai Rp 15.000. Nilainya kami pakai untuk merangkul satu jamaah yang singgah, agar amal ibadahnya mengalir.
 
-Patungan ini dikelola tiga relawan. Setiap pemasukan yang sudah kami terima dicatat di halaman ini, dan penggunaannya dilaporkan lewat Kabar Aksi.',
+Patungan ini dikelola tiga relawan. Setiap pemasukan yang sudah kami terima dicatat di halaman ini, dan penggunaannya dilaporkan lewat Laporan Kegiatan.',
   7000000,
   15000,
   '2026-10-01',

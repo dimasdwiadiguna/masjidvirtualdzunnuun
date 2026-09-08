@@ -20,7 +20,7 @@ export default async function HalamanDonasi() {
         <h1>Ikut patungan</h1>
         <p className="mt-2 text-ink-soft">Belum ada patungan yang berjalan.</p>
         <Link href="/kabar" className="tombol-kedua mt-4">
-          Baca Kabar Aksi
+          Baca Laporan Kegiatan
         </Link>
       </div>
     );

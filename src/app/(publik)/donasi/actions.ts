@@ -1,16 +1,16 @@
 "use server";
 
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { db } from "@/lib/data";
 import { buatKode, pilihSuffix } from "@/lib/kode";
 import { ipDari, lewatBatas } from "@/lib/ratelimit";
 import { normalkanWa } from "@/lib/wa";
+import { KUKI_DONASI, simpanKodeHasil } from "@/lib/kuki-hasil";
 
 export type HasilFormDonasi = {
   pesan?: string;
   galat?: { nama?: string; whatsapp?: string; paket?: string };
-  /** Diisi kalau donasi berhasil dicatat. Peramban dipindahkan ke halaman kode ini. */
-  kode?: string;
 };
 
 const BATAS_PAKET = 2000;
@@ -77,5 +77,6 @@ export async function kirimDonasi(
     is_anonymous: anonim,
   });
 
-  return { kode: donasi.code };
+  await simpanKodeHasil(KUKI_DONASI, donasi.code);
+  redirect("/donasi/selesai");
 }

@@ -18,7 +18,10 @@ Bagian 1 sampai 4 untuk yang memasang app. Bagian 5 ditulis untuk pengurus yang 
 2. Buka **SQL Editor**, tempel seluruh isi `supabase/schema.sql`, jalankan.
 3. Masih di SQL Editor, tempel seluruh isi `supabase/seed.sql`, jalankan. Ini membuat Season 1 dan satu baris pengaturan berisi nilai contoh.
 
-   **Kalau database Anda sudah dibuat sebelum September 2026** dan sudah berisi data, jalankan juga `supabase/migrasi-01-hero-dan-penanda-kabar.sql` sekali. Berkas itu menambah tabel foto hero dan kolom penanda kegiatan tanpa menyentuh data yang sudah ada, dan aman dijalankan berulang. Tanpa itu, menu Foto Hero dan penanda kegiatan belum berfungsi.
+   **Kalau database Anda sudah dibuat sebelumnya** dan sudah berisi data, jalankan juga berkas migrasi berikut, sekali masing-masing, urut nomornya. Semuanya aman dijalankan berulang dan tidak menyentuh data yang sudah ada:
+
+   - `supabase/migrasi-01-hero-dan-penanda-kabar.sql` — tabel foto hero dan kolom penanda kegiatan.
+   - `supabase/migrasi-02-pengumuman.sql` — tabel pengumuman. Tanpa ini, menu Pengumuman belum berfungsi.
 4. Buka **Project Settings, API**, catat dua nilai ini:
    - Project URL, misalnya `https://abcdefgh.supabase.co`
    - `service_role` key (bukan `anon` key)
@@ -74,14 +77,15 @@ Ini pekerjaan harian yang paling penting. Angka di halaman publik hanya naik dar
 2. Cocokkan dengan mutasi rekening atau QRIS. Setiap donasi punya nominal yang unik sampai angka terakhir, misalnya `Rp 150.137`. Angka belakang itu yang membedakan satu donatur dengan donatur lain di nominal yang sama.
 3. Kalau nominalnya cocok dengan uang yang masuk, tekan **Verifikasi**. Akan muncul kotak konfirmasi berisi nama dan jumlah paketnya. Tekan **Ya, dana sudah masuk** hanya kalau Anda sudah benar-benar melihat uangnya masuk.
 4. Kolom catatan boleh diisi, misalnya `masuk 12.40 lewat QRIS`. Catatan ini hanya untuk sesama pengurus, kecuali kalau Anda menolak donasi.
-5. Kalau transfernya tidak ketemu, tekan **Tolak** dan tulis catatan singkat. Donatur akan melihat catatan itu di halaman statusnya, jadi tulis dengan bahasa yang enak dibaca, misalnya `belum ada transfer masuk dengan nominal ini sampai hari Rabu`.
+5. Kalau transfernya tidak ketemu, tekan **Tolak** dan tulis catatan singkat. Catatan itu ikut masuk ke pesan WhatsApp penolakan yang Anda kirim, jadi tulis dengan bahasa yang enak dibaca, misalnya `belum ada transfer masuk dengan nominal ini sampai hari Rabu`. Setelah menolak, tekan **Kirim alasan** untuk mengabari donaturnya.
 6. Perlu bertanya ke donatur? Tekan **Buka WhatsApp donatur**. Pesannya sudah terisi nama, kode, dan nominal.
 
 Yang berubah setelah verifikasi:
 
 - Angka rupiah di beranda dan halaman season naik
-- Halaman donatur berubah jadi ucapan terima kasih dan menampilkan berapa jamaah yang dirangkul lewat dia
-- Baris kabar terbaru muncul di halaman donatur itu
+- Tombol WhatsApp pada baris itu berubah jadi **Kirim kabar diterima**, dan pesannya sudah terisi ucapan terima kasih berikut berapa jamaah yang dirangkul lewat dia
+
+**Donatur tidak punya halaman status.** Dia tidak akan tahu donasinya sudah diterima sampai Anda menekan tombol WhatsApp itu dan mengirim pesannya. Ini pekerjaan yang tidak boleh dilewat.
 
 Kalau salah verifikasi, buka lagi donasi tersebut dan tekan **Tolak**. Angkanya akan turun kembali.
 
@@ -114,6 +118,19 @@ Foto besar di bagian atas beranda diambil dari menu **Foto Hero**, bukan dari po
 
 Kalau belum ada satu pun foto, hero tampil sebagai blok warna. Itu keadaan yang wajar, bukan galat. Tiga sampai lima foto sudah cukup.
 
+### Mengisi pengumuman
+
+Pengumuman adalah gambar yang berjalan sendiri di beranda, di bawah kotak patungan. Dipakai untuk pemberitahuan seperti `Aturan Masjid Ngopi-Ngopi` atau ucapan hari besar. Bedanya dengan Laporan Kegiatan: laporan menceritakan kegiatan yang **sudah terlaksana**, pengumuman **memberi tahu** sesuatu dan bentuk utamanya gambar.
+
+1. Menu **Pengumuman**, tekan **Buat pengumuman baru**. Formulirnya muncul dari bawah layar.
+2. **Judul** dipakai sebagai judul halaman dan sebagai teks alternatif gambarnya, jadi tulis yang menjelaskan isi gambarnya.
+3. **Gambar** wajib. Bentuk persegi atau tegak paling enak dilihat di HP. Foto dari kamera otomatis dikecilkan dulu di HP Anda.
+4. **Keterangan** boleh dikosongkan kalau gambarnya sudah menjelaskan sendiri.
+5. **Urutan** menentukan yang tampil lebih dulu, angka kecil duluan.
+6. Tombol **Sembunyikan** membuat pengumuman berhenti tampil tanpa menghapusnya.
+
+Kalau belum ada satu pun pengumuman, bagian itu tidak muncul sama sekali di beranda. Itu wajar, bukan galat.
+
 ### Membuat acara dan menerima pendaftar
 
 1. Menu **Acara**, isi judul, waktu mulai, lokasi, dan keterangan. Semua waktu dibaca sebagai waktu Jakarta.
@@ -123,18 +140,33 @@ Kalau belum ada satu pun foto, hero tampil sebagai blok warna. Itu keadaan yang 
 5. Centang **Terbitkan acara ini** supaya muncul di halaman publik. Tanpa itu, acara hanya terlihat oleh pengurus.
 6. Menu **Pendaftar** menampilkan daftar per acara, tombol **Ekspor CSV** untuk dibuka di Excel, dan tombol WhatsApp per orang.
 
+### Mengirim kabar lewat WhatsApp
+
+**Jamaah tidak punya halaman status.** Sejak halaman status dihapus, satu-satunya cara mereka tahu donasinya diterima atau tiketnya sudah jadi adalah pesan WhatsApp yang **Anda** kirim. Ini pekerjaan harian, bukan tambahan.
+
+Caranya sama di dua tempat:
+
+- Menu **Donasi**: setelah memverifikasi, tekan **Kirim kabar diterima**. Setelah menolak, tekan **Kirim alasan**.
+- Menu **Pendaftar**: setelah mengonfirmasi pembayaran, tekan **Kirim tiket dan QR**.
+
+WhatsApp terbuka dengan pesannya sudah terisi lengkap: nama, kode, nominal, dan untuk tiket juga tautan gambar QR-nya. Anda tinggal menekan kirim. Boleh diubah dulu kalau mau.
+
+Menu **Pesan WhatsApp** memuat contoh kelima pesan itu berikut tombol salin, untuk dilihat kata-katanya atau dipakai kalau Anda mengirim dari perangkat lain.
+
+Pengiriman tidak otomatis, dan itu disengaja. Pesan dari pengurus sungguhan lebih dipercaya jamaah daripada pesan robot.
+
 ### Check-in saat hari H
 
 Menu **Check-in** punya dua cara yang sama sahnya:
 
 - **Ketik kode tiket**, misalnya `DZN-9F2M`. Cara ini selalu jalan di HP apa pun.
-- **Pindai QR** lewat kamera. Sebagian HP, termasuk iPhone, belum mendukung pemindaian bawaan peramban. Kalau begitu, pakai cara ketik kode.
+- **Pindai QR** lewat kamera. QR-nya ada di pesan WhatsApp yang Anda kirim ke peserta. Sebagian HP, termasuk iPhone, belum mendukung pemindaian bawaan peramban. Kalau begitu, pakai cara ketik kode, hasilnya sama.
 
 Hasilnya muncul besar: nama, jumlah orang, dan status. Kalau tiket sudah pernah dipakai, muncul peringatan berikut waktu check-in sebelumnya, bukan tanda merah menakutkan.
 
 ### Membagikan halaman ke WhatsApp
 
-Tombol **Bagikan** di halaman acara, kabar, dan season membuka lembar bagikan bawaan HP. Dari situ pilih WhatsApp, lalu pilih kontak atau grupnya seperti biasa.
+Tombol **Bagikan** di halaman acara, laporan, pengumuman, dan season membuka lembar bagikan bawaan HP. Dari situ pilih WhatsApp, lalu pilih kontak atau grupnya seperti biasa.
 
 ### Kalau app menampilkan pesan galat
 
@@ -157,7 +189,8 @@ Season yang tidak aktif otomatis pindah ke halaman **Arsip** berikut total yang 
 ## 6. Catatan teknis singkat
 
 - Progress season dihitung dari `SUM(total_amount)` donasi berstatus `verified`. Donasi `pending` tidak pernah ikut dihitung.
-- Tidak ada endpoint publik yang mengembalikan daftar donatur atau pendaftar. Halaman `/donasi/[kode]` dan `/tiket/[kode]` hanya mengembalikan satu baris sesuai kode.
+- Tidak ada endpoint publik yang mengembalikan daftar donatur atau pendaftar. Halaman status per kode sudah dihapus sama sekali. Layar hasil setelah mengirim formulir dipegang kuki berumur 2 jam, bukan alamat yang bisa ditebak.
+- `/api/qr/[kode]` hanya menggambar QR dari kode yang bentuknya benar, tanpa menyentuh database. Jadi alamat itu tidak bisa dipakai menebak kode mana yang benar-benar ada, dan tidak membocorkan nama atau nominal.
 - Nomor WhatsApp tidak pernah tampil utuh di halaman publik, hanya tersamar seperti `0812••••789`.
 - RLS menyala di semua tabel tanpa policy publik. Seluruh baca dan tulis lewat route server yang memakai service role key.
 - `vercel.json` menaruh fungsi di region `sin1` (Singapore) supaya duduk dekat dengan database. Kalau project Supabase Anda ada di region lain, ganti nilai itu supaya keduanya sekota.

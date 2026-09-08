@@ -8,7 +8,7 @@ import type { Settings } from "@/lib/data/types";
 
 const HALAMAN = [
   { href: "/donasi", label: "Ikut patungan" },
-  { href: "/kabar", label: "Kabar Aksi" },
+  { href: "/kabar", label: "Laporan Kegiatan" },
   { href: "/acara", label: "Acara" },
   { href: "/arsip", label: "Arsip" },
   { href: "/tentang", label: "Tentang" },

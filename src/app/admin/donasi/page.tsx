@@ -1,9 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import BarisTabel from "@/components/admin/BarisTabel";
 import KonfirmasiAksi from "@/components/admin/KonfirmasiAksi";
+import TabelAdmin from "@/components/admin/TabelAdmin";
 import { IkonWhatsApp } from "@/components/Ikon";
 import { db } from "@/lib/data";
 import { rupiah, samarkanWa, tanggalPendek } from "@/lib/format";
+import {
+  pesanDonasiBelumCocok,
+  pesanDonasiDiterima,
+  pesanPembukaDonasi,
+} from "@/lib/pesan-wa";
 import { linkWa } from "@/lib/wa";
 import { tolakDonasi, verifikasiDonasi } from "./actions";
 import type { DonationStatus } from "@/lib/data/types";
@@ -24,13 +31,23 @@ const NAMA_STATUS: Record<DonationStatus, string> = {
   rejected: "Ditolak",
 };
 
+const KELAS_STATUS: Record<DonationStatus, string> = {
+  pending: "status-tunggu",
+  verified: "status-baik",
+  rejected: "status-bahaya",
+};
+
 type Props = { searchParams: Promise<{ status?: string; cari?: string }> };
 
 export default async function AdminDonasi({ searchParams }: Props) {
   const { status, cari } = await searchParams;
   const saringan = (SARINGAN.find((s) => s.nilai === status)?.nilai ?? "pending") as DonationStatus | "semua";
   const kataCari = cari ?? "";
-  const donasi = await (await db()).listDonations({ status: saringan, cari: kataCari });
+  const data = await db();
+  const [donasi, season] = await Promise.all([
+    data.listDonations({ status: saringan, cari: kataCari }),
+    data.getActiveSeason(),
+  ]);
 
   return (
     <div className="mx-auto w-full max-w-[900px] px-4 py-6">
@@ -83,81 +100,128 @@ export default async function AdminDonasi({ searchParams }: Props) {
           </p>
         </div>
       ) : (
-        <div className="mt-6 grid gap-3">
-          {donasi.map((item) => (
-            <article key={item.id} className="kartu p-4">
-              <div className="flex flex-wrap items-start justify-between gap-2">
-                <div>
-                  <p className="font-[family-name:var(--font-judul)] text-lg font-bold">{rupiah(item.total_amount)}</p>
-                  <p className="text-sm text-ink-soft">
-                    {item.package_count} paket, kode <span className="kode-besar text-sm">{item.code}</span>
-                  </p>
-                </div>
-                <p
-                  className={`rounded-[4px] border-2 px-2 py-1 text-sm font-semibold ${
-                    item.status === "verified"
-                      ? "border-sukses text-sukses"
-                      : item.status === "rejected"
-                        ? "border-bahaya text-bahaya"
-                        : "border-garis text-ink-soft"
-                  }`}
-                >
-                  {NAMA_STATUS[item.status]}
-                </p>
-              </div>
+        <TabelAdmin
+          className="mt-6"
+          keterangan={`Daftar donasi berstatus ${saringan === "semua" ? "semua status" : NAMA_STATUS[saringan]}`}
+          kepala={
+            <tr>
+              <th scope="col">Donatur</th>
+              <th scope="col">Nominal</th>
+              <th scope="col" className="hidden sm:table-cell">
+                Kode
+              </th>
+              <th scope="col" className="hidden sm:table-cell">
+                Status
+              </th>
+              <th scope="col" className="sel-aksi">
+                Aksi
+              </th>
+            </tr>
+          }
+        >
+          {donasi.map((item) => {
+            const isi = {
+              nama: item.donor_name,
+              kode: item.code,
+              nominal: item.total_amount,
+              paket: item.package_count,
+              catatan: item.admin_note,
+              slugSeason: season?.slug ?? null,
+            };
+            const teksWa =
+              item.status === "verified"
+                ? pesanDonasiDiterima(isi)
+                : item.status === "rejected"
+                  ? pesanDonasiBelumCocok(isi)
+                  : pesanPembukaDonasi(isi);
+            const labelWa =
+              item.status === "verified"
+                ? "Kirim kabar diterima"
+                : item.status === "rejected"
+                  ? "Kirim alasan"
+                  : "WhatsApp";
 
-              <p className="mt-2">
-                {item.donor_name}
-                {item.is_anonymous ? " (minta namanya disembunyikan di halaman publik)" : ""}
-              </p>
-              <p className="text-sm text-ink-soft">
-                {samarkanWa(item.whatsapp)}, masuk {tanggalPendek(item.created_at)}
-              </p>
-              {item.admin_note ? <p className="mt-1 text-sm">Catatan: {item.admin_note}</p> : null}
-
-              <div className="mt-3 flex flex-wrap gap-2">
-                <a
-                  href={linkWa(
-                    item.whatsapp,
-                    `Assalamualaikum ${item.donor_name}, ini pengurus Dzun Nuun. Terkait donasi kode ${item.code} sebesar ${rupiah(item.total_amount)}.`,
-                  )}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="tombol-kecil"
-                >
-                  <IkonWhatsApp className="mr-2" />
-                  Buka WhatsApp donatur
-                </a>
-                {item.status !== "verified" ? (
-                  <KonfirmasiAksi
-                    aksi={verifikasiDonasi}
-                    tersembunyi={{ id: item.id }}
-                    labelPemicu="Verifikasi"
-                    judul={`Verifikasi ${rupiah(item.total_amount)}`}
-                    penjelasan={`Pastikan nominal ini benar-benar sudah masuk ke rekening. Setelah diverifikasi, ${item.package_count} paket dari ${item.donor_name} ikut menambah progress di halaman publik.`}
-                    labelKonfirmasi="Ya, dana sudah masuk"
-                    pakaiCatatan
-                  />
-                ) : null}
-                {item.status !== "rejected" ? (
-                  <KonfirmasiAksi
-                    aksi={tolakDonasi}
-                    tersembunyi={{ id: item.id }}
-                    labelPemicu="Tolak"
-                    judul="Tandai belum bisa dicocokkan"
-                    penjelasan="Dipakai kalau transfernya tidak ditemukan. Donatur akan melihat catatan Anda di halaman statusnya."
-                    labelKonfirmasi="Tandai ditolak"
-                    pakaiCatatan
-                    nadaBahaya
-                  />
-                ) : null}
-                <Link prefetch={false} href={`/donasi/${item.code}`} className="tombol-kecil">
-                  Lihat halaman donatur
-                </Link>
-              </div>
-            </article>
-          ))}
-        </div>
+            return (
+              <BarisTabel
+                key={item.id}
+                kolom={5}
+                judulBaris={`donasi ${item.donor_name}`}
+                ringkas={
+                  <>
+                    <td>
+                      <span className="font-semibold">{item.donor_name}</span>
+                      {item.is_anonymous ? (
+                        <span className="block text-xs text-ink-soft">nama disembunyikan di halaman publik</span>
+                      ) : null}
+                      <span className="block text-xs text-ink-soft sm:hidden">
+                        <span className="kode-besar text-xs">{item.code}</span>
+                      </span>
+                    </td>
+                    <td className="whitespace-nowrap font-semibold">{rupiah(item.total_amount)}</td>
+                  </>
+                }
+                tambahan={
+                  <>
+                    <td className="hidden sm:table-cell">
+                      <span className="kode-besar text-sm">{item.code}</span>
+                    </td>
+                    <td className="hidden sm:table-cell">
+                      <span className={`label-status ${KELAS_STATUS[item.status]}`}>{NAMA_STATUS[item.status]}</span>
+                    </td>
+                  </>
+                }
+                rincian={
+                  <>
+                    <p>
+                      <span className={`label-status ${KELAS_STATUS[item.status]}`}>{NAMA_STATUS[item.status]}</span>
+                    </p>
+                    <p>
+                      {item.package_count} paket, {samarkanWa(item.whatsapp)}
+                    </p>
+                    <p>Masuk {tanggalPendek(item.created_at)}</p>
+                    {item.admin_note ? <p>Catatan: {item.admin_note}</p> : null}
+                  </>
+                }
+                aksi={
+                  <>
+                    <a
+                      href={linkWa(item.whatsapp, teksWa)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="tombol-kecil"
+                    >
+                      <IkonWhatsApp className="mr-2" />
+                      {labelWa}
+                    </a>
+                    {item.status !== "verified" ? (
+                      <KonfirmasiAksi
+                        aksi={verifikasiDonasi}
+                        tersembunyi={{ id: item.id }}
+                        labelPemicu="Verifikasi"
+                        judul={`Verifikasi ${rupiah(item.total_amount)}`}
+                        penjelasan={`Pastikan nominal ini benar-benar sudah masuk ke rekening. Setelah diverifikasi, ${item.package_count} paket dari ${item.donor_name} ikut menambah progress di halaman publik.`}
+                        labelKonfirmasi="Ya, dana sudah masuk"
+                        pakaiCatatan
+                      />
+                    ) : null}
+                    {item.status !== "rejected" ? (
+                      <KonfirmasiAksi
+                        aksi={tolakDonasi}
+                        tersembunyi={{ id: item.id }}
+                        labelPemicu="Tolak"
+                        judul="Tandai belum bisa dicocokkan"
+                        penjelasan="Dipakai kalau transfernya tidak ditemukan. Catatan Anda ikut terbawa ke pesan WhatsApp penolakan, jadi tulis dengan bahasa yang enak dibaca."
+                        labelKonfirmasi="Tandai ditolak"
+                        pakaiCatatan
+                        nadaBahaya
+                      />
+                    ) : null}
+                  </>
+                }
+              />
+            );
+          })}
+        </TabelAdmin>
       )}
     </div>
   );

@@ -7,7 +7,7 @@ import { IkonAcaraNav, IkonBeranda, IkonKabar, IkonTentang } from "./Ikon";
 
 const TAUTAN = [
   { href: "/", label: "Beranda", Ikon: IkonBeranda },
-  { href: "/kabar", label: "Kabar", Ikon: IkonKabar },
+  { href: "/kabar", label: "Laporan", Ikon: IkonKabar },
   { href: "/acara", label: "Acara", Ikon: IkonAcaraNav },
   { href: "/tentang", label: "Tentang", Ikon: IkonTentang },
 ];
@@ -74,7 +74,7 @@ export default function NavBawah() {
               >
                 <span className="relative">
                   <Ikon aktif={aktif} />
-                  {label === "Kabar" && kabarBaru > 0 ? (
+                  {href === "/kabar" && kabarBaru > 0 ? (
                     <span className="absolute -right-2 -top-1 min-w-[16px] rounded-full bg-bahaya px-1 text-center text-[0.62rem] font-bold leading-4 text-paper">
                       {kabarBaru}
                     </span>

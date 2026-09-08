@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { kirimDonasi, type HasilFormDonasi } from "@/app/(publik)/donasi/actions";
 import { angka, rupiah } from "@/lib/format";
@@ -19,13 +19,6 @@ function TombolKirim() {
 export default function FormDonasi({ hargaPaket }: { hargaPaket: number }) {
   const [hasil, aksi] = useActionState<HasilFormDonasi, FormData>(kirimDonasi, {});
   const [paket, setPaket] = useState(1);
-
-  // Perpindahan ke halaman kode dilakukan penuh oleh peramban. Pengalihan dari
-  // dalam server action pernah tidak diikuti router, dan donatur melihat
-  // formulir yang seolah tidak bereaksi padahal donasinya sudah tercatat.
-  useEffect(() => {
-    if (hasil.kode) window.location.assign(`/donasi/${hasil.kode}`);
-  }, [hasil]);
 
   const jumlah = Number.isFinite(paket) && paket > 0 ? Math.floor(paket) : 0;
 

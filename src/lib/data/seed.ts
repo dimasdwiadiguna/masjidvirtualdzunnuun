@@ -29,7 +29,7 @@ export const SEED_SEASON: Season = {
     "",
     "Satu paket bernilai Rp 15.000. Nilainya kami pakai untuk merangkul satu jamaah yang singgah, agar amal ibadahnya mengalir.",
     "",
-    "Patungan ini dikelola tiga relawan. Setiap pemasukan yang sudah kami terima dicatat di halaman ini, dan penggunaannya dilaporkan lewat Kabar Aksi.",
+    "Patungan ini dikelola tiga relawan. Setiap pemasukan yang sudah kami terima dicatat di halaman ini, dan penggunaannya dilaporkan lewat Laporan Kegiatan.",
   ].join("\n"),
   header_image_url: null,
   target_amount: 7_000_000,

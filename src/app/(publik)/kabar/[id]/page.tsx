@@ -15,7 +15,7 @@ type Props = { params: Promise<{ id: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const kabar = await satuKabar(id);
-  if (!kabar || !kabar.is_published) return { title: "Kabar tidak ditemukan" };
+  if (!kabar || !kabar.is_published) return { title: "Laporan tidak ditemukan" };
   return {
     title: kabar.title,
     description: ringkas(kabar.body),
@@ -61,7 +61,7 @@ export default async function DetailKabar({ params }: Props) {
         </Link>
         <Bagikan judul={kabar.title} teks={kabar.title} jalurCadangan={`/kabar/${kabar.id}`} />
         <Link href="/kabar" className="tombol-kedua">
-          Kabar lainnya
+          Laporan lainnya
         </Link>
       </div>
     </article>

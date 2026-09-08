@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     template: "%s | Dzun Nuun",
   },
   description:
-    "Patungan, acara, dan kabar kegiatan komunitas pemuda pemudi Dzun Nuun di Masjid Fathul Ummah.",
+    "Patungan, acara, dan laporan kegiatan komunitas pemuda pemudi Dzun Nuun di Masjid Fathul Ummah.",
   applicationName: "Dzun Nuun",
   manifest: "/manifest.webmanifest",
   appleWebApp: { capable: true, title: "Dzun Nuun", statusBarStyle: "default" },

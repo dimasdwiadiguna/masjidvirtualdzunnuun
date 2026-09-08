@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 const TAUTAN = [
-  { href: "/kabar", label: "Kabar" },
+  { href: "/kabar", label: "Laporan" },
   { href: "/acara", label: "Acara" },
   { href: "/arsip", label: "Arsip" },
   { href: "/tentang", label: "Tentang" },
