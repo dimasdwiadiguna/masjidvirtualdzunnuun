@@ -56,11 +56,11 @@ export default async function HalamanSeason({ params }: Props) {
         {season.tagline ? <p className="mt-1.5 text-[0.95rem] text-ink-soft">{season.tagline}</p> : null}
 
         <div className="kartu mt-4 p-4">
-          <ProgressSeason season={season} progress={progress} label="Patungan berjalan" />
+          <ProgressSeason season={season} progress={progress} label="Donasi berjalan" />
           <p className="petunjuk">1 paket {rupiah(season.package_price)} untuk merangkul satu jamaah.</p>
           <div className="mt-3 flex gap-2">
             <Link href="/donasi" className="tombol-utama flex-1">
-              Ikut patungan
+              Ikut donasi
             </Link>
             <Bagikan
               judul={judulSeason(season)}
@@ -131,7 +131,7 @@ export default async function HalamanSeason({ params }: Props) {
       <div className="fixed bottom-[92px] left-0 right-0 z-30 border-t border-garis bg-paper p-3 md:hidden">
         <div className="kolom-isi">
           <Link href="/donasi" className="tombol-utama w-full">
-            Ikut patungan
+            Ikut donasi
           </Link>
         </div>
       </div>

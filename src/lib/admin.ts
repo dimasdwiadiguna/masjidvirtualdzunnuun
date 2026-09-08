@@ -1,16 +1,27 @@
 import "server-only";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { COOKIE_SESI, tokenSah } from "@/lib/auth";
+import { COOKIE_SESI, peranToken, type Peran } from "@/lib/auth";
 import { db } from "@/lib/data";
 
 /**
  * Middleware sudah mengunci /admin, tapi setiap server action memeriksa ulang.
  * Kalau suatu saat matcher middleware berubah, aksi tulis tetap tertutup.
+ *
+ * Isi `perluPeran` dengan "admin" untuk aksi yang hanya boleh dijalankan
+ * superadmin. Tanpa argumen, panitia ikut boleh.
  */
-export async function pastikanAdmin(): Promise<void> {
+export async function pastikanAdmin(perluPeran?: Peran): Promise<Peran> {
   const token = (await cookies()).get(COOKIE_SESI)?.value;
-  if (!(await tokenSah(token))) redirect("/admin/masuk");
+  const peran = await peranToken(token);
+  if (!peran) redirect("/admin/masuk");
+  if (perluPeran === "admin" && peran !== "admin") redirect("/admin?akses=terbatas");
+  return peran;
+}
+
+/** Peran pemegang sesi, atau null kalau belum masuk. Tidak mengalihkan. */
+export async function peranSekarang(): Promise<Peran | null> {
+  return peranToken((await cookies()).get(COOKIE_SESI)?.value);
 }
 
 const TIPE_DIIZINKAN = ["image/jpeg", "image/png", "image/webp"];

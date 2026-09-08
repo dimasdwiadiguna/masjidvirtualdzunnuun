@@ -21,7 +21,8 @@ export default async function HalamanMasuk({ searchParams }: Props) {
     <div className="kolom-isi py-10">
       <h1>Panel pengurus</h1>
       <p className="mt-2 text-ink-soft">
-        Satu password dipakai bersama semua pengurus. Kalau lupa, tanyakan ke yang memasang app ini.
+        Ada dua password: satu untuk pengurus inti, satu untuk panitia acara. Pakai yang diberikan ke Anda. Kalau
+        lupa, tanyakan ke yang memasang app ini.
       </p>
 
       <form method="post" action="/admin/masuk/kirim" className="mt-6 grid gap-4">
@@ -33,7 +34,7 @@ export default async function HalamanMasuk({ searchParams }: Props) {
         ) : null}
         <div>
           <label className="label-isian" htmlFor="password">
-            Password bersama
+            Password
           </label>
           <input
             id="password"

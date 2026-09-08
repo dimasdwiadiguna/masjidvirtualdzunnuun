@@ -38,7 +38,7 @@ export default function HeaderSitus() {
           </ul>
         </nav>
         <Link href="/donasi" className="tombol-utama min-h-[38px] px-4 py-2 text-sm">
-          Ikut patungan
+          Ikut donasi
         </Link>
       </div>
     </header>

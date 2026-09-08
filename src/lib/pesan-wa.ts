@@ -117,6 +117,45 @@ export function pesanPengingatAcara(t: DataTiket): string {
   return baris.join("\n");
 }
 
+export type DataKartu = {
+  nama: string;
+  tautan: string;
+  hadir: number;
+  kurang: number;
+};
+
+export function pesanKartuLoyalitas(k: DataKartu): string {
+  return [
+    `${SALAM} ${k.nama}, ini pengurus Dzun Nuun.`,
+    "",
+    `Terima kasih sudah ikut kegiatan kami. Sampai sekarang Anda tercatat hadir ${k.hadir} kali.`,
+    `Kurang ${k.kurang} kehadiran lagi menuju hadiah berikutnya.`,
+    "",
+    `Kartu kehadiran Anda: ${k.tautan}`,
+    "Simpan tautannya, isinya ikut bertambah sendiri tiap Anda check-in di acara.",
+  ].join("\n");
+}
+
+export function pesanHadiahLoyalitas(k: DataKartu): string {
+  return [
+    `${SALAM} ${k.nama}, ini pengurus Dzun Nuun.`,
+    "",
+    `Kartu kehadiran Anda penuh. ${k.hadir} kali hadir, alhamdulillah.`,
+    "Ada hadiah khusus yang sudah kami siapkan. Balas pesan ini untuk mengaturnya.",
+    "",
+    `Kartu Anda: ${k.tautan}`,
+  ].join("\n");
+}
+
+export function pesanPemenangKuis(nama: string): string {
+  return [
+    `${SALAM} ${nama}, ini pengurus Dzun Nuun.`,
+    "",
+    "Selamat, jawaban kuis Anda benar semua.",
+    "Balas pesan ini untuk mengambil hadiahnya.",
+  ].join("\n");
+}
+
 /** Pembuka umum, dipakai kalau pengurus hanya ingin bertanya. */
 export function pesanPembukaDonasi(d: DataDonasi): string {
   return `${SALAM} ${d.nama}, ini pengurus Dzun Nuun. Terkait donasi kode ${d.kode} sebesar ${rupiah(d.nominal)}.`;

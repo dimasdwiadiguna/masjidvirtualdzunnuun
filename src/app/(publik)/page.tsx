@@ -1,10 +1,19 @@
 import Link from "next/link";
 import CarouselAcara from "@/components/CarouselAcara";
+import BagianInteraksi from "@/components/BagianInteraksi";
 import CarouselPengumuman from "@/components/CarouselPengumuman";
+import SorotanSosmed from "@/components/SorotanSosmed";
 import HeroCarousel from "@/components/HeroCarousel";
 import KartuKabar from "@/components/KartuKabar";
 import ProgressSeason from "@/components/ProgressSeason";
-import { kabarTerbit, pengaturanPublik, pengumumanAktif, progressSeason, seasonAktif } from "@/lib/cache";
+import {
+  kabarTerbit,
+  pengaturanPublik,
+  pengumumanAktif,
+  postSosmedAktif,
+  progressSeason,
+  seasonAktif,
+} from "@/lib/cache";
 import { rupiah } from "@/lib/format";
 import { ringkas } from "@/lib/markdown";
 import { acaraTerdekat, fotoHero } from "@/lib/tampilan";
@@ -20,6 +29,7 @@ export default async function Beranda() {
     fotoHero(),
     pengumumanAktif(),
   ]);
+  const sosmed = await postSosmedAktif();
 
   return (
     <>
@@ -37,9 +47,9 @@ export default async function Beranda() {
       <div className="kolom-lebar -mt-5 relative z-10">
         {season && progress ? (
           <div className="kartu p-4">
-            <ProgressSeason season={season} progress={progress} label="Patungan berjalan" />
+            <ProgressSeason season={season} progress={progress} label="Donasi berjalan" />
             <Link href="/donasi" className="tombol-utama mt-4 w-full">
-              Ikut patungan
+              Ikut donasi
             </Link>
             <p className="mt-2 flex flex-wrap items-center justify-between gap-2 text-sm">
               <span className="text-ink-soft">1 paket {rupiah(season.package_price)}, satu jamaah dirangkul.</span>
@@ -57,7 +67,7 @@ export default async function Beranda() {
       </div>
 
       {pengumuman.length > 0 ? (
-        <div className="kolom-lebar mt-8 overflow-hidden">
+        <div className="kolom-lebar mt-8">
           <CarouselPengumuman daftar={pengumuman} />
         </div>
       ) : null}
@@ -80,6 +90,17 @@ export default async function Beranda() {
         )}
       </section>
 
+      {sosmed.length > 0 ? (
+        <section className="kolom-lebar mt-8">
+          <div className="judul-bagian">
+            <h2>Sorotan sosmed</h2>
+          </div>
+          <div className="mt-3">
+            <SorotanSosmed daftar={sosmed} />
+          </div>
+        </section>
+      ) : null}
+
       <section className="kolom-lebar mt-8 overflow-hidden">
         <div className="judul-bagian">
           <h2>Acara terdekat</h2>
@@ -95,6 +116,8 @@ export default async function Beranda() {
           <p className="mt-2 text-sm text-ink-soft">Belum ada acara yang dijadwalkan.</p>
         )}
       </section>
+
+      <BagianInteraksi />
 
       <section className="kolom-lebar mt-8">
         <div className="judul-bagian">

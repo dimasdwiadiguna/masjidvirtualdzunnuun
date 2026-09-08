@@ -1,10 +1,12 @@
+import { IkonInstagram, IkonTikTok } from "@/components/Ikon";
 import { pengaturanPublik } from "@/lib/cache";
 
 /**
  * Bar ajakan follow yang menempel tepat di atas navigasi bawah.
  *
- * Latar emas dipakai karena itu warna paling terang di palet brand, dan teks
- * tinta di atasnya berkontras 7,65 banding 1. Bar hanya dirender kalau ada
+ * Latar emas dipakai karena itu warna paling terang di palet brand, dan tinta
+ * di atasnya berkontras 7,65 banding 1. Tautannya ikon saja supaya muat di bar
+ * setinggi 38px, dengan sasaran tap 44 kali 38 piksel. Bar hanya dirender kalau ada
  * alamat sosial yang benar-benar diisi pengurus, jadi tidak pernah jadi bar
  * kosong. Ruangnya dipesan lewat padding di tata letak, jadi tidak menutup isi.
  */
@@ -20,9 +22,9 @@ export default async function BarSosial() {
   }
 
   const tautan = [
-    { url: instagram, label: "Instagram" },
-    { url: tiktok, label: "TikTok" },
-  ].filter((item): item is { url: string; label: string } => Boolean(item.url));
+    { url: instagram, label: "Instagram", Ikon: IkonInstagram },
+    { url: tiktok, label: "TikTok", Ikon: IkonTikTok },
+  ].filter((item): item is { url: string; label: string; Ikon: typeof IkonInstagram } => Boolean(item.url));
 
   if (tautan.length === 0) return null;
 
@@ -37,9 +39,12 @@ export default async function BarSosial() {
               href={item.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex h-[38px] items-center px-2 text-[0.8rem] font-bold text-ink underline underline-offset-2"
+              // Ikonnya aria-hidden, jadi nama tautan datang dari sini. Tanpa
+              // ini tautannya jadi tautan tanpa nama bagi pembaca layar.
+              aria-label={`${item.label} Dzun Nuun, terbuka di aplikasi`}
+              className="inline-flex h-[38px] min-w-[44px] items-center justify-center text-ink"
             >
-              {item.label}
+              <item.Ikon />
             </a>
           ))}
         </div>

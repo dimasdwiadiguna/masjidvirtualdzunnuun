@@ -1,8 +1,11 @@
 import "server-only";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { SEED_SETTINGS } from "./seed";
+import { hariIniJakarta, hitungSuara, kumpulkanKehadiran } from "./kehadiran";
+import { buatTokenKartu } from "@/lib/kode";
 import type {
   AnnouncementInput,
+  SocialPostInput,
   DataDriver,
   DonationFilter,
   HeroPhotoInput,
@@ -15,6 +18,7 @@ import type {
 } from "./index";
 import type {
   Announcement,
+  SocialPost,
   Donation,
   EventCapacityInfo,
   EventItem,
@@ -300,6 +304,125 @@ export function createSupabaseDriver(): DataDriver {
     async deleteAnnouncement(id) {
       const { error } = await sb.from("announcements").delete().eq("id", id);
       lempar("Gagal menghapus pengumuman", error);
+    },
+
+    async listSocialPosts(opts = {}) {
+      let q = sb.from("social_posts").select("*").order("sort_order", { ascending: true });
+      if (opts.hanyaAktif) q = q.eq("is_active", true);
+      const { data, error } = await q;
+      lempar("Gagal membaca post sosmed", error);
+      return (data ?? []) as SocialPost[];
+    },
+    async saveSocialPost(input: SocialPostInput) {
+      const { id, ...isi } = input;
+      if (id) {
+        const { data, error } = await sb.from("social_posts").update(isi).eq("id", id).select("*").single();
+        lempar("Gagal menyimpan post sosmed", error);
+        return data as SocialPost;
+      }
+      const { data, error } = await sb.from("social_posts").insert(isi).select("*").single();
+      lempar("Gagal menambah post sosmed", error);
+      return data as SocialPost;
+    },
+    async deleteSocialPost(id) {
+      const { error } = await sb.from("social_posts").delete().eq("id", id);
+      lempar("Gagal menghapus post sosmed", error);
+    },
+
+    async hitungKehadiran(whatsapp) {
+      const { count, error } = await sb
+        .from("registrations")
+        .select("id", { count: "exact", head: true })
+        .eq("whatsapp", whatsapp)
+        .eq("status", "checked_in");
+      lempar("Gagal menghitung kehadiran", error);
+      return count ?? 0;
+    },
+    async ringkasanKehadiran() {
+      const { data, error } = await sb
+        .from("registrations")
+        .select("whatsapp, name, checked_in_at")
+        .eq("status", "checked_in")
+        .order("checked_in_at", { ascending: false });
+      lempar("Gagal membaca kehadiran", error);
+      return kumpulkanKehadiran(
+        (data ?? []) as { whatsapp: string; name: string; checked_in_at: string | null }[],
+      );
+    },
+    async buatTautanKartu(whatsapp) {
+      // Token lama dihapus supaya tautan yang sudah beredar bisa dianggap
+      // hangus dengan menekan tombolnya sekali lagi.
+      const { error: galatHapus } = await sb.from("loyalty_links").delete().eq("whatsapp", whatsapp);
+      lempar("Gagal menghapus tautan kartu lama", galatHapus);
+      const token = buatTokenKartu();
+      const { error } = await sb.from("loyalty_links").insert({ token, whatsapp });
+      lempar("Gagal membuat tautan kartu", error);
+      return token;
+    },
+    async kartuLewatToken(token) {
+      const { data, error } = await sb
+        .from("loyalty_links")
+        .select("whatsapp")
+        .eq("token", token)
+        .maybeSingle();
+      lempar("Gagal membaca tautan kartu", error);
+      return (data as { whatsapp: string } | null)?.whatsapp ?? null;
+    },
+
+    async semuaTautanKartu() {
+      const { data, error } = await sb.from("loyalty_links").select("token, whatsapp");
+      lempar("Gagal membaca tautan kartu", error);
+      return new Map((data ?? []).map((satu) => [satu.whatsapp as string, satu.token as string]));
+    },
+
+    async hitungPemenangHariIni() {
+      const { count, error } = await sb
+        .from("quiz_winners")
+        .select("id", { count: "exact", head: true })
+        .eq("won_on", hariIniJakarta());
+      lempar("Gagal menghitung pemenang kuis", error);
+      return count ?? 0;
+    },
+    async hitungKemenangan(whatsapp) {
+      const { count, error } = await sb
+        .from("quiz_winners")
+        .select("id", { count: "exact", head: true })
+        .eq("whatsapp", whatsapp);
+      lempar("Gagal menghitung kemenangan kuis", error);
+      return count ?? 0;
+    },
+    async catatPemenang(whatsapp, nama) {
+      const { error } = await sb
+        .from("quiz_winners")
+        .insert({ whatsapp, nama, won_on: hariIniJakarta() });
+      // Batas unik (whatsapp, won_on) yang menegakkan satu kemenangan per hari.
+      if (error?.code === "23505") return "sudah-menang";
+      lempar("Gagal mencatat pemenang kuis", error);
+      return "tercatat";
+    },
+
+    async sudahMemilih(pollKey, penanda) {
+      const { data, error } = await sb
+        .from("poll_votes")
+        .select("id")
+        .eq("poll_key", pollKey)
+        .eq("penanda", penanda)
+        .maybeSingle();
+      lempar("Gagal memeriksa suara polling", error);
+      return Boolean(data);
+    },
+    async catatSuara(pollKey, pilihan, penanda) {
+      const { error } = await sb
+        .from("poll_votes")
+        .insert({ poll_key: pollKey, pilihan, penanda });
+      if (error?.code === "23505") return "sudah-memilih";
+      lempar("Gagal mencatat suara polling", error);
+      return "tercatat";
+    },
+    async hasilPolling(pollKey, jumlahPilihan) {
+      const { data, error } = await sb.from("poll_votes").select("pilihan").eq("poll_key", pollKey);
+      lempar("Gagal membaca hasil polling", error);
+      return hitungSuara((data ?? []) as { pilihan: number }[], jumlahPilihan);
     },
 
     async listRegistrations(eventId) {

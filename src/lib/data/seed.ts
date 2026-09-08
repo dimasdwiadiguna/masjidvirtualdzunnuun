@@ -17,6 +17,12 @@ export const SEED_SETTINGS: Settings = {
     "",
     "Teman Beriman dan Bertumbuh.",
   ].join("\n"),
+  interaksi_mode: "mati",
+  kuis_bank: "",
+  kuis_kuota_harian: 5,
+  polling_pertanyaan: "",
+  polling_pilihan: "",
+  polling_kunci: "",
 };
 
 export const SEED_SEASON: Season = {

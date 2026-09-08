@@ -84,6 +84,10 @@ create table if not exists registrations (
 
 create index if not exists registrations_event on registrations (event_id, status);
 
+-- Kehadiran dihitung per nomor WhatsApp untuk kartu loyalitas.
+create index if not exists registrations_whatsapp
+  on registrations (whatsapp) where status = 'checked_in';
+
 create unique index if not exists registrations_pending_nominal_unik
   on registrations (event_id, total_amount) where status = 'pending' and total_amount > 0;
 
@@ -143,6 +147,50 @@ create table if not exists announcements (
 );
 create index if not exists announcements_urutan on announcements (is_active, sort_order);
 
+-- Tautan kartu loyalitas. Token acak, bukan nomor WhatsApp yang disandikan,
+-- supaya nomor tidak pernah muncul di alamat halaman publik.
+create table if not exists loyalty_links (
+  token text primary key,
+  whatsapp text not null,
+  created_at timestamptz not null default now()
+);
+create index if not exists loyalty_links_whatsapp on loyalty_links (whatsapp);
+
+-- Post Instagram dan TikTok yang dipilih pengurus untuk ditampilkan.
+create table if not exists social_posts (
+  id uuid primary key default gen_random_uuid(),
+  platform text not null check (platform in ('instagram', 'tiktok')),
+  post_url text not null,
+  sort_order integer not null default 0,
+  is_active boolean not null default true,
+  created_at timestamptz not null default now()
+);
+create index if not exists social_posts_urutan on social_posts (is_active, sort_order);
+
+-- Pemenang kuis. Batas unik menegakkan satu kemenangan per nomor per hari.
+create table if not exists quiz_winners (
+  id uuid primary key default gen_random_uuid(),
+  whatsapp text not null,
+  nama text not null,
+  won_on date not null default ((now() at time zone 'Asia/Jakarta')::date),
+  created_at timestamptz not null default now(),
+  unique (whatsapp, won_on)
+);
+create index if not exists quiz_winners_hari on quiz_winners (won_on);
+
+-- Suara polling, unik per (poll_key, penanda). Penanda adalah id acak di kuki
+-- perangkat; IP tidak dipakai karena satu masjid berbagi satu IP seluler.
+create table if not exists poll_votes (
+  id uuid primary key default gen_random_uuid(),
+  poll_key text not null,
+  pilihan integer not null,
+  penanda text not null,
+  created_at timestamptz not null default now(),
+  unique (poll_key, penanda)
+);
+create index if not exists poll_votes_kunci on poll_votes (poll_key);
+
+
 
 create table if not exists settings (
   id text primary key default 'settings',
@@ -153,6 +201,12 @@ create table if not exists settings (
   tiktok_url text,
   youtube_url text,
   about_markdown text not null default '',
+  interaksi_mode text not null default 'mati',
+  kuis_bank text not null default '',
+  kuis_kuota_harian integer not null default 5,
+  polling_pertanyaan text not null default '',
+  polling_pilihan text not null default '',
+  polling_kunci text not null default '',
   constraint settings_satu_baris check (id = 'settings')
 );
 
@@ -167,6 +221,10 @@ alter table updates enable row level security;
 alter table sponsors enable row level security;
 alter table hero_photos enable row level security;
 alter table announcements enable row level security;
+alter table loyalty_links enable row level security;
+alter table social_posts enable row level security;
+alter table quiz_winners enable row level security;
+alter table poll_votes enable row level security;
 alter table settings enable row level security;
 
 -- Bucket penyimpanan gambar. Publik untuk dibaca karena isinya foto header,

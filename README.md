@@ -22,6 +22,7 @@ Bagian 1 sampai 4 untuk yang memasang app. Bagian 5 ditulis untuk pengurus yang 
 
    - `supabase/migrasi-01-hero-dan-penanda-kabar.sql` — tabel foto hero dan kolom penanda kegiatan.
    - `supabase/migrasi-02-pengumuman.sql` — tabel pengumuman. Tanpa ini, menu Pengumuman belum berfungsi.
+   - `supabase/migrasi-03-loyalty-sosmed-kuis.sql` — kartu loyalitas, post sosmed, kuis, dan polling. Tanpa ini, keempat menu itu belum berfungsi.
 4. Buka **Project Settings, API**, catat dua nilai ini:
    - Project URL, misalnya `https://abcdefgh.supabase.co`
    - `service_role` key (bukan `anon` key)
@@ -32,7 +33,8 @@ Catatan keamanan: `service_role` key membuka seluruh database. Simpan hanya di e
 
 | Nama | Wajib | Isi |
 |---|---|---|
-| `ADMIN_PASSWORD` | ya | Password bersama untuk seluruh pengurus. Pakai kalimat panjang, minimal 16 karakter. |
+| `ADMIN_PASSWORD` | ya | Password pengurus inti. Bisa mengurus semuanya. Pakai kalimat panjang, minimal 16 karakter. |
+| `ADMIN_PASSWORD_PANITIA` | tidak | Password panitia acara, boleh 8 karakter. Hanya bisa mengurus Acara, Pendaftar, Check-in, Laporan, Pengumuman, dan Foto Hero. Kalau dikosongkan, app berjalan dengan satu password saja. |
 | `NEXT_PUBLIC_SUPABASE_URL` | ya | Project URL dari Supabase. |
 | `SUPABASE_SERVICE_ROLE_KEY` | ya | `service_role` key dari Supabase. Hanya dibaca di server. |
 | `NEXT_PUBLIC_SITE_URL` | tidak | Alamat publik app, misalnya `https://dzunnuun.vercel.app`. Dipakai untuk gambar pratinjau tautan WhatsApp. Kalau dikosongkan, alamat produksi dari Vercel yang dipakai. Isi manual kalau app sudah punya domain sendiri. Boleh ditulis tanpa `https://`. |
@@ -67,7 +69,14 @@ Bagian ini untuk pengurus yang memegang app sehari-hari. Tidak perlu paham kode.
 
 ### Masuk ke panel pengurus
 
-Buka alamat app, gulir ke paling bawah, tekan **Masuk pengurus**. Atau langsung ke `alamat-app/admin`. Passwordnya satu, dipakai bersama. Sesi bertahan 12 jam, setelah itu diminta masuk lagi.
+Buka alamat app, gulir ke paling bawah, tekan **Masuk pengurus**. Atau langsung ke `alamat-app/admin`. Sesi bertahan 12 jam, setelah itu diminta masuk lagi.
+
+Ada dua password:
+
+- **Pengurus inti** (`ADMIN_PASSWORD`) bisa membuka semua menu.
+- **Panitia acara** (`ADMIN_PASSWORD_PANITIA`) hanya bisa membuka Acara, Pendaftar, Check-in, Laporan, Pengumuman, Foto Hero, dan Pesan WhatsApp. Menu Donasi, Season, Sponsor, Pengaturan, Diagnosa, dan Jamaah Loyal tidak muncul untuk mereka, dan membuka alamatnya langsung pun tetap tertutup.
+
+Bagi password panitia ke yang membantu di lapangan, dan simpan password pengurus inti di lingkaran yang lebih kecil.
 
 ### Memverifikasi donasi
 
@@ -118,6 +127,8 @@ Foto besar di bagian atas beranda diambil dari menu **Foto Hero**, bukan dari po
 
 Kalau belum ada satu pun foto, hero tampil sebagai blok warna. Itu keadaan yang wajar, bukan galat. Tiga sampai lima foto sudah cukup.
 
+**Catatan untuk pengumuman:** gambar pengumuman sekarang ditampilkan mendatar dengan perbandingan 2:1, selebar kotak donasi di atasnya. Gambar lama yang berbentuk persegi akan terpotong atas bawahnya. Kalau komposisinya jadi aneh, unggah ulang dengan gambar mendatar. Judul pengumuman tidak lagi ditulis di bawah gambar, jadi taruh semua pesannya di dalam gambar itu sendiri.
+
 ### Mengisi pengumuman
 
 Pengumuman adalah gambar yang berjalan sendiri di beranda, di bawah kotak patungan. Dipakai untuk pemberitahuan seperti `Aturan Masjid Ngopi-Ngopi` atau ucapan hari besar. Bedanya dengan Laporan Kegiatan: laporan menceritakan kegiatan yang **sudah terlaksana**, pengumuman **memberi tahu** sesuatu dan bentuk utamanya gambar.
@@ -154,6 +165,48 @@ WhatsApp terbuka dengan pesannya sudah terisi lengkap: nama, kode, nominal, dan 
 Menu **Pesan WhatsApp** memuat contoh kelima pesan itu berikut tombol salin, untuk dilihat kata-katanya atau dipakai kalau Anda mengirim dari perangkat lain.
 
 Pengiriman tidak otomatis, dan itu disengaja. Pesan dari pengurus sungguhan lebih dipercaya jamaah daripada pesan robot.
+
+### Kartu kehadiran jamaah
+
+Tiap 10 kali hadir acara, jamaah berhak hadiah khusus. Hitungannya jalan sendiri, tanpa jamaah perlu punya akun atau password.
+
+1. Menu **Jamaah Loyal** menampilkan siapa saja yang pernah hadir dan berapa kali. Yang sudah tembus kelipatan 10 diberi tanda.
+2. Tekan **Buat tautan kartu** sekali per orang. Setelah itu tombolnya berubah jadi **Kirim kartu**, dan WhatsApp terbuka dengan pesan berisi tautan kartunya.
+3. Jamaah membuka tautan itu dan melihat kartu berisi 10 kotak stempel. Isinya bertambah sendiri tiap dia check-in lagi.
+4. Kalau tautannya terlanjur tersebar ke orang lain, tekan **Ganti tautan**. Tautan lama langsung tidak bisa dibuka.
+
+Yang dihitung adalah tiket yang benar-benar Anda check-in, bukan yang sekadar mendaftar. Satu tiket dihitung satu kehadiran walaupun dipakai untuk beberapa orang, karena yang punya nomor itu yang hadir. Tiket yang Anda batalkan setelah check-in ikut dikurangi lagi.
+
+### Menampilkan post Instagram dan TikTok
+
+1. Menu **Post Sosmed**, tekan **Tambah post baru**.
+2. Tempel tautan satu post dari tombol bagikan di aplikasi Instagram atau TikTok. Platformnya dikenali otomatis. Tautan profil tidak bisa dipakai, harus tautan satu post.
+3. Isinya diambil langsung dari platformnya. Kalau postnya Anda ubah atau hapus di sana, yang di beranda ikut berubah.
+
+Post ini dimuat oleh skrip milik Instagram dan TikTok, dan skrip itu ikut melacak pengunjung app. Supaya tidak memberatkan, skripnya baru dimuat saat pengunjung menggulir sampai ke bagian itu.
+
+### Membuka kuis atau polling
+
+Menu **Kuis dan Polling** mengatur satu bagian di bawah beranda. Hanya satu yang bisa tampil dalam satu waktu.
+
+**Kuis.** Isi bank soalnya dengan format berikut, satu soal per blok, dipisah baris kosong:
+
+```
+# Masjid tempat Dzun Nuun berkegiatan?
+* Masjid Fathul Ummah
+- Masjid Al-Ikhlas
+- Masjid An-Nur
+```
+
+Pagar untuk pertanyaan, bintang untuk jawaban yang benar, strip untuk yang salah. Tiap kali kuis dibuka, 7 soal diambil acak dan urutan pilihannya ikut diacak, jadi isi lebih dari 7 soal supaya tidak selalu sama.
+
+Yang menjawab benar semua diminta nama dan nomor WhatsApp, lalu muncul ucapan selamat dan diminta menghubungi panitia. **Kuota pemenang per hari** Anda yang tentukan, dan satu nomor hanya bisa menang sekali per hari.
+
+Bank soal boleh disimpan walaupun belum lengkap. Kalau belum lengkap, kuisnya tidak akan tampil di beranda dan halaman ini menyebutkan apa yang kurang.
+
+**Polling.** Isi satu pertanyaan dan pilihan jawabannya, satu per baris. Hasilnya langsung tampil sebagai batang setelah orang menjawab. Satu jawaban per perangkat.
+
+Mengubah pertanyaan atau pilihannya memulai perhitungan dari nol, supaya jawaban lama tidak tercampur ke pertanyaan baru.
 
 ### Check-in saat hari H
 

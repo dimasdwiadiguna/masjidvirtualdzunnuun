@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { COOKIE_SESI, buatToken, passwordCocok } from "@/lib/auth";
+import { COOKIE_SESI, bolehBuka, buatToken, cocokkanPassword } from "@/lib/auth";
 import { ipDari, lewatBatas } from "@/lib/ratelimit";
 
 export const dynamic = "force-dynamic";
@@ -34,13 +34,21 @@ export async function POST(permintaan: Request): Promise<NextResponse> {
   if (!process.env.ADMIN_PASSWORD) {
     return kembali(asal, tujuan, "belum-disetel");
   }
-  if (!passwordCocok(password)) {
+
+  // Satu kali catat per kiriman, bukan per password yang dicoba. Kalau tiap
+  // percobaan dicatat, batas delapan kali diam-diam jadi empat.
+  const peran = cocokkanPassword(password);
+  if (!peran) {
     lewatBatas(kunciBatas, 8, 600, true);
     return kembali(asal, tujuan, "salah");
   }
 
-  const token = await buatToken();
-  const respons = NextResponse.redirect(new URL(tujuan, asal), 303);
+  // Panitia yang diminta membuka halaman khusus superadmin diantar ke ringkasan
+  // saja, supaya tidak masuk lalu langsung terpental.
+  const tujuanPeran = bolehBuka(peran, tujuan) ? tujuan : "/admin";
+
+  const token = await buatToken(peran);
+  const respons = NextResponse.redirect(new URL(tujuanPeran, asal), 303);
   respons.cookies.set(COOKIE_SESI, token.nilai, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",

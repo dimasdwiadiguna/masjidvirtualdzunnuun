@@ -546,6 +546,204 @@ tombol simpannya diganti jadi "Simpan foto hero".
 
 ---
 
+## N. Masukan pengurus putaran keempat
+
+Tujuh masukan. Dua di antaranya mencabut aturan yang ditulis di `BRIEF.md`.
+Keduanya keputusan pemilik produk, dicatat terbuka di sini supaya tidak
+terbaca sebagai kelalaian.
+
+### D-73 BRIEF §5 "jangan bikin role" dicabut, dua password bersama
+
+Panitia acara perlu bisa mengurus acara dan pendaftar tanpa ikut melihat
+donasi, pengaturan, dan diagnosa. Sebelumnya semua pengurus memakai satu
+password yang membuka segalanya.
+
+Yang dibuat bukan sistem role bertabel. Tidak ada tabel pengguna, tidak ada
+Supabase Auth. Yang ada dua password bersama di env var dan satu kata peran di
+dalam cookie yang sudah ada. Larangan §5 yang sesungguhnya, yaitu tabel user
+dan Supabase Auth, tetap dipatuhi. Kalimat "jangan bikin role" yang memang
+tidak berlaku lagi.
+
+Token sesi sudah berbentuk `subjek.kedaluwarsa.tandatangan` sejak awal, dan
+subjeknya ikut ditandatangani. Jadi menambah peran kedua tidak mengubah skema
+tanda tangan sama sekali, dan sesi superadmin yang sedang berjalan tetap sah
+setelah perubahan ini dipasang.
+
+`ADMIN_PASSWORD_PANITIA` boleh dikosongkan. Kalau kosong, app berjalan persis
+seperti sebelumnya dengan satu password.
+
+Penjagaannya tiga lapis: middleware mencocokkan awalan alamat (ini yang juga
+menjaga `/admin/pendaftar/csv`, satu-satunya rute admin tanpa pemeriksaan
+sendiri di dalamnya), `pastikanAdmin("admin")` pada sembilan aksi milik
+superadmin, dan penyaringan menu. Halaman ringkasan tidak sekadar
+menyembunyikan angka donasi dari panitia: datanya memang tidak diambil.
+
+Kedua password selalu diperiksa keduanya, bukan berhenti di yang pertama
+cocok, supaya lama pemeriksaan tidak memberi tahu password mana yang kena. Dan
+kegagalan dicatat ke pembatas laju paling banyak sekali per kiriman, kalau
+tidak batas delapan kali diam-diam jadi empat.
+
+### D-74 BRIEF §12 "profil pengguna" disentuh oleh kartu loyalitas
+
+Kartu loyalitas menyimpan riwayat kehadiran per orang, dan itu memang dekat
+dengan "profil". Yang tidak dibuat: akun, password, dan login jamaah. Identitas
+diambil dari nomor WhatsApp yang sudah diisi jamaah tiap mendaftar acara, dan
+`normalkanWa()` sudah memampatkan semua bentuk penulisan jadi satu bentuk
+`62812…` sejak lama, jadi kuncinya sudah ada tanpa tabel baru.
+
+Larangan "leaderboard donatur" di §12 tetap dipatuhi: tidak ada peringkat
+publik, dan daftar jamaah loyal hanya terlihat superadmin.
+
+### D-75 Aturan hitung kehadiran
+
+Satu kehadiran sama dengan satu tiket berstatus `checked_in`. Bukan per kepala:
+satu orang yang mendaftarkan lima orang tetap dihitung satu, karena yang punya
+nomor itu yang hadir.
+
+Dihitung dari `status`, bukan dari `checked_in_at`. Bedanya nyata:
+`batalkanPendaftar` bisa dijalankan pada tiket yang sudah check-in dan tidak
+mengosongkan `checked_in_at`. Tiket yang dibatalkan tidak boleh ikut menambah
+stempel. Diuji: tiga kehadiran, satu dibatalkan, hitungannya turun jadi dua.
+
+Aturannya ditaruh di `src/lib/data/kehadiran.ts` dan dipakai kedua driver,
+supaya keduanya tidak pernah berbeda jawaban.
+
+### D-76 Tautan kartu memakai tabel pemetaan, bukan nomor di alamat
+
+Godaan termudah adalah menandatangani nomor WhatsApp lalu menaruhnya di alamat
+halaman. Itu ditolak: BRIEF §7 melarang nomor utuh muncul di halaman publik,
+dan alamat halaman ikut tercatat di riwayat peramban serta bisa terbawa ke
+header referer.
+
+Jadi ada tabel `loyalty_links` berisi token acak 16 karakter. Selain menutup
+nomornya, ini juga membuat tautan bisa dicabut: menekan tombolnya sekali lagi
+membuat token baru dan menghanguskan yang lama.
+
+Membuka halaman daftar jamaah loyal tidak membuat token. Token lahir saat
+pengurus menekan tombolnya, jadi permintaan baca tidak menulis apa pun.
+
+### D-77 Post sosmed memakai embed resmi, dan ongkosnya diterima sadar
+
+Menarik post terbaru otomatis butuh akun Instagram Business tersambung Halaman
+Facebook, aplikasi terdaftar di Meta dan TikTok Developer, review dari
+keduanya, dan token yang harus diperpanjang berkala. Terlalu berat untuk
+komunitas ini, dan bisa mati sendiri saat tokennya kedaluwarsa.
+
+Yang dipakai embed resmi: pengurus menempel tautan post, skrip platform yang
+menampilkan isinya. Konsekuensinya diterima sadar dan perlu disebut apa adanya:
+**skrip itu melacak pengunjung**, dan itu skrip pihak ketiga pertama di app ini.
+
+Yang dijaga supaya ongkosnya tidak menular ke performa:
+
+- Skrip tidak dimuat saat beranda dibuka. Wadahnya dirender lebih dulu dengan
+  tinggi pasti, dan skripnya baru diminta saat bagian itu mendekati layar
+  lewat `IntersectionObserver` dengan `rootMargin` 400px.
+- Tiap embed dibungkus wadah rasio tetap, supaya iframe yang tingginya baru
+  diketahui belakangan tidak menggeser isi di bawahnya.
+- Sebelum skripnya dimuat, wadahnya sudah berupa tautan yang bisa dibuka. Kalau
+  embed-nya gagal atau diblokir, yang tersisa tetap berguna.
+- Alamat yang diterima hanya dari kedua platform itu. Alamat lain ditolak saat
+  disimpan, bukan dibiarkan jadi kotak kosong di beranda.
+
+### D-78 Bank soal kuis berupa teks, bukan tabel soal
+
+Pengurus perlu bisa memperbarui soal tanpa deploy dan tanpa menyentuh kode.
+Tabel soal berarti satu menu CRUD lagi untuk isi yang sebenarnya cocok ditulis
+sekali jalan. Jadi bank soal disimpan sebagai satu teks berformat di
+pengaturan, disunting lewat satu kotak teks.
+
+Formatnya sengaja hanya punya tiga tanda: pagar untuk pertanyaan, bintang untuk
+jawaban benar, strip untuk jawaban salah, blok dipisah baris kosong.
+
+Parsernya mengembalikan galat, bukan membuang soal yang rusak diam-diam. Bank
+soal yang rusak tidak boleh berubah jadi kuis yang tidak mungkin dimenangkan
+siapa pun, dan galatnya ditampilkan di halaman pengurus.
+
+### D-79 Isian kuis dan polling selalu tersimpan, yang dijaga tampilnya
+
+Awalnya penyimpanan ditolak kalau bank soalnya belum lengkap. Itu ternyata
+menciptakan bug: balasan aksi merender ulang seluruh pohon komponen server,
+komponen klien di dalamnya dipasang ulang, dan pilihan mode yang belum
+tersimpan kembali ke nilai lama. Pengurus mengira modenya sudah "kuis" padahal
+sudah balik ke "mati". Bentuk kegagalan yang sama dengan D-21 dan D-64, dan
+terbukti masih terjadi walaupun pilihannya sudah dibuat terkendali.
+
+Perbaikannya bukan menambal, tetapi menghapus jalur penolakannya: isian selalu
+tersimpan termasuk yang setengah jadi, dan yang dijaga adalah tampilnya di
+beranda. `BagianInteraksi` tidak merender apa pun kalau isinya belum lengkap,
+dan pesan setelah menyimpan menyebutkan dengan jujur kenapa belum tampil.
+
+Sekalian jadi lebih enak dipakai: pengurus bisa menyimpan draf bank soal lalu
+melanjutkan besok.
+
+### D-80 Kunci jawaban tidak pernah dikirim ke peramban
+
+Yang dikirim ke klien hanya soal, pilihan, sebuah benih, dan tanda tangan
+benih itu. Server menyusun ulang soal yang sama persis dari benih tersebut saat
+menilai, jadi kunci jawaban tidak pernah meninggalkan server dan pengirim tidak
+bisa mengarang nomor soal atau menukar urutan pilihan.
+
+Benih diikat ke waktunya di dalam tanda tangan dan hanya berlaku 30 menit,
+supaya jawaban tidak bisa dicoba berulang seharian dengan satu set soal.
+
+Diuji dengan mengubah tanda tangan dan mengubah benih lewat DOM lalu mengirim
+form sungguhan: keduanya ditolak, dan modal menang tidak muncul.
+
+### D-81 Keunikan polling ditegakkan batas unik database
+
+Keunikan pengisi polling ditegakkan batas unik `(poll_key, penanda)` di
+database, bukan pemeriksaan di aplikasi. Pemeriksaan di aplikasi bisa dilewati
+dua permintaan yang datang bersamaan.
+
+Penandanya id acak di kuki perangkat. **IP sengaja tidak dipakai sebagai
+identitas**: komentar di aksi donasi sudah menjelaskan bahwa satu masjid sering
+berbagi satu IP seluler, jadi IP hanya dipakai sebagai rem banjir. Kuki bisa
+dihapus orang, dan itu diterima: polling ini mengukur pendapat, bukan
+pemungutan suara resmi.
+
+Kunci polling berganti tiap pertanyaan atau pilihannya diubah, supaya suara
+lama tidak tercampur ke pertanyaan baru dan orang yang sudah menjawab bisa
+menjawab lagi di pertanyaan berikutnya.
+
+Kuota pemenang kuis dijaga cara yang sama: batas unik `(whatsapp, won_on)`
+dengan tanggal menurut waktu Jakarta.
+
+### D-82 Carousel pengumuman selebar kartu donasi, tanpa teks
+
+Slide dibuat selebar kartu donasi di atasnya dengan rasio 2:1, dan judulnya
+dihapus dari tampilan. Semua pesan dititipkan ke gambarnya sendiri, jadi
+pengurus bebas menata isinya tanpa bertabrakan dengan teks app.
+
+`alt` tetap diisi judul pengumuman. Tanpa teks yang terlihat, keterangan itu
+satu-satunya cara pembaca layar tahu isi gambarnya. Titik penanda posisi tetap
+ada, dan penghitungan titik aktif diubah memakai posisi tiap slide, bukan lebar
+dibagi rata, karena ada jarak antarslide yang membuat pembagian rata meleset
+makin jauh di slide terakhir.
+
+Gambar lama yang berbentuk persegi akan terpotong. Dicatat di README.
+
+### D-83 Bar sosial jadi ikon
+
+Teks "Instagram" dan "TikTok" diganti ikon supaya muat di bar setinggi 38px.
+Ikon di app ini semuanya `aria-hidden`, jadi tiap tautan diberi `aria-label`;
+tanpa itu keduanya jadi tautan tanpa nama bagi pembaca layar.
+
+Sasaran tapnya dibuat 44 kali 38 piksel dengan melebarkan tautannya, bukan
+meninggikan barnya. Meninggikan bar berarti mengubah juga ruang bawah halaman
+yang sudah dipesan pas `pb-[96px]`.
+
+### D-84 "Ikut patungan" jadi "Ikut donasi"
+
+Tombol ajakan dan judul halaman `/donasi` ikut berubah, termasuk label kartu
+progress supaya tidak campur aduk dalam satu kartu.
+
+Yang sengaja tidak diubah: judul cadangan season dari `judulSeason()` yang
+menghasilkan "Patungan 1 Jan sampai 31 Mar", dan label "Patungan Dzun Nuun" di
+gambar pratinjau tautan season. Keduanya identitas season yang sudah tersebar
+di tautan WhatsApp; menggantinya mengubah judul tautan lama tanpa manfaat.
+
+---
+
 ## I. Yang sengaja tidak dibuat
 
 Sesuai BRIEF §12: tidak ada payment gateway, tidak ada akun pengguna, tidak ada sistem role, tidak ada notifikasi push atau email, tidak ada dashboard analitik, tidak ada dark mode, tidak ada i18n, tidak ada animasi scroll, tidak ada chatbot, dan tidak ada leaderboard donatur.
