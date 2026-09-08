@@ -4,7 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import Bagikan from "@/components/Bagikan";
 import Markdown from "@/components/Markdown";
-import { db } from "@/lib/data";
+import { satuKabar } from "@/lib/cache";
 import { tanggalPanjang } from "@/lib/format";
 import { ringkas } from "@/lib/markdown";
 
@@ -14,7 +14,7 @@ type Props = { params: Promise<{ id: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  const kabar = await (await db()).getUpdateById(id);
+  const kabar = await satuKabar(id);
   if (!kabar || !kabar.is_published) return { title: "Kabar tidak ditemukan" };
   return {
     title: kabar.title,
@@ -25,14 +25,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function DetailKabar({ params }: Props) {
   const { id } = await params;
-  const kabar = await (await db()).getUpdateById(id);
+  const kabar = await satuKabar(id);
   if (!kabar || !kabar.is_published) notFound();
 
   return (
     <article className="kolom-isi py-6">
       <p className="text-xs font-semibold text-gold-ink">
-        {kabar.day_number ? `Hari ke-${kabar.day_number}` : "Kabar"}
-        <span className="text-ink-soft"> · {tanggalPanjang(kabar.published_at)}</span>
+        {kabar.activity_label ? (
+          <>
+            {kabar.activity_label}
+            <span className="text-ink-soft"> · {tanggalPanjang(kabar.published_at)}</span>
+          </>
+        ) : (
+          <span className="text-ink-soft">{tanggalPanjang(kabar.published_at)}</span>
+        )}
       </p>
       <h1 className="mt-1.5">{kabar.title}</h1>
 

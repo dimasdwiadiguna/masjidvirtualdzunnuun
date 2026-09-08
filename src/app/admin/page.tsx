@@ -72,7 +72,7 @@ export default async function RingkasanAdmin() {
           <>
             <p className="mt-1 text-ink-soft">{judulSeason(season)}</p>
             <div className="mt-3 max-w-[520px]">
-              <ProgressSeason season={season} progress={progress} />
+              <ProgressSeason season={season} progress={progress} label="Patungan berjalan" />
             </div>
             <p className="mt-2 text-sm text-ink-soft">
               Angka ini hanya menghitung donasi berstatus terverifikasi.

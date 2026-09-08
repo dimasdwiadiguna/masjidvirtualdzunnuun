@@ -1,6 +1,7 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { TANDA } from "@/lib/cache";
 import { db } from "@/lib/data";
 import { buatSlug, pastikanAdmin, unggahGambar } from "@/lib/admin";
 import { dariInputWaktu } from "@/lib/format";
@@ -60,6 +61,7 @@ export async function simpanAcara(_sebelumnya: HasilAksi, formData: FormData): P
     return { pesan: galat instanceof Error ? galat.message : "Acara gagal disimpan." };
   }
 
+  revalidateTag(TANDA.acara);
   return { pesan: id ? "Acara diperbarui." : `Acara "${judul}" dibuat.`, sukses: true };
 }
 
@@ -68,5 +70,6 @@ export async function hapusAcara(formData: FormData): Promise<void> {
   const id = String(formData.get("id") ?? "");
   if (!id) return;
   await (await db()).deleteEvent(id);
+  revalidateTag(TANDA.acara);
   revalidatePath("/admin/acara");
 }

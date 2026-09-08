@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import KartuKabar from "@/components/KartuKabar";
-import { db } from "@/lib/data";
+import { kabarTerbit } from "@/lib/cache";
 
 export const metadata: Metadata = {
   title: "Kabar Aksi",
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function HalamanKabar() {
-  const kabar = await (await db()).listUpdates({ hanyaTerbit: true });
+  const kabar = await kabarTerbit();
 
   return (
     <div className="kolom-isi py-6">

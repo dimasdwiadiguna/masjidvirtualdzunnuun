@@ -1,17 +1,18 @@
 "use server";
 
+import { revalidateTag } from "next/cache";
+import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { db } from "@/lib/data";
 import { buatKode, pilihSuffix } from "@/lib/kode";
 import { ipDari, lewatBatas } from "@/lib/ratelimit";
 import { sudahLewat } from "@/lib/format";
 import { normalkanWa } from "@/lib/wa";
+import { TANDA } from "@/lib/cache";
 
 export type HasilFormDaftar = {
   pesan?: string;
   galat?: { nama?: string; whatsapp?: string; jumlah?: string };
-  /** Diisi kalau pendaftaran berhasil. Peramban dipindahkan ke halaman tiket ini. */
-  kode?: string;
 };
 
 export async function kirimPendaftaran(
@@ -77,7 +78,8 @@ export async function kirimPendaftaran(
       unique_suffix: 0,
       status: "confirmed",
     });
-    return { kode: gratis.code };
+    revalidateTag(TANDA.acara);
+    redirect(`/tiket/${gratis.code}`);
   }
 
   const nominalDasar = acara.price * jumlah;
@@ -98,5 +100,6 @@ export async function kirimPendaftaran(
     status: "pending",
   });
 
-  return { kode: berbayar.code };
+  revalidateTag(TANDA.acara);
+  redirect(`/tiket/${berbayar.code}`);
 }

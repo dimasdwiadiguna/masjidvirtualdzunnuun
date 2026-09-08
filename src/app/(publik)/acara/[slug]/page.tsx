@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import Bagikan from "@/components/Bagikan";
 import Markdown from "@/components/Markdown";
 import { IkonKalender, IkonLokasi } from "@/components/Ikon";
-import { db } from "@/lib/data";
+import { kuotaAcara, satuAcara } from "@/lib/cache";
 import { jam, rupiah, sudahLewat, tanggalDanJam, tanggalPanjang } from "@/lib/format";
 import { ringkas } from "@/lib/markdown";
 
@@ -15,7 +15,7 @@ type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const acara = await (await db()).getEventBySlug(slug);
+  const acara = await satuAcara(slug);
   if (!acara || !acara.is_published) return { title: "Acara tidak ditemukan" };
   const deskripsi = `${tanggalDanJam(acara.starts_at)}${acara.location_name ? `, ${acara.location_name}` : ""}`;
   return {
@@ -27,11 +27,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function DetailAcara({ params }: Props) {
   const { slug } = await params;
-  const data = await db();
-  const acara = await data.getEventBySlug(slug);
+  const acara = await satuAcara(slug);
   if (!acara || !acara.is_published) notFound();
 
-  const kuota = await data.eventCapacity(acara.id, acara.capacity);
+  const terpakai = new Map(acara.capacity === null ? [] : await kuotaAcara([acara.id]));
+  const kuota = {
+    remaining: acara.capacity === null ? null : Math.max(0, acara.capacity - (terpakai.get(acara.id) ?? 0)),
+  };
   const tenggatLewat = acara.registration_deadline ? sudahLewat(acara.registration_deadline) : false;
   const acaraLewat = sudahLewat(acara.ends_at ?? acara.starts_at);
   const penuh = kuota.remaining !== null && kuota.remaining <= 0;
@@ -119,7 +121,7 @@ export default async function DetailAcara({ params }: Props) {
       </div>
 
       {bisaDaftar ? (
-        <div className="fixed bottom-[54px] left-0 right-0 z-30 border-t border-garis bg-paper p-3 md:static md:border-0 md:bg-transparent md:p-0">
+        <div className="fixed bottom-[92px] left-0 right-0 z-30 border-t border-garis bg-paper p-3 md:static md:border-0 md:bg-transparent md:p-0">
           <div className="kolom-isi">
             <Link href={`/acara/${acara.slug}/daftar`} className="tombol-utama w-full">
               Daftar ikut acara ini

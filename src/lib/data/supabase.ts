@@ -4,6 +4,7 @@ import { SEED_SETTINGS } from "./seed";
 import type {
   DataDriver,
   DonationFilter,
+  HeroPhotoInput,
   DonationInput,
   EventInput,
   RegistrationInput,
@@ -15,6 +16,7 @@ import type {
   Donation,
   EventCapacityInfo,
   EventItem,
+  HeroPhoto,
   Registration,
   Season,
   SeasonProgress,
@@ -228,6 +230,46 @@ export function createSupabaseDriver(): DataDriver {
       lempar("Gagal menghitung kuota", error);
       const taken = ((data ?? []) as { quantity: number }[]).reduce((t, r) => t + r.quantity, 0);
       return { taken, remaining: capacity === null ? null : Math.max(0, capacity - taken) };
+    },
+
+    async eventCapacities(eventIds) {
+      const hitung = new Map<string, number>();
+      for (const id of eventIds) hitung.set(id, 0);
+      if (eventIds.length === 0) return hitung;
+
+      const { data, error } = await sb
+        .from("registrations")
+        .select("event_id, quantity")
+        .in("event_id", eventIds)
+        .neq("status", "cancelled");
+      lempar("Gagal menghitung kuota", error);
+      for (const baris of (data ?? []) as { event_id: string; quantity: number }[]) {
+        hitung.set(baris.event_id, (hitung.get(baris.event_id) ?? 0) + baris.quantity);
+      }
+      return hitung;
+    },
+
+    async listHeroPhotos(opts = {}) {
+      let q = sb.from("hero_photos").select("*").order("sort_order", { ascending: true });
+      if (opts.hanyaAktif) q = q.eq("is_active", true);
+      const { data, error } = await q;
+      lempar("Gagal membaca foto hero", error);
+      return (data ?? []) as HeroPhoto[];
+    },
+    async saveHeroPhoto(input: HeroPhotoInput) {
+      const { id, ...isi } = input;
+      if (id) {
+        const { data, error } = await sb.from("hero_photos").update(isi).eq("id", id).select("*").single();
+        lempar("Gagal menyimpan foto hero", error);
+        return data as HeroPhoto;
+      }
+      const { data, error } = await sb.from("hero_photos").insert(isi).select("*").single();
+      lempar("Gagal menambah foto hero", error);
+      return data as HeroPhoto;
+    },
+    async deleteHeroPhoto(id) {
+      const { error } = await sb.from("hero_photos").delete().eq("id", id);
+      lempar("Gagal menghapus foto hero", error);
     },
 
     async listRegistrations(eventId) {

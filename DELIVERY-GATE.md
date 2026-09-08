@@ -36,7 +36,7 @@ Semua jawaban harus **tidak**.
 
 ### R-35: catatan klik, elemen per elemen
 
-Dijalankan pada build produksi, lebar 360px, mode sentuh. **Tidak ada satu pun galat konsol pada ketiga tahap.**
+Dijalankan pada lebar 360px, mode sentuh, pada data yang baru dibuat dari nol. **Tidak ada satu pun galat konsol pada kelima tahap.**
 
 **Alur donasi, dari sisi jamaah**
 
@@ -109,6 +109,21 @@ Dijalankan pada build produksi, lebar 360px, mode sentuh. **Tidak ada satu pun g
 | `/tentang` | Tombol Saluran WhatsApp tampil setelah alamatnya diisi pengurus |
 | Gambar pratinjau tautan `/`, `/season/season-1`, `/acara/[slug]`, `/kabar` | Keempatnya 200 OK, PNG 1200x630, ukuran 42 sampai 50 KB |
 
+**Perubahan putaran kedua**
+
+| Elemen yang diklik | Yang benar-benar terjadi |
+|---|---|
+| Unggah dua foto di `/admin/hero` | Keduanya tersimpan, urutannya terisi otomatis 0 lalu 1, dan daftarnya menampilkan 2 foto |
+| Buka `/` setelah itu | Hero memuat 2 foto, keduanya dari folder `hero`, dan tidak ada satu pun poster acara yang ikut terpungut |
+| Tunggu di beranda tanpa menyentuh apa pun | Foto hero berpindah sendiri dari indeks 0 ke 1 setelah jeda 6 detik |
+| Kartu progress di beranda | Tiga kolom Jamaah dirangkul, Donasi masuk, Sisa hari tampil; "Ikut patungan" sebagai tombol penuh lebar dan "Rincian season" sebagai tautan teks |
+| Geser carousel agenda | `scrollLeft` berubah 16 jadi 242, dan lebar dokumen tetap 360px selama digeser |
+| Tombol "Daftar" di kartu carousel | Membuka `/acara/ngopi-subuh-bareng-anak-muda/daftar` |
+| Isi penanda kegiatan "Tahsin Pertemuan 13" di `/admin/kabar` | Tampil apa adanya di daftar kabar, di halaman kabar, dan di gambar pratinjau tautan (200, PNG, 35 KB). Tidak ada lagi tulisan "Hari ke-" di mana pun |
+| Bar sosial di beranda | Duduk pada y=648, tepat di atas navigasi bawah pada y=685; tetap tampil setelah halaman digulir sampai bawah, dan isi terakhir tidak tertutup |
+| Tombol Instagram dan TikTok di bar sosial | Menuju `https://www.instagram.com/dzunnuun.id` dan `https://www.tiktok.com/@dzunnuun.id`; tautan yang sama sudah tidak dobel di footer |
+| Daftar acara berbayar yang membuat kuota jadi penuh | Tetap sampai ke halaman tiketnya. Ini yang dulu gagal karena perpindahannya bergantung pada state klien yang lenyap saat form berganti jadi "Kuota penuh" (D-64) |
+
 Yang belum bisa diklik di lingkungan ini dan perlu dicek pengurus sekali sebelum live: kamera check-in di HP fisik, tampilan pratinjau tautan di dalam aplikasi WhatsApp, dan koneksi ke instance Supabase sungguhan. Ketiganya dicatat terbuka di `DECISIONS.md` bagian J.
 
 ---
@@ -144,7 +159,7 @@ Semua jawaban harus **ya**.
 | Hasil sesuai dial? | ya | Komposisi tiap halaman memang berbeda (`DESIGN.md` §7): beranda memakai blok hero gelap penuh lebar, kabar memakai feed foto kiri, acara memakai blok tanggal atau grid kalender, admin tanpa hero sama sekali. Gerak berhenti di hover, active, dan focus, sesuai MOTION 1. |
 | Ada satu focal point per layar? | ya | Beranda dan season pada angka rupiah, halaman status pada nominal transfer, detail acara pada tombol daftar, check-in pada hasil pemindaian yang dicetak besar. |
 | Ruang kosong dipakai sebagai struktur? | ya | Skala jarak tetap (4 sampai 64), padding section mobile 32 sampai 40 bukan ukuran desktop, lebar isi dikunci 640px. |
-| Ada satu aksen yang disengaja? | ya | Emas hanya di dua tempat: kalimat pembuka hero di atas foto gelap, dan label "Hari ke-N" di Kabar Aksi (D-26). |
+| Ada satu aksen yang disengaja? | ya | Emas hanya di tiga tempat: kalimat pembuka hero di atas foto gelap, penanda kegiatan di Kabar Aksi, dan latar bar sosial (D-26, D-63). |
 | Ada motif identitas yang diulang? | ya | Garis pendek teal di atas setiap judul bagian, diulang di beranda, season, tentang, dan blok cara bayar (D-53). |
 | Design Read dideklarasikan sebelum membangun? | ya | `DESIGN.md` §1, ditulis sebelum baris kode pertama. |
 
@@ -179,14 +194,16 @@ Diminta BRIEF §13.
 
 | Pemeriksaan | Hasil |
 |---|---|
-| Lighthouse mobile, performa | Setelah tampilan baru: `/` 95, `/acara` 98, `/kabar` 99, `/donasi` 98, `/tentang` 94, `/arsip` 98. Ambang brief 85. |
-| Lighthouse mobile, aksesibilitas | 100 di semua halaman yang diukur. Ambang brief 95. |
+| Lighthouse mobile, performa | Setelah perubahan putaran kedua: `/` 99, `/acara` 98, `/kabar` 100, `/donasi` 98. Ambang brief 85. Angka diambil pada build produksi, bukan `next dev`, dan tidak pada render pertama setelah server hidup. |
+| Lighthouse mobile, aksesibilitas | 100 di keempat halaman itu. Ambang brief 95. |
 | Lighthouse mobile, praktik terbaik dan SEO | 100 di semua halaman yang diukur, tanpa galat konsol. |
-| Cumulative Layout Shift | 0 di enam halaman, 0.061 di halaman season. Batas "baik" menurut Core Web Vitals adalah 0.1. Dicapai setelah ukuran logo dipasang pasti (D-42) dan keadaan memuat diberi tinggi minimal (D-44). |
+| Cumulative Layout Shift | 0 di `/`, `/acara`, `/kabar`, dan `/donasi` setelah carousel dan bar sosial dipasang. Sebelumnya 0 di enam halaman, 0.061 di halaman season. Batas "baik" menurut Core Web Vitals adalah 0.1. Dicapai setelah ukuran logo dipasang pasti (D-42) dan keadaan memuat diberi tinggi minimal (D-44). |
 | Metadata pratinjau tautan | Judul, deskripsi, dan `og:image` diperiksa benar-benar berada di dalam `<head>` pada HTML mentah, bukan menyusul di akhir dokumen (D-45). |
 | Kunci rahasia di bundle klien | Build dijalankan dengan nilai rahasia penanda, lalu `grep` pada `.next/static/` dan seluruh `.next/`: tidak ditemukan sama sekali. |
 | Build dengan env var kosong atau salah bentuk | Diuji empat keadaan: `NEXT_PUBLIC_SITE_URL` kosong, berisi spasi, tanpa protokol, dan tidak ada sama sekali. Semuanya berhasil dibangun (D-47). |
 | Ketahanan saat database bermasalah | Diuji dua keadaan pada build produksi: kredensial Supabase kosong, dan alamat project yang tidak bisa dihubungi. Keduanya tetap merender kerangka situs berikut pesan galat yang jelas, bukan halaman galat kosong, dan halaman `/admin/diagnosa` menyebutkan penyebabnya (D-48 sampai D-50). |
+| Kueri database per render beranda | Diukur dengan pembungkus penghitung pada driver data: 7 kueri saat cache dingin, 0 pada render berikutnya selama cache masih hangat. Sebelum bacaan pengaturan dibungkus `cache()` React, render dingin memakai 9 kueri karena layout, footer, dan bar sosial meleset berbarengan (D-58, D-59). |
+| Kontras warna komponen baru | Dihitung, bukan dikira: bar sosial tinta di atas emas 7,65:1; judul kartu acara 16,11:1; keterangan 6,57:1; chip 7,42:1; tombol Daftar 4,74:1; blok tanggal tanpa poster 12,21:1. Semuanya lolos WCAG AA. |
 | `tsc --noEmit` | Bersih. |
 | `next lint` | Bersih, tanpa peringatan. |
 | Teks Inggris yang terlihat pengguna | Tidak ada. Seluruh antarmuka Bahasa Indonesia. |

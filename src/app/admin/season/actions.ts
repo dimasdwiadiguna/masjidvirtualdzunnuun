@@ -1,6 +1,7 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
+import { TANDA } from "@/lib/cache";
 import { db } from "@/lib/data";
 import { buatSlug, pastikanAdmin, unggahGambar } from "@/lib/admin";
 import type { HasilAksi } from "@/components/admin/FormAksi";
@@ -47,6 +48,7 @@ export async function simpanSeason(_sebelumnya: HasilAksi, formData: FormData): 
   } catch (galat) {
     return { pesan: galat instanceof Error ? galat.message : "Season gagal disimpan." };
   }
+  revalidateTag(TANDA.season);
   return { pesan: id ? "Season diperbarui." : "Season baru dibuat.", sukses: true };
 }
 
@@ -55,5 +57,6 @@ export async function aktifkanSeason(formData: FormData): Promise<void> {
   const id = String(formData.get("id") ?? "");
   if (!id) return;
   await (await db()).setActiveSeason(id);
+  revalidateTag(TANDA.season);
   revalidatePath("/admin/season");
 }

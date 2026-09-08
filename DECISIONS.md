@@ -327,6 +327,60 @@ Kalimat penjelas yang panjang dipangkas jadi satu baris atau dihapus kalau isiny
 
 ---
 
+## L. Masukan pengurus putaran kedua
+
+Enam masukan setelah app dipakai sehari-hari, ditambah satu bug yang ketahuan saat memverifikasinya.
+
+### D-57 Fungsi Vercel dipindah ke Singapore
+
+Bawaan Vercel menempatkan fungsi di Amerika, sedangkan Supabase pengurus ada di Singapore. Setiap kueri menyeberang Pasifik dua kali, dan halaman yang memanggil database belasan kali membayar ongkos itu berkali-kali. `vercel.json` menyetel `regions: ["sin1"]` supaya fungsi duduk di sebelah database. Ini penyebab terbesar dari keluhan "sedang mengambil data" yang lama.
+
+### D-58 Bacaan publik dibungkus cache bertanda, bukan ISR
+
+Semua halaman publik `force-dynamic` (D-23), jadi setiap kunjungan membaca database dari nol. Bacaan publik sekarang dibungkus `unstable_cache` bertanda di `src/lib/cache.ts` dengan umur 300 detik, dan aksi tulis memanggil `revalidateTag` supaya angka tidak pernah basi setelah pengurus mengubah sesuatu.
+
+ISR penuh (`export const revalidate`) sengaja tidak dipakai: halaman akan dirender saat build, dan build ikut gagal kalau Supabase tidak terjangkau saat itu. Build project ini pernah gagal sekali karena env var (D-47), jadi ketergantungan tambahan pada build dihindari.
+
+Yang sengaja tidak ikut di-cache: `/donasi/[code]`, `/tiket/[code]`, `/acara/[slug]/daftar`, dan `/api/kabar-terbaru`. Isinya status pribadi dan sisa kuota, dua hal yang harus selalu terbaru. Kuota acara di-cache 30 detik saja dengan alasan yang sama.
+
+### D-59 Kuota acara diambil sekali untuk banyak acara
+
+`acaraTerdekat()` dulu memanggil `eventCapacity()` satu per satu untuk tiap acara, jadi lima acara berarti lima kueri. Antarmuka `DataDriver` dapat metode baru `eventCapacities(eventIds)` yang mengambil semuanya dalam satu kueri `in('event_id', ids)`. `fotoHero()` juga tidak lagi mengambil ulang season, kabar, dan acara yang sudah diambil halaman.
+
+### D-60 Foto hero punya tabel sendiri
+
+Hero dulu memungut gambar dari poster acara dan foto Kabar Aksi, jadi isinya berubah sendiri mengikuti data lain dan pengurus tidak bisa mengaturnya. Tabel `hero_photos` dan menu **Foto Hero** memberi pengurus daftar khusus berikut urutan, keterangan, dan tombol sembunyikan. Poster acara tidak lagi dipungut sama sekali. Kalau daftarnya kosong, hero kembali jadi blok warna, bukan kotak kosong.
+
+Keterangan foto dipakai sebagai teks alternatif. Kalau dikosongkan, dipakai "Kegiatan komunitas Dzun Nuun".
+
+### D-61 Penanda kegiatan menggantikan hitungan hari
+
+"Hari ke-N" mengandaikan satu rangkaian kegiatan yang berjalan terus, padahal yang dilaporkan pengurus bermacam-macam. Kolom `activity_label` menggantikannya dengan teks bebas maksimal 60 huruf, misalnya `MBKM Pekan ke-12` atau `Tahsin Pertemuan 13`. Kabar tanpa penanda hanya menampilkan tanggal.
+
+Kolom `day_number` dibiarkan ada di database supaya data lama tidak hilang, tetapi tidak lagi dibaca app. Kabar lama tidak dikonversi otomatis, karena "Hari ke-12" justru bentuk yang tidak diinginkan.
+
+### D-62 Agenda terdekat jadi carousel kartu
+
+Poster acara naik jadi header kartu dengan rasio 4:3, dan separuh bawah berisi tanggal, judul, lokasi, harga, sisa kuota, lalu tombol **Daftar** penuh lebar. Acara tanpa poster memakai blok teal gelap berisi tanggal besar, bukan kotak abu-abu kosong. Kartu selebar 85% layar supaya kartu berikutnya terlihat mengintip, jadi jelas bahwa daftarnya bisa digeser.
+
+Wadah gesernya `<ul>` yang bisa difokus keyboard, dibungkus `<section aria-label="Agenda terdekat">` supaya pembaca layar mengenalinya sebagai satu bagian tanpa kehilangan semantik daftar. Yang menggeser hanya wadahnya, halaman tidak ikut bergeser di lebar 360px.
+
+Halaman `/acara` tetap daftar vertikal yang rapat, karena di situ orang memindai banyak acara sekaligus, bukan melihat sorotan.
+
+### D-63 Bar sosial menempel di atas navigasi bawah
+
+Tautan sosial di footer nyaris tidak pernah terlihat karena footer ada di ujung halaman. Bar setinggi 38px sekarang menempel tepat di atas navigasi bawah, hanya di layar HP. Latarnya emas brand `#C6B066` dengan teks tinta `#06232A`, rasio kontras 7,65 banding 1 (dihitung, bukan dikira-kira), dan ini warna paling terang di palet sehingga mencolok tanpa keluar dari BRIEF §9.
+
+Bar hanya dirender kalau Instagram atau TikTok terisi, jadi tidak pernah jadi bar kosong. Padding bawah halaman publik naik jadi 96px supaya isi terakhir tidak tertutup. Di layar lebar tautannya tetap di footer.
+
+### D-64 Pendaftaran dialihkan dari server, bukan dari state klien
+
+Ketahuan saat memverifikasi D-58. `FormPendaftaran` dulu memindahkan peramban ke halaman tiket lewat `useEffect` yang membaca kode dari `useActionState`. Begitu aksi pendaftaran memanggil `revalidateTag`, halaman dirender ulang; dan kalau pendaftaran itu sendiri yang membuat kuota penuh, formnya berganti jadi keadaan "Kuota penuh" dan komponennya lepas sebelum efeknya sempat jalan. Akibatnya pendaftar yang baru saja membayar tidak pernah sampai ke halaman tiketnya.
+
+Aksi sekarang memanggil `redirect()` dari server, jadi perpindahannya tidak bergantung pada state klien yang bisa hilang. Ini gejala yang sama dengan D-21, dan pelajarannya sama: jangan menaruh langkah penting pada state yang bisa lenyap saat komponen dipasang ulang.
+
+---
+
 ## I. Yang sengaja tidak dibuat
 
 Sesuai BRIEF §12: tidak ada payment gateway, tidak ada akun pengguna, tidak ada sistem role, tidak ada notifikasi push atau email, tidak ada dashboard analitik, tidak ada dark mode, tidak ada i18n, tidak ada animasi scroll, tidak ada chatbot, dan tidak ada leaderboard donatur.

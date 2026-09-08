@@ -6,6 +6,7 @@ import { SEED_SEASON, SEED_SETTINGS } from "./seed";
 import type {
   DataDriver,
   DonationFilter,
+  HeroPhotoInput,
   DonationInput,
   EventInput,
   RegistrationInput,
@@ -18,6 +19,7 @@ import type {
   DonationStatus,
   EventCapacityInfo,
   EventItem,
+  HeroPhoto,
   Registration,
   RegistrationStatus,
   Season,
@@ -29,6 +31,7 @@ import type {
 
 type Isi = {
   settings: Settings;
+  heroPhotos: HeroPhoto[];
   seasons: Season[];
   donations: Donation[];
   events: EventItem[];
@@ -43,6 +46,7 @@ const UNGGAHAN = path.join(process.cwd(), ".data", "uploads");
 function isiAwal(): Isi {
   return {
     settings: { ...SEED_SETTINGS },
+    heroPhotos: [],
     seasons: [{ ...SEED_SEASON }],
     donations: [],
     events: [],
@@ -279,6 +283,51 @@ export function createLocalDriver(): DataDriver {
           .filter((r) => r.event_id === eventId && r.status !== "cancelled")
           .reduce((t, r) => t + r.quantity, 0);
         return { taken, remaining: capacity === null ? null : Math.max(0, capacity - taken) };
+      });
+    },
+
+    async eventCapacities(eventIds) {
+      return berurutan(async () => {
+        const isi = await bacaMentah();
+        const hitung = new Map<string, number>();
+        for (const id of eventIds) hitung.set(id, 0);
+        for (const daftar of isi.registrations) {
+          if (daftar.status === "cancelled" || !hitung.has(daftar.event_id)) continue;
+          hitung.set(daftar.event_id, (hitung.get(daftar.event_id) ?? 0) + daftar.quantity);
+        }
+        return hitung;
+      });
+    },
+
+    async listHeroPhotos(opts = {}) {
+      return berurutan(async () => {
+        const isi = await bacaMentah();
+        return isi.heroPhotos
+          .filter((foto) => (opts.hanyaAktif ? foto.is_active : true))
+          .sort((a, b) => a.sort_order - b.sort_order || a.created_at.localeCompare(b.created_at));
+      });
+    },
+    async saveHeroPhoto(input: HeroPhotoInput) {
+      return berurutan(async () => {
+        const isi = await bacaMentah();
+        if (input.id) {
+          const idx = isi.heroPhotos.findIndex((foto) => foto.id === input.id);
+          if (idx < 0) throw new Error("Foto hero tidak ditemukan");
+          isi.heroPhotos[idx] = { ...isi.heroPhotos[idx], ...input, id: input.id };
+          await tulisMentah(isi);
+          return isi.heroPhotos[idx];
+        }
+        const baru: HeroPhoto = { ...input, id: randomUUID(), created_at: new Date().toISOString() };
+        isi.heroPhotos.push(baru);
+        await tulisMentah(isi);
+        return baru;
+      });
+    },
+    async deleteHeroPhoto(id) {
+      return berurutan(async () => {
+        const isi = await bacaMentah();
+        isi.heroPhotos = isi.heroPhotos.filter((foto) => foto.id !== id);
+        await tulisMentah(isi);
       });
     },
 

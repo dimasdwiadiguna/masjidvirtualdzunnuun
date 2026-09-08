@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import FormDonasi from "@/components/FormDonasi";
-import { db } from "@/lib/data";
+import { seasonAktif } from "@/lib/cache";
 import { rupiah } from "@/lib/format";
 
 export const metadata: Metadata = {
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function HalamanDonasi() {
-  const season = await (await db()).getActiveSeason();
+  const season = await seasonAktif();
 
   if (!season) {
     return (

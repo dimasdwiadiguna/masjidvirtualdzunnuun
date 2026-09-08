@@ -1,7 +1,8 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { db } from "@/lib/data";
+import { TANDA } from "@/lib/cache";
 import { pastikanAdmin } from "@/lib/admin";
 import type { RegistrationStatus } from "@/lib/data/types";
 
@@ -10,6 +11,8 @@ async function ubah(formData: FormData, status: RegistrationStatus): Promise<voi
   const id = String(formData.get("id") ?? "");
   if (!id) return;
   await (await db()).setRegistrationStatus(id, status);
+  // Membatalkan pendaftar melepas kuota, jadi daftar acara publik ikut disegarkan.
+  revalidateTag(TANDA.acara);
   revalidatePath("/admin/pendaftar");
 }
 
