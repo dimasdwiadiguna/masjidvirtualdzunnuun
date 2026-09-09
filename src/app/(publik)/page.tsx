@@ -1,11 +1,3 @@
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      [elemName: string]: any;
-    }
-  }
-}
-
 import Link from "next/link";
 import CarouselAcara from "@/components/CarouselAcara";
 import BagianInteraksi from "@/components/BagianInteraksi";
