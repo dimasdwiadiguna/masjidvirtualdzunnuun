@@ -10,6 +10,7 @@ import type {
   DonationFilter,
   HeroPhotoInput,
   DonationInput,
+  DonationPatch,
   EventInput,
   RegistrationInput,
   SeasonInput,
@@ -155,6 +156,11 @@ export function createSupabaseDriver(): DataDriver {
       lempar("Gagal membaca donasi", error);
       return (data as Donation) ?? null;
     },
+    async getDonationById(id) {
+      const { data, error } = await sb.from("donations").select("*").eq("id", id).maybeSingle();
+      lempar("Gagal membaca donasi", error);
+      return (data as Donation) ?? null;
+    },
     async pendingDonationTotals(seasonId) {
       const { data, error } = await sb
         .from("donations")
@@ -172,13 +178,30 @@ export function createSupabaseDriver(): DataDriver {
       return Boolean(donasi.data) || Boolean(tiket.data);
     },
     async createDonation(input: DonationInput) {
+      const status = input.status ?? "pending";
       const { data, error } = await sb
         .from("donations")
-        .insert({ ...input, status: input.status ?? "pending" })
+        .insert({
+          ...input,
+          status,
+          // Donasi yang dicatat pengurus bisa langsung berstatus verified, dan
+          // stempel waktunya harus ikut terisi seperti lewat tombol Verifikasi.
+          verified_at: input.verified_at ?? (status === "verified" ? new Date().toISOString() : null),
+        })
         .select("*")
         .single();
       lempar("Gagal menyimpan donasi", error);
       return data as Donation;
+    },
+    async updateDonation(id, patch: DonationPatch) {
+      const { data, error } = await sb
+        .from("donations")
+        .update(patch)
+        .eq("id", id)
+        .select("*")
+        .maybeSingle();
+      lempar("Gagal memperbarui donasi", error);
+      return (data as Donation) ?? null;
     },
     async setDonationStatus(id, status, adminNote) {
       const { data, error } = await sb

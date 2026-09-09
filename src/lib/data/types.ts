@@ -179,6 +179,12 @@ export type Settings = {
   polling_pilihan: string;
   /** Berganti tiap pertanyaan diubah, supaya suara lama tidak tercampur. */
   polling_kunci: string;
+  /**
+   * Kata-kata pesan WhatsApp yang disunting pengurus di /admin/pesan, dipetakan
+   * dari id templat. Kunci yang tidak ada, atau isinya kosong, berarti templat
+   * itu masih memakai teks bawaan di src/lib/pesan-wa.ts.
+   */
+  wa_templat: Record<string, string>;
 };
 
 export type SeasonProgress = {

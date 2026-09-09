@@ -23,6 +23,7 @@ export const SEED_SETTINGS: Settings = {
   polling_pertanyaan: "",
   polling_pilihan: "",
   polling_kunci: "",
+  wa_templat: {},
 };
 
 export const SEED_SEASON: Season = {

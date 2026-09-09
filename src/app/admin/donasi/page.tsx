@@ -1,16 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import BannerTersimpan from "@/components/admin/BannerTersimpan";
 import BarisTabel from "@/components/admin/BarisTabel";
+import FormDonasiAdmin from "@/components/admin/FormDonasiAdmin";
 import KonfirmasiAksi from "@/components/admin/KonfirmasiAksi";
+import LaciForm from "@/components/admin/LaciForm";
 import TabelAdmin from "@/components/admin/TabelAdmin";
 import { IkonWhatsApp } from "@/components/Ikon";
 import { db } from "@/lib/data";
 import { rupiah, samarkanWa, tanggalPendek } from "@/lib/format";
-import {
-  pesanDonasiBelumCocok,
-  pesanDonasiDiterima,
-  pesanPembukaDonasi,
-} from "@/lib/pesan-wa";
+import { pesanDonasi, templatDari } from "@/lib/pesan-wa";
 import { linkWa } from "@/lib/wa";
 import { tolakDonasi, verifikasiDonasi } from "./actions";
 import type { DonationStatus } from "@/lib/data/types";
@@ -37,17 +36,27 @@ const KELAS_STATUS: Record<DonationStatus, string> = {
   rejected: "status-bahaya",
 };
 
-type Props = { searchParams: Promise<{ status?: string; cari?: string }> };
+type Props = {
+  searchParams: Promise<{ status?: string; cari?: string; ubah?: string; tersimpan?: string }>;
+};
 
 export default async function AdminDonasi({ searchParams }: Props) {
-  const { status, cari } = await searchParams;
+  const { status, cari, ubah, tersimpan } = await searchParams;
   const saringan = (SARINGAN.find((s) => s.nilai === status)?.nilai ?? "pending") as DonationStatus | "semua";
   const kataCari = cari ?? "";
   const data = await db();
-  const [donasi, season] = await Promise.all([
+  const [donasi, season, pengaturan] = await Promise.all([
     data.listDonations({ status: saringan, cari: kataCari }),
     data.getActiveSeason(),
+    data.getSettings(),
   ]);
+  // Kata-kata pesannya diambil sekali untuk seluruh tabel, bukan per baris.
+  const templat = templatDari(pengaturan);
+  const diubah = ubah ? await data.getDonationById(ubah) : null;
+  const seasonDiubah = diubah ? await data.getSeasonById(diubah.season_id) : null;
+
+  // Alamat daftar tanpa ?ubah=, dipakai tautan tombol Ubah dan penutup lacinya.
+  const alamatDaftar = `/admin/donasi?status=${saringan}${kataCari ? `&cari=${encodeURIComponent(kataCari)}` : ""}`;
 
   return (
     <div className="mx-auto w-full max-w-[900px] px-4 py-6">
@@ -57,7 +66,46 @@ export default async function AdminDonasi({ searchParams }: Props) {
         menambah progress di halaman publik.
       </p>
 
-      <nav aria-label="Saring status" className="mt-4 flex flex-wrap gap-2">
+      <BannerTersimpan tampil={Boolean(tersimpan)} />
+
+      <div className="mt-4">
+        <LaciForm
+          labelPemicu="Catat donasi manual"
+          judul="Catat donasi yang masuk di luar formulir"
+          penjelasan="Untuk uang tunai yang diterima langsung, transfer yang nominalnya tidak unik, atau titipan lewat pengurus lain."
+        >
+          <FormDonasiAdmin
+            season={season}
+            hargaPaket={season?.package_price ?? 15000}
+            alamatSukses="/admin/donasi?status=semua"
+          />
+        </LaciForm>
+        <p className="petunjuk">
+          Yang ditandai sudah masuk langsung terverifikasi. Setelah tersimpan, daftar berpindah ke saringan Semua
+          supaya baris barunya pasti terlihat.
+        </p>
+      </div>
+
+      {diubah ? (
+        <div className="mt-4">
+          <LaciForm
+            labelPemicu={`Lanjut mengubah ${diubah.code}`}
+            judul={`Ubah donasi ${diubah.code}`}
+            penjelasan="Statusnya tidak ikut berubah di sini. Verifikasi dan penolakan tetap lewat tombolnya sendiri di daftar."
+            terbukaAwal
+            alamatTutup={alamatDaftar}
+          >
+            <FormDonasiAdmin
+              donasi={diubah}
+              season={seasonDiubah}
+              hargaPaket={seasonDiubah?.package_price ?? season?.package_price ?? 15000}
+              alamatSukses={alamatDaftar}
+            />
+          </LaciForm>
+        </div>
+      ) : null}
+
+      <nav aria-label="Saring status" className="mt-6 flex flex-wrap gap-2">
         {SARINGAN.map((item) => (
           <Link prefetch={false}
             key={item.nilai}
@@ -130,10 +178,10 @@ export default async function AdminDonasi({ searchParams }: Props) {
             };
             const teksWa =
               item.status === "verified"
-                ? pesanDonasiDiterima(isi)
+                ? pesanDonasi(templat, "donasi_diterima", isi)
                 : item.status === "rejected"
-                  ? pesanDonasiBelumCocok(isi)
-                  : pesanPembukaDonasi(isi);
+                  ? pesanDonasi(templat, "donasi_belum_cocok", isi)
+                  : pesanDonasi(templat, "pembuka_donasi", isi);
             const labelWa =
               item.status === "verified"
                 ? "Kirim kabar diterima"
@@ -176,7 +224,7 @@ export default async function AdminDonasi({ searchParams }: Props) {
                       <span className={`label-status ${KELAS_STATUS[item.status]}`}>{NAMA_STATUS[item.status]}</span>
                     </p>
                     <p>
-                      {item.package_count} paket, {samarkanWa(item.whatsapp)}
+                      {item.package_count} paket, {item.whatsapp ? samarkanWa(item.whatsapp) : "nomor tidak dicatat"}
                     </p>
                     <p>Masuk {tanggalPendek(item.created_at)}</p>
                     {item.admin_note ? <p>Catatan: {item.admin_note}</p> : null}
@@ -184,15 +232,20 @@ export default async function AdminDonasi({ searchParams }: Props) {
                 }
                 aksi={
                   <>
-                    <a
-                      href={linkWa(item.whatsapp, teksWa)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="tombol-kecil"
-                    >
-                      <IkonWhatsApp className="mr-2" />
-                      {labelWa}
-                    </a>
+                    {item.whatsapp ? (
+                      <a
+                        href={linkWa(item.whatsapp, teksWa)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="tombol-kecil"
+                      >
+                        <IkonWhatsApp className="mr-2" />
+                        {labelWa}
+                      </a>
+                    ) : null}
+                    <Link prefetch={false} href={`${alamatDaftar}&ubah=${item.id}`} className="tombol-kecil">
+                      Ubah nominal
+                    </Link>
                     {item.status !== "verified" ? (
                       <KonfirmasiAksi
                         aksi={verifikasiDonasi}
