@@ -30,7 +30,9 @@ create table if not exists donations (
   whatsapp text not null,
   package_count integer not null check (package_count > 0),
   base_amount bigint not null,
-  unique_suffix integer not null check (unique_suffix between 100 and 999),
+  -- Nol dipakai donasi yang dicatat manual pengurus: tidak ada transfer yang
+  -- perlu dicocokkan, jadi tidak ada angka uniknya.
+  unique_suffix integer not null check (unique_suffix between 0 and 999),
   total_amount bigint not null,
   is_anonymous boolean not null default false,
   status text not null default 'pending' check (status in ('pending', 'verified', 'rejected')),
@@ -207,6 +209,9 @@ create table if not exists settings (
   polling_pertanyaan text not null default '',
   polling_pilihan text not null default '',
   polling_kunci text not null default '',
+  -- Kata-kata pesan WhatsApp yang disunting pengurus, dipetakan dari id
+  -- templat. Kunci yang tidak ada berarti templat itu memakai teks bawaan.
+  wa_templat jsonb not null default '{}'::jsonb,
   constraint settings_satu_baris check (id = 'settings')
 );
 

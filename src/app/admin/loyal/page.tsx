@@ -5,7 +5,7 @@ import TabelAdmin from "@/components/admin/TabelAdmin";
 import { IkonWhatsApp } from "@/components/Ikon";
 import { db } from "@/lib/data";
 import { samarkanWa, tanggalPendek } from "@/lib/format";
-import { pesanHadiahLoyalitas, pesanKartuLoyalitas } from "@/lib/pesan-wa";
+import { pesanKartu, templatDari } from "@/lib/pesan-wa";
 import { alamatSitus } from "@/lib/situs";
 import { linkWa } from "@/lib/wa";
 import { buatTautanKartu } from "./actions";
@@ -17,7 +17,9 @@ const TARGET = 10;
 
 export default async function AdminLoyal() {
   const data = await db();
-  const ringkasan = await data.ringkasanKehadiran();
+  const [ringkasan, pengaturan] = await Promise.all([data.ringkasanKehadiran(), data.getSettings()]);
+  // Kata-kata pesannya diambil sekali untuk seluruh tabel, bukan per baris.
+  const templat = templatDari(pengaturan);
 
   // Tautan yang sudah pernah dibuat, diambil sekali. Membuka halaman ini tidak
   // membuat token baru: token lahir saat pengurus menekan tombolnya.
@@ -99,7 +101,10 @@ export default async function AdminLoyal() {
                   <>
                     {alamat ? (
                       <a
-                        href={linkWa(satu.whatsapp, penuh ? pesanHadiahLoyalitas(isi) : pesanKartuLoyalitas(isi))}
+                        href={linkWa(
+                          satu.whatsapp,
+                          pesanKartu(templat, penuh ? "hadiah_loyalitas" : "kartu_loyalitas", isi),
+                        )}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="tombol-kecil"

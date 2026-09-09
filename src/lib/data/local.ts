@@ -12,6 +12,7 @@ import type {
   SocialPostInput,
   HeroPhotoInput,
   DonationInput,
+  DonationPatch,
   EventInput,
   RegistrationInput,
   SeasonInput,
@@ -91,7 +92,10 @@ async function bacaMentah(): Promise<Isi> {
   try {
     const teks = await readFile(BERKAS, "utf8");
     const terurai = JSON.parse(teks) as Partial<Isi>;
-    return { ...isiAwal(), ...terurai };
+    const awal = isiAwal();
+    // Pengaturan digabung per kolom, bukan ditimpa utuh, supaya berkas lama yang
+    // dibuat sebelum ada kolom baru tetap terbaca dengan nilai bawaannya.
+    return { ...awal, ...terurai, settings: { ...awal.settings, ...(terurai.settings ?? {}) } };
   } catch {
     const awal = isiAwal();
     await tulisMentah(awal);
@@ -206,6 +210,11 @@ export function createLocalDriver(): DataDriver {
         return (await bacaMentah()).donations.find((d) => d.code === code.toUpperCase()) ?? null;
       });
     },
+    async getDonationById(id) {
+      return berurutan(async () => {
+        return (await bacaMentah()).donations.find((d) => d.id === id) ?? null;
+      });
+    },
     async pendingDonationTotals(seasonId) {
       return berurutan(async () => {
         const isi = await bacaMentah();
@@ -223,17 +232,31 @@ export function createLocalDriver(): DataDriver {
     async createDonation(input: DonationInput) {
       return berurutan(async () => {
         const isi = await bacaMentah();
+        const status = input.status ?? "pending";
+        const sekarang = new Date().toISOString();
         const baru: Donation = {
           ...input,
-          status: input.status ?? "pending",
+          status,
           id: randomUUID(),
-          admin_note: null,
-          created_at: new Date().toISOString(),
-          verified_at: null,
+          admin_note: input.admin_note ?? null,
+          created_at: sekarang,
+          // Donasi yang dicatat pengurus bisa langsung berstatus verified, dan
+          // stempel waktunya harus ikut terisi seperti lewat tombol Verifikasi.
+          verified_at: input.verified_at ?? (status === "verified" ? sekarang : null),
         };
         isi.donations.push(baru);
         await tulisMentah(isi);
         return baru;
+      });
+    },
+    async updateDonation(id, patch: DonationPatch) {
+      return berurutan(async () => {
+        const isi = await bacaMentah();
+        const idx = isi.donations.findIndex((d) => d.id === id);
+        if (idx < 0) return null;
+        isi.donations[idx] = { ...isi.donations[idx], ...patch };
+        await tulisMentah(isi);
+        return isi.donations[idx];
       });
     },
     async setDonationStatus(id, status: DonationStatus, adminNote) {

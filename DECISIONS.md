@@ -500,6 +500,10 @@ di database menambah satu tabel dan satu formulir untuk manfaat yang belum
 tentu dipakai. Kalau nanti ternyata sering diubah, memindahkannya ke pengaturan
 itu pekerjaan kecil.
 
+> Dicabut sebagian oleh D-85. Templatnya sekarang bisa disunting di
+> `/admin/pesan`. Yang tetap berlaku dari keputusan ini: satu sumber kata-kata,
+> dan tidak ada tabel baru.
+
 Tidak ada pengiriman otomatis. wa.me hanya membuka WhatsApp dengan teks terisi,
 pengurus sendiri yang menekan kirim, sesuai BRIEF §1.
 
@@ -741,6 +745,127 @@ Yang sengaja tidak diubah: judul cadangan season dari `judulSeason()` yang
 menghasilkan "Patungan 1 Jan sampai 31 Mar", dan label "Patungan Dzun Nuun" di
 gambar pratinjau tautan season. Keduanya identitas season yang sudah tersebar
 di tautan WhatsApp; menggantinya mengubah judul tautan lama tanpa manfaat.
+
+---
+
+## O. Masukan pengurus putaran kelima
+
+Dua masukan. Yang pertama mencabut satu keputusan yang ditulis sendiri di D-70.
+
+### D-85 Templat pesan WhatsApp pindah ke panel, D-70 dicabut sebagian
+
+D-70 memutuskan templat tidak bisa disunting dari panel, dengan alasan
+menyimpannya di database menambah satu tabel dan satu formulir untuk manfaat
+yang belum tentu dipakai. Kalimat penutupnya menyebut kalau ternyata sering
+diubah, memindahkannya ke pengaturan itu pekerjaan kecil. Pengurus memintanya,
+jadi pekerjaan kecil itu dikerjakan.
+
+Yang tidak jadi dibuat: tabel baru. Suntingannya satu kolom `jsonb` di baris
+`settings` yang sudah ada, dipetakan dari id templat ke teksnya. Kunci yang
+tidak ada berarti templat itu memakai teks bawaan, jadi keadaan awal adalah
+`{}` dan bukan sembilan salinan teks bawaan yang harus ikut diperbarui sendiri
+setiap kalimat bawaannya diperbaiki lewat pembaruan app.
+
+Teks bawaannya tetap di `src/lib/pesan-wa.ts`, sekarang sebagai templat berisi
+isian, bukan fungsi yang merangkai kalimat. Satu sumber kata-kata dari D-70
+tetap berlaku: halaman `/admin/pesan` dan tombol WhatsApp per baris membaca
+templat yang sama.
+
+Bahasa templatnya sengaja cuma punya satu aturan: **baris yang memuat isian
+kosong dibuang seluruhnya**, lalu baris kosong berlebih dirapatkan. Itu yang
+dulu ditangani `if` di dalam kode untuk catatan penolakan, lokasi acara, dan
+tautan season. Bahasa templat bercabang akan lebih kuat, tetapi harus
+dipelajari pengurus, dan tiga cabang itu satu-satunya yang pernah dibutuhkan.
+Konsekuensinya disebut terus terang di halamannya: isian yang belum tentu ada
+sebaiknya ditaruh di barisnya sendiri. Teks bawaan `pembayaran_tiket` ikut
+diatur ulang supaya nominalnya punya baris sendiri.
+
+Sembilan templat yang bisa disunting, dua di antaranya pembuka singkat yang
+dulu tidak ada di halaman contoh. `pesanPemenangKuis` dihapus: fungsi itu tidak
+pernah punya tombol, dan menaruh templat tanpa tombol di panel hanya
+membingungkan.
+
+Suntingan yang isiannya salah tulis, misalnya `{nma}`, **tetap tersimpan** dan
+tidak ditolak. Yang dijaga pemakaiannya: templat bermasalah tidak dipakai
+tombol mana pun, teks bawaannya yang jalan, dan halamannya menyebutkan
+masalahnya per templat. Alasannya sama dengan D-79, dan diperkuat temuan di
+D-87: kiriman yang ditolak mengosongkan formulir, jadi menolak simpanan sama
+dengan menghapus kalimat yang baru diketik pengurus.
+
+Panitia acara boleh membuka halamannya dan menyalin pesannya, tetapi tidak bisa
+menyunting. Kata-kata yang dikirim atas nama komunitas adalah keputusan
+pengurus inti, dan aksinya dijaga `pastikanAdmin("admin")` seperti sembilan
+aksi superadmin lainnya.
+
+### D-86 Donasi bisa dicatat dan dibetulkan pengurus
+
+Dua alur baru di `/admin/donasi`: mencatat donasi yang masuk di luar formulir
+publik, dan mengubah donasi yang sudah ada. Keduanya memakai satu formulir yang
+sama di dalam laci, mengikuti D-72.
+
+Uang tunai yang diterima langsung di masjid selama ini tidak punya jalan masuk
+sama sekali. Satu-satunya cara mencatatnya adalah menyuruh donaturnya mengisi
+formulir publik, padahal uangnya sudah di tangan pengurus. Yang kedua, nominal
+transfer sering tidak persis sama dengan yang diminta: ada yang membulatkan ke
+atas, ada yang salah ketik satu angka. Sebelumnya pengurus hanya punya dua
+pilihan, memverifikasi nominal yang salah atau menolak donasi yang uangnya
+benar-benar masuk.
+
+Empat keputusan di dalamnya:
+
+**Nomor WhatsApp boleh kosong.** Berbeda dari formulir publik. Donasi tunai
+sering datang tanpa nomor, dan mewajibkannya hanya akan membuat pengurus
+mengarang nomor supaya formulirnya mau lewat. Tombol WhatsApp pada baris
+tanpa nomor tidak dirender, dan rinciannya menulis "nomor tidak dicatat",
+bukan nomor samaran yang menyesatkan.
+
+**Nominal dan jumlah paket diisi terpisah.** Nominal yang menambah angka
+rupiah di halaman publik, jumlah paket yang menghitung jamaah dirangkul.
+Memaksa keduanya selalu berkelipatan akan membuat pengurus memilih antara
+angka rupiah yang benar dan hitungan jamaah yang benar.
+
+**Angka unik jadi nol untuk donasi yang dicatat manual.** Angka unik gunanya
+mencocokkan transfer masuk; donasi yang dicatat pengurus tidak punya transfer
+yang perlu dicocokkan. Yang dijaga satu: `base_amount + unique_suffix` selalu
+sama dengan `total_amount`, di kedua jalur. Batas kolomnya di database
+dilonggarkan dari 100–999 jadi 0–999 lewat `migrasi-04`.
+
+**Donasi menunggu tetap tidak boleh punya nominal kembar.** Indeks unik
+parsial dari D-10 tetap menjaganya di database, dan aksinya memeriksa lebih
+dulu supaya pengurus membaca kalimat, bukan galat mesin. Donasi yang langsung
+ditandai sudah masuk tidak kena aturan ini, sesuai indeksnya yang memang hanya
+berlaku untuk baris `pending`.
+
+Harga paket untuk donasi yang diubah diambil dari season milik donasi itu,
+bukan season yang sedang aktif, supaya membetulkan donasi season lama tidak
+ikut memakai harga baru.
+
+Status tidak bisa diubah dari formulir ini. Verifikasi dan penolakan tetap
+lewat tombolnya sendiri berikut kotak konfirmasinya (D-46), karena keduanya
+yang menggeser angka publik dan mengirim kabar ke donatur.
+
+### D-87 Formulir pengurus tidak lagi dikosongkan saat kiriman ditolak
+
+Ditemukan saat menguji alur di atas. Sejak React 19, formulir dikosongkan
+setiap aksi selesai, termasuk saat aksinya menolak kiriman. Jadi kalimat di
+D-21, "galat validasi ditahan di halaman yang sama supaya isian yang sudah
+diketik tidak hilang", sebenarnya tidak berlaku sejak lama, dan berlaku untuk
+semua formulir pengurus, bukan cuma yang baru.
+
+Yang paling berbahaya bukan isian teks, melainkan pilihan. Pada donasi yang
+ditolak karena nominalnya kembar, pilihan "Belum masuk" berbalik sendiri ke
+"Sudah masuk" tanpa terlihat. Pengurus menggeser nominalnya beberapa rupiah,
+menekan simpan lagi, dan donasinya tercatat terverifikasi padahal uangnya
+belum ada.
+
+`FormAksi` sekarang membatalkan pengosongan itu. Pembatalnya dipasang sebagai
+penyimak asli lewat `ref`, bukan lewat prop `onReset`: pembatalan dari prop itu
+diuji dan tidak sampai membatalkan pengosongannya. Setelah berhasil, halaman
+tetap dimuat ulang penuh seperti D-21, jadi isian lama ikut terbawa pergi.
+
+Sekalian, `FormAksi` menerima `alamatSukses`. Tanpa itu, laci yang dibuka lewat
+penanda di alamat seperti `?ubah=` akan terbuka lagi sendiri setelah disimpan,
+karena yang dimuat ulang adalah alamat yang sedang dibuka berikut penandanya.
 
 ---
 

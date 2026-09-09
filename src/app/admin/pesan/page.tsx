@@ -1,108 +1,181 @@
 import type { Metadata } from "next";
+import BannerTersimpan from "@/components/admin/BannerTersimpan";
+import FormAksi from "@/components/admin/FormAksi";
 import SalinTeks from "@/components/SalinTeks";
 import { db } from "@/lib/data";
-import {
-  pesanDonasiBelumCocok,
-  pesanDonasiDiterima,
-  pesanPembayaranTiketDiterima,
-  pesanPengingatAcara,
-  pesanTiketSiap,
-} from "@/lib/pesan-wa";
+import { peranSekarang } from "@/lib/admin";
+import { TEMPLAT, contohPesan, periksaTemplat, templatDari, templatTersimpan } from "@/lib/pesan-wa";
+import { simpanTemplatPesan } from "./actions";
 
 export const metadata: Metadata = { title: "Pesan WhatsApp", robots: { index: false } };
 export const dynamic = "force-dynamic";
 
-/**
- * Contoh dibuat dari data isian, bukan data jamaah sungguhan. Halaman ini
- * dibuka untuk melihat kata-katanya, bukan untuk mengirim.
- */
-const CONTOH_DONASI = {
-  nama: "Budi",
-  kode: "DZN-4K7P",
-  nominal: 150284,
-  paket: 10,
-  catatan: "belum ada transfer masuk dengan nominal ini sampai hari Rabu",
-};
+type Props = { searchParams: Promise<{ tersimpan?: string }> };
 
-const CONTOH_TIKET = {
-  nama: "Sari",
-  kode: "DZN-9F2M",
-  acara: "Kelas menulis dakwah",
-  mulai: new Date(Date.now() + 86400000).toISOString(),
-  lokasi: "Aula Masjid Fathul Ummah",
-  jumlah: 2,
-  nominal: 50284,
-};
-
-export default async function AdminPesan() {
-  const season = await (await db()).getActiveSeason();
-  const donasi = { ...CONTOH_DONASI, slugSeason: season?.slug ?? null };
-
-  const daftar = [
-    {
-      judul: "Donasi sudah diterima",
-      kapan: "Dikirim setelah Anda menekan Verifikasi di menu Donasi.",
-      teks: pesanDonasiDiterima(donasi),
-    },
-    {
-      judul: "Donasi belum bisa dicocokkan",
-      kapan:
-        "Dikirim setelah Anda menekan Tolak. Catatan yang Anda tulis di kotak konfirmasi ikut masuk ke pesan ini, jadi tulis alasannya dengan bahasa yang enak dibaca.",
-      teks: pesanDonasiBelumCocok(donasi),
-    },
-    {
-      judul: "Tiket gratis siap dipakai",
-      kapan: "Dikirim begitu ada yang mendaftar acara gratis.",
-      teks: pesanTiketSiap(CONTOH_TIKET),
-    },
-    {
-      judul: "Pembayaran tiket sudah diterima",
-      kapan: "Dikirim setelah Anda menekan Konfirmasi pembayaran di menu Pendaftar.",
-      teks: pesanPembayaranTiketDiterima(CONTOH_TIKET),
-    },
-    {
-      judul: "Pengingat sehari sebelum acara",
-      kapan: "Dikirim manual sehari sebelum hari H, satu per satu dari menu Pendaftar.",
-      teks: pesanPengingatAcara(CONTOH_TIKET),
-    },
-  ];
+export default async function AdminPesan({ searchParams }: Props) {
+  const { tersimpan } = await searchParams;
+  const [pengaturan, peran] = await Promise.all([(await db()).getSettings(), peranSekarang()]);
+  // Dua hal yang berbeda dan keduanya perlu ditampilkan: teks yang benar-benar
+  // dipakai tombol WhatsApp, dan teks yang tersimpan apa adanya termasuk yang
+  // isiannya masih salah tulis, supaya pengurus bisa membetulkannya.
+  const teks = templatDari(pengaturan);
+  const tersimpanSendiri = templatTersimpan(pengaturan);
+  const masalah = TEMPLAT.flatMap((templat) => periksaTemplat(templat.id, tersimpanSendiri[templat.id] ?? ""));
+  const bolehMenyunting = peran === "admin";
 
   return (
     <div className="mx-auto w-full max-w-[900px] px-4 py-6">
       <h1>Pesan WhatsApp</h1>
       <p className="mt-1 text-ink-soft">
-        Jamaah tidak punya halaman status. Semua kabar penerimaan dan tiket sampai lewat WhatsApp, dikirim Anda
-        sendiri. Ini kata-kata yang dipakai.
+        Jamaah tidak punya halaman status. Semua kabar sampai lewat WhatsApp, dikirim Anda sendiri. Ini kata-katanya,
+        dan di sini tempat mengubahnya.
       </p>
 
+      <BannerTersimpan tampil={Boolean(tersimpan)} />
+
       <div className="kartu mt-5 bg-cream p-4">
-        <h2 className="text-base">Tidak perlu menyalin dari sini</h2>
+        <h2 className="text-base">Satu tempat untuk semua kata-katanya</h2>
         <p className="petunjuk">
-          Tombol WhatsApp di menu Donasi dan Pendaftar sudah membuka WhatsApp dengan teks yang persis sama, sudah
-          terisi nama, kode, dan nominal orangnya. Halaman ini untuk melihat kata-katanya, atau menyalin kalau Anda mau
-          mengirim dari perangkat lain.
+          Tombol WhatsApp di menu Donasi, Pendaftar, dan Jamaah Loyal memakai teks dari halaman ini. Ubah sekali di
+          sini, semua pesan setelahnya ikut berubah.
+        </p>
+        <p className="petunjuk">
+          Kurung kurawal seperti <code>{"{nama}"}</code> diganti data orangnya saat pesan dibuka.{" "}
+          <strong>Baris yang isiannya kosong hilang sendiri</strong>, jadi taruh isian yang belum tentu ada, misalnya{" "}
+          <code>{"{catatan}"}</code> dan <code>{"{tempat}"}</code>, di barisnya sendiri.
+        </p>
+        <p className="petunjuk">
+          Kotak yang dikosongkan, atau yang kotak &quot;kembalikan ke teks bawaan&quot;-nya dicentang, kembali memakai
+          kata-kata bawaan app.
         </p>
       </div>
 
-      <div className="mt-6 grid gap-4">
-        {daftar.map((item) => (
-          <section key={item.judul} className="kartu p-4">
-            <h2 className="text-[1.05rem]">{item.judul}</h2>
-            <p className="petunjuk">{item.kapan}</p>
-            <pre className="mt-3 whitespace-pre-wrap break-words rounded-[8px] bg-cream p-3 font-[family-name:var(--font-isi)] text-[0.9rem]">
-              {item.teks}
-            </pre>
-            <SalinTeks teks={item.teks} label="Salin pesan" labelSelesai="Pesan tersalin" className="mt-3 block" />
-          </section>
-        ))}
-      </div>
+      {masalah.length > 0 ? (
+        <div className="kartu mt-5 border-bahaya p-4">
+          <h2 className="text-base text-bahaya">Ada pesan yang belum bisa dipakai</h2>
+          <p className="petunjuk">
+            Suntingannya tersimpan dan tidak hilang, tetapi selama masalahnya belum dibetulkan, pesan itu dikirim
+            memakai teks bawaan supaya jamaah tidak menerima kalimat yang isiannya salah tulis.
+          </p>
+          <ul className="mt-2 grid gap-1 text-sm text-bahaya">
+            {masalah.map((satu) => (
+              <li key={satu}>{satu}</li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
+      {bolehMenyunting ? (
+        <FormAksi aksi={simpanTemplatPesan} labelKirim="Simpan semua pesan" className="mt-6">
+          {TEMPLAT.map((templat) => {
+            const disunting = tersimpanSendiri[templat.id];
+            const galat = periksaTemplat(templat.id, disunting ?? "");
+            const dipakai = teks[templat.id];
+            const diubah = Boolean(disunting) && galat.length === 0;
+            return (
+              <section key={templat.id} className="kartu p-4">
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <h2 className="text-[1.05rem]">{templat.judul}</h2>
+                  <span
+                    className={`label-status ${galat.length > 0 ? "status-bahaya" : diubah ? "status-baik" : "status-diam"}`}
+                  >
+                    {galat.length > 0 ? "Belum dipakai" : diubah ? "Kata-kata Anda" : "Teks bawaan"}
+                  </span>
+                </div>
+                <p className="petunjuk">{templat.kapan}</p>
+
+                <label className="label-isian mt-3" htmlFor={`teks_${templat.id}`}>
+                  Isi pesan
+                </label>
+                <textarea
+                  id={`teks_${templat.id}`}
+                  name={`teks_${templat.id}`}
+                  rows={Math.min(16, (disunting ?? dipakai).split("\n").length + 2)}
+                  defaultValue={disunting ?? dipakai}
+                  className="isian font-[family-name:var(--font-isi)]"
+                />
+                {galat.length > 0 ? (
+                  <ul role="alert" className="mt-1 grid gap-1 text-sm text-bahaya">
+                    {galat.map((satu) => (
+                      <li key={satu}>{satu}</li>
+                    ))}
+                  </ul>
+                ) : null}
+
+                <p className="petunjuk">Isian yang bisa dipakai di pesan ini:</p>
+                <ul className="mt-1 grid gap-1 text-sm text-ink-soft">
+                  {templat.medan.map((medan) => (
+                    <li key={medan.kunci}>
+                      <code className="font-semibold text-ink">{`{${medan.kunci}}`}</code> — {medan.arti}
+                    </li>
+                  ))}
+                </ul>
+
+                <label className="mt-3 flex min-h-[44px] items-center gap-2">
+                  <input type="checkbox" name={`bawaan_${templat.id}`} value="ya" className="h-5 w-5" />
+                  <span>Kembalikan ke teks bawaan saat disimpan</span>
+                </label>
+
+                <details className="mt-2">
+                  <summary className="min-h-[44px] cursor-pointer py-2 font-semibold">
+                    Lihat pratinjau dan teks bawaan
+                  </summary>
+                  <p className="petunjuk mt-2">
+                    Pratinjau memakai data contoh, bukan data jamaah sungguhan. Yang tampil adalah pesan yang
+                    benar-benar dikirim sekarang, jadi tekan Simpan dulu untuk melihat hasil suntingan Anda.
+                  </p>
+                  <pre className="mt-2 whitespace-pre-wrap break-words rounded-[8px] bg-cream p-3 font-[family-name:var(--font-isi)] text-[0.9rem]">
+                    {contohPesan(templat, dipakai)}
+                  </pre>
+                  <SalinTeks
+                    teks={contohPesan(templat, dipakai)}
+                    label="Salin pratinjau"
+                    labelSelesai="Pratinjau tersalin"
+                    className="mt-3 block"
+                  />
+                  {diubah ? (
+                    <>
+                      <p className="petunjuk mt-3">Teks bawaan app, kalau Anda ingin membandingkan:</p>
+                      <pre className="mt-2 whitespace-pre-wrap break-words rounded-[8px] border border-garis p-3 font-[family-name:var(--font-isi)] text-[0.9rem]">
+                        {templat.bawaan}
+                      </pre>
+                    </>
+                  ) : null}
+                </details>
+              </section>
+            );
+          })}
+        </FormAksi>
+      ) : (
+        <div className="mt-6 grid gap-4">
+          <p className="text-ink-soft">
+            Mengubah kata-katanya hanya bisa dilakukan pemegang password superadmin. Yang di bawah ini pesan yang
+            berlaku sekarang, berikut tombol salin kalau Anda mengirim dari perangkat lain.
+          </p>
+          {TEMPLAT.map((templat) => (
+            <section key={templat.id} className="kartu p-4">
+              <h2 className="text-[1.05rem]">{templat.judul}</h2>
+              <p className="petunjuk">{templat.kapan}</p>
+              <pre className="mt-3 whitespace-pre-wrap break-words rounded-[8px] bg-cream p-3 font-[family-name:var(--font-isi)] text-[0.9rem]">
+                {contohPesan(templat, teks[templat.id])}
+              </pre>
+              <SalinTeks
+                teks={contohPesan(templat, teks[templat.id])}
+                label="Salin pesan"
+                labelSelesai="Pesan tersalin"
+                className="mt-3 block"
+              />
+            </section>
+          ))}
+        </div>
+      )}
 
       <div className="kartu mt-6 p-4">
         <h2 className="text-base">Kenapa tidak terkirim otomatis</h2>
         <p className="petunjuk">
           Alur manual ini disengaja. Pengiriman otomatis butuh WhatsApp Business API berbayar dan nomor terdaftar, dan
-          pesan dari pengurus sungguhan lebih dipercaya jamaah daripada pesan robot. Anda tetap bisa mengubah kalimatnya
-          di WhatsApp sebelum menekan kirim.
+          pesan dari pengurus sungguhan lebih dipercaya jamaah daripada pesan robot. Anda tetap bisa mengubah
+          kalimatnya di WhatsApp sebelum menekan kirim.
         </p>
       </div>
     </div>

@@ -23,6 +23,7 @@ Bagian 1 sampai 4 untuk yang memasang app. Bagian 5 ditulis untuk pengurus yang 
    - `supabase/migrasi-01-hero-dan-penanda-kabar.sql` — tabel foto hero dan kolom penanda kegiatan.
    - `supabase/migrasi-02-pengumuman.sql` — tabel pengumuman. Tanpa ini, menu Pengumuman belum berfungsi.
    - `supabase/migrasi-03-loyalty-sosmed-kuis.sql` — kartu loyalitas, post sosmed, kuis, dan polling. Tanpa ini, keempat menu itu belum berfungsi.
+   - `supabase/migrasi-04-templat-wa-dan-donasi-manual.sql` — kolom templat pesan WhatsApp, dan pelonggaran batas angka unik supaya donasi bisa dicatat manual. Tanpa ini, menyunting pesan WhatsApp dan mencatat donasi manual akan gagal.
 4. Buka **Project Settings, API**, catat dua nilai ini:
    - Project URL, misalnya `https://abcdefgh.supabase.co`
    - `service_role` key (bukan `anon` key)
@@ -98,6 +99,30 @@ Yang berubah setelah verifikasi:
 
 Kalau salah verifikasi, buka lagi donasi tersebut dan tekan **Tolak**. Angkanya akan turun kembali.
 
+### Mencatat donasi yang tidak lewat formulir
+
+Uang tunai yang diterima langsung, transfer yang nominalnya tidak unik, atau titipan lewat pengurus lain tetap harus tercatat supaya angka di halaman publik jujur.
+
+1. Buka menu **Donasi**, tekan **Catat donasi manual**.
+2. Isi nama donatur. **Nomor WhatsApp boleh dikosongkan** kalau memang tidak ada; baris itu nanti tidak punya tombol WhatsApp, sisanya berjalan seperti biasa.
+3. Isi **jumlah paket** dan **nominal yang masuk**. Keduanya terpisah dan itu disengaja: nominal yang menambah angka rupiah di halaman publik, jumlah paket yang menghitung berapa jamaah dirangkul. Kalau nominalnya dikosongkan, dihitung sendiri dari jumlah paket dikali harga paket.
+4. Pilih keadaan uangnya. **Sudah masuk** berarti langsung terverifikasi dan progress publik naik saat itu juga. **Belum masuk** menaruhnya di daftar Menunggu, sama seperti donasi dari formulir publik.
+5. Catatan pengurus boleh diisi, misalnya `tunai, diterima Rian saat kajian Ahad`.
+
+Setelah tersimpan, daftar berpindah ke saringan **Semua** supaya baris barunya pasti terlihat.
+
+Kalau Anda memilih **Belum masuk** dan nominalnya kebetulan sama persis dengan donasi lain yang juga sedang menunggu, penyimpanan ditolak dengan penjelasan. Geser nominalnya beberapa rupiah, atau tandai sudah masuk. Isian yang sudah Anda ketik tidak hilang.
+
+### Membetulkan nominal donasi
+
+Donatur sering mentransfer tidak persis: dibulatkan ke atas, atau salah ketik satu angka. Jangan menolak donasi yang uangnya benar-benar masuk, dan jangan pula memverifikasi nominal yang salah.
+
+1. Di menu **Donasi**, buka baris donasinya, tekan **Ubah nominal**.
+2. Betulkan nominalnya sesuai uang yang benar-benar masuk. Jumlah paket, nama, nomor WhatsApp, dan catatan bisa ikut dibetulkan di situ.
+3. Tekan **Simpan perubahan**.
+
+Statusnya tidak ikut berubah di formulir itu. Verifikasi dan penolakan tetap lewat tombolnya sendiri. Kalau donasinya sudah terverifikasi, angka di halaman publik ikut menyesuaikan begitu perubahannya tersimpan.
+
 ### Menulis Kabar Aksi
 
 Kabar Aksi adalah alasan orang membuka app ini lagi. Satu kabar pendek yang rutin lebih baik daripada satu laporan panjang setahun sekali.
@@ -162,9 +187,26 @@ Caranya sama di dua tempat:
 
 WhatsApp terbuka dengan pesannya sudah terisi lengkap: nama, kode, nominal, dan untuk tiket juga tautan gambar QR-nya. Anda tinggal menekan kirim. Boleh diubah dulu kalau mau.
 
-Menu **Pesan WhatsApp** memuat contoh kelima pesan itu berikut tombol salin, untuk dilihat kata-katanya atau dipakai kalau Anda mengirim dari perangkat lain.
+Menu **Pesan WhatsApp** memuat semua pesan itu berikut tombol salin, untuk dilihat kata-katanya atau dipakai kalau Anda mengirim dari perangkat lain.
 
 Pengiriman tidak otomatis, dan itu disengaja. Pesan dari pengurus sungguhan lebih dipercaya jamaah daripada pesan robot.
+
+### Mengubah kata-kata pesan WhatsApp
+
+Semua pesan diubah di satu tempat, menu **Pesan WhatsApp**. Tidak perlu mengetik ulang satu per satu tiap mengirim.
+
+1. Buka menu **Pesan WhatsApp**. Tiap pesan punya satu kotak teks.
+2. Ubah kalimatnya. Yang ditulis dalam kurung kurawal, misalnya `{nama}` dan `{nominal}`, diganti data orangnya saat pesan dibuka. Daftar isian yang bisa dipakai ada di bawah tiap kotak, dan isian yang tidak ada di daftar itu tidak akan terisi.
+3. Tekan **Simpan semua pesan**. Sejak itu semua tombol WhatsApp memakai kata-kata Anda.
+
+Dua hal yang perlu diingat:
+
+- **Baris yang isiannya kosong akan hilang sendiri.** Karena itu isian yang belum tentu ada, misalnya `{catatan}` dan `{tempat}`, sebaiknya ditulis di barisnya sendiri. Kalau ditaruh di tengah kalimat, seluruh kalimat itu ikut hilang saat datanya kosong.
+- **Kembali ke kata-kata bawaan** cukup dengan mencentang *Kembalikan ke teks bawaan* pada pesan itu, atau mengosongkan kotak teksnya, lalu simpan.
+
+Kalau ada isian yang salah tulis, misalnya `{nma}`, suntingan Anda tetap tersimpan tetapi pesan itu untuk sementara dikirim memakai teks bawaan, dan halaman itu menyebutkan letak masalahnya. Ini supaya jamaah tidak menerima pesan berisi tulisan yang tidak terisi.
+
+Membuka dan menyalin pesannya bisa dilakukan panitia. Mengubah kata-katanya hanya bisa dengan password pengurus inti.
 
 ### Kartu kehadiran jamaah
 
@@ -245,6 +287,8 @@ Season yang tidak aktif otomatis pindah ke halaman **Arsip** berikut total yang 
 - Tidak ada endpoint publik yang mengembalikan daftar donatur atau pendaftar. Halaman status per kode sudah dihapus sama sekali. Layar hasil setelah mengirim formulir dipegang kuki berumur 2 jam, bukan alamat yang bisa ditebak.
 - `/api/qr/[kode]` hanya menggambar QR dari kode yang bentuknya benar, tanpa menyentuh database. Jadi alamat itu tidak bisa dipakai menebak kode mana yang benar-benar ada, dan tidak membocorkan nama atau nominal.
 - Nomor WhatsApp tidak pernah tampil utuh di halaman publik, hanya tersamar seperti `0812••••789`.
+- Kata-kata pesan WhatsApp tersimpan di kolom `settings.wa_templat`, dipetakan dari id templat. Kunci yang tidak ada berarti templat itu memakai teks bawaan di `src/lib/pesan-wa.ts`, jadi memperbaiki kalimat bawaan lewat pembaruan app tidak perlu menyentuh database. Templat yang isiannya salah tulis disimpan tetapi tidak dipakai.
+- Donasi yang dicatat pengurus memakai `unique_suffix` nol karena tidak ada transfer yang perlu dicocokkan. Di kedua jalur, `base_amount + unique_suffix` selalu sama dengan `total_amount`.
 - RLS menyala di semua tabel tanpa policy publik. Seluruh baca dan tulis lewat route server yang memakai service role key.
 - `vercel.json` menaruh fungsi di region `sin1` (Singapore) supaya duduk dekat dengan database. Kalau project Supabase Anda ada di region lain, ganti nilai itu supaya keduanya sekota.
 - Bacaan halaman publik di-cache 300 detik lewat `src/lib/cache.ts`, dan aksi pengurus memanggil `revalidateTag` supaya angkanya langsung ikut berubah setelah disimpan. Halaman status donasi, tiket, dan form pendaftaran sengaja tidak di-cache.

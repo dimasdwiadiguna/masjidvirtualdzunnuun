@@ -5,11 +5,7 @@ import TabelAdmin from "@/components/admin/TabelAdmin";
 import { IkonUnduh, IkonWhatsApp } from "@/components/Ikon";
 import { db } from "@/lib/data";
 import { rupiah, tanggalDanJam, tanggalPendek } from "@/lib/format";
-import {
-  pesanPembayaranTiketDiterima,
-  pesanPembukaTiket,
-  pesanTiketSiap,
-} from "@/lib/pesan-wa";
+import { pesanTiket, templatDari } from "@/lib/pesan-wa";
 import { linkWa } from "@/lib/wa";
 import { batalkanPendaftar, konfirmasiPendaftar } from "./actions";
 import type { RegistrationStatus } from "@/lib/data/types";
@@ -36,7 +32,9 @@ type Props = { searchParams: Promise<{ acara?: string }> };
 export default async function AdminPendaftar({ searchParams }: Props) {
   const { acara: acaraId } = await searchParams;
   const data = await db();
-  const semuaAcara = await data.listEvents();
+  const [semuaAcara, pengaturan] = await Promise.all([data.listEvents(), data.getSettings()]);
+  // Kata-kata pesannya diambil sekali untuk seluruh tabel, bukan per baris.
+  const templat = templatDari(pengaturan);
   const terpilih = acaraId ? await data.getEventById(acaraId) : (semuaAcara[0] ?? null);
   const pendaftar = terpilih ? await data.listRegistrations(terpilih.id) : [];
   const totalOrang = pendaftar
@@ -126,9 +124,9 @@ export default async function AdminPendaftar({ searchParams }: Props) {
                     const teksWa =
                       orang.status === "confirmed" || orang.status === "checked_in"
                         ? sudahBayar
-                          ? pesanPembayaranTiketDiterima(isi)
-                          : pesanTiketSiap(isi)
-                        : pesanPembukaTiket(isi);
+                          ? pesanTiket(templat, "pembayaran_tiket", isi)
+                          : pesanTiket(templat, "tiket_siap", isi)
+                        : pesanTiket(templat, "pembuka_tiket", isi);
                     const labelWa =
                       orang.status === "confirmed" || orang.status === "checked_in"
                         ? "Kirim tiket dan QR"

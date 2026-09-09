@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import { useFormStatus } from "react-dom";
 
 export type HasilAksi = { pesan?: string; sukses?: boolean };
@@ -29,23 +29,53 @@ export default function FormAksi({
   labelKirim,
   children,
   className,
+  alamatSukses,
 }: {
   aksi: (sebelumnya: HasilAksi, formData: FormData) => Promise<HasilAksi>;
   labelKirim: string;
   children: React.ReactNode;
   className?: string;
+  /**
+   * Alamat tujuan setelah berhasil. Tanpa ini, alamat yang sedang dibuka yang
+   * dimuat ulang. Dipakai formulir di dalam laci yang dibuka lewat penanda di
+   * alamat, misalnya ?ubah=, supaya penandanya ikut hilang dan lacinya tidak
+   * langsung terbuka lagi setelah disimpan.
+   */
+  alamatSukses?: string;
 }) {
   const [hasil, dispatch] = useActionState<HasilAksi, FormData>(aksi, {});
+  const form = useRef<HTMLFormElement>(null);
+
+  /**
+   * React mengosongkan formulir setiap aksi selesai, termasuk saat aksinya
+   * menolak kiriman. Untuk formulir pengurus itu merugikan: galat validasi
+   * ditahan di halaman yang sama justru supaya isian yang sudah diketik tidak
+   * hilang, dan isian yang dikosongkan diam-diam bisa membuat pilihan yang
+   * sudah ditetapkan pengurus berbalik tanpa terlihat.
+   *
+   * Pembatalnya dipasang sebagai penyimak asli, bukan lewat prop onReset:
+   * pembatalan dari prop itu tidak sampai membatalkan pengosongannya.
+   *
+   * Setelah berhasil, halaman dimuat ulang penuh, jadi isian lama tetap ikut
+   * terbawa pergi.
+   */
+  useEffect(() => {
+    const elemen = form.current;
+    if (!elemen) return;
+    const tahan = (peristiwa: Event) => peristiwa.preventDefault();
+    elemen.addEventListener("reset", tahan);
+    return () => elemen.removeEventListener("reset", tahan);
+  }, []);
 
   useEffect(() => {
     if (!hasil.sukses) return;
-    const alamat = new URL(window.location.href);
+    const alamat = new URL(alamatSukses ?? window.location.href, window.location.href);
     alamat.searchParams.set("tersimpan", "1");
     window.location.assign(alamat.toString());
-  }, [hasil]);
+  }, [hasil, alamatSukses]);
 
   return (
-    <form action={dispatch} className={`grid gap-4 ${className ?? ""}`}>
+    <form ref={form} action={dispatch} className={`grid gap-4 ${className ?? ""}`}>
       {hasil.pesan && !hasil.sukses ? (
         <p role="alert" className="rounded-[4px] border border-bahaya bg-paper p-3 text-bahaya">
           {hasil.pesan}

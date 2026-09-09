@@ -8,6 +8,8 @@ Status akhir: **PASS**. Tidak ada satu pun butir FAIL.
 
 Diperbarui setelah putaran masukan pengurus: tampilan diarahkan ulang jadi compact dan clean, hero memakai foto asli yang berganti, navigasi bawah memakai ikon, teks dipendekkan, unggahan foto dan tombol bagikan diperbaiki. Seluruh pemeriksaan di bawah dijalankan ulang pada tampilan baru.
 
+Putaran kelima menambah dua hal: kata-kata pesan WhatsApp bisa disunting pengurus dari satu tempat, dan donasi bisa dicatat serta dibetulkan dari panel. Catatan kliknya ada di Blok 1 butir R-35, bagian "Putaran kelima".
+
 ---
 
 ## Blok 1: Hard Gate (mutlak)
@@ -173,6 +175,34 @@ Dijalankan pada lebar 360px, mode sentuh, pada data yang baru dibuat dari nol. *
 | Ganti pertanyaan polling | Suara lama tidak terbawa, perangkat yang sudah memilih bisa memilih lagi |
 | Carousel pengumuman | Slide selebar kartu donasi, rasio 2:1, tanpa teks sama sekali, titik penanda posisi tetap ada |
 | Bar sosial di HP | Ikon Instagram dan TikTok, tiap tautan punya `aria-label`, sasaran tap 44 kali 38 piksel |
+
+**Putaran kelima: templat pesan WhatsApp dan donasi manual**
+
+Dijalankan pada lebar 360px, mode sentuh, data dibuat dari nol, 26 pemeriksaan, semuanya lulus, tanpa satu pun galat konsol.
+
+| Elemen yang diklik | Yang benar-benar terjadi |
+|---|---|
+| Sunting satu templat di `/admin/pesan`, tekan Simpan semua pesan | Tersimpan, chip baris itu berubah jadi "Kata-kata Anda", banner "Perubahan tersimpan" muncul |
+| Tombol WhatsApp pada baris donasi setelah templat disunting | `wa.me` terbuka dengan kata-kata pengurus, bukan teks bawaan, sudah terisi nama, kode, dan nominal |
+| Baris `{catatan}` pada donasi yang catatannya kosong | Barisnya hilang seluruhnya, tidak menyisakan "Catatan:" yang menggantung |
+| Templat berisi isian salah tulis `{nma}` | Tetap tersimpan, ditandai "Belum dipakai", tautan WhatsApp diperiksa tidak memuat `{nma}` sama sekali, dan halamannya menyebutkan letak masalahnya |
+| Centang "Kembalikan ke teks bawaan" lalu simpan | Kotaknya kembali berisi teks bawaan, chipnya kembali "Teks bawaan" |
+| Panitia membuka `/admin/pesan` | Tidak ada satu pun kotak sunting, yang tampil sembilan pesan berikut tombol salin |
+| Catat donasi manual, tandai sudah masuk | Tersimpan terverifikasi, daftar berpindah sendiri ke saringan Semua supaya baris barunya terlihat |
+| Baris donasi tanpa nomor WhatsApp | Tombol WhatsApp tidak dirender, rinciannya menulis "nomor tidak dicatat" |
+| Halaman season setelah donasi manual | Angka publik `Rp 200.000`, hitungan jamaah memakai jumlah paket yang diisi pengurus |
+| Tombol "Ubah nominal" pada satu baris | Laci terbuka sendiri berisi nominal lama `200000` |
+| Ubah nominal jadi `175000`, simpan | Angka publik ikut jadi `Rp 175.000`, `?ubah=` hilang dari alamat, dan lacinya tidak terbuka lagi |
+| Catat donasi menunggu dengan nominal yang sudah dipakai donasi menunggu lain | Ditolak dengan kalimat yang menyebut nominalnya, bukan galat database |
+| Isian formulir setelah penolakan itu | Nama, nominal, jumlah paket, dan pilihan "Belum masuk" semuanya masih terisi |
+| Geser nominalnya lalu simpan lagi | Tersimpan sebagai donasi menunggu, dan pilihan "Belum masuk" benar-benar terpakai |
+| Verifikasi dan Tolak yang lama | Masih berjalan berikut kotak konfirmasinya |
+| Enam halaman publik dan enam halaman pengurus | Semuanya 200 |
+| Formulir pengurus lain (Laporan, Pengaturan, Kuis) setelah `FormAksi` diubah | Ketiganya tetap menyimpan dengan benar |
+
+Dua masalah ditemukan lewat pengujian ini dan sudah diperbaiki, dicatat di `DECISIONS.md` D-87: laci yang dibuka lewat `?ubah=` terbuka lagi sendiri setelah disimpan, dan formulir yang dikosongkan React saat kiriman ditolak membuat pilihan "Belum masuk" berbalik diam-diam jadi "Sudah masuk".
+
+Satu hal yang **bukan** masalah app, dicatat supaya tidak dikejar lagi nanti: `fill()` milik Playwright menyisipkan teks di depan isi `<textarea>` React alih-alih menggantinya. Diperiksa dengan mengetik lewat papan ketik seperti pengguna sungguhan, hasilnya benar. Skrip pengujian memakai cara mengetik itu.
 
 Yang belum bisa diklik di lingkungan ini dan perlu dicek pengurus sekali sebelum live: kamera check-in di HP fisik, tampilan pratinjau tautan di dalam aplikasi WhatsApp, dan koneksi ke instance Supabase sungguhan. Ketiganya dicatat terbuka di `DECISIONS.md` bagian J.
 

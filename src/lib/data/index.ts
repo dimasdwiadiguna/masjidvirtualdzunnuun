@@ -26,7 +26,29 @@ export type AnnouncementInput = Omit<Announcement, "id" | "created_at"> & { id?:
 export type SocialPostInput = Omit<SocialPost, "id" | "created_at"> & { id?: string };
 export type DonationInput = Omit<Donation, "id" | "created_at" | "verified_at" | "admin_note" | "status"> & {
   status?: DonationStatus;
+  admin_note?: string | null;
+  /** Diisi sendiri saat status "verified" kalau tidak disebut pemanggil. */
+  verified_at?: string | null;
 };
+
+/**
+ * Bagian donasi yang boleh diubah pengurus dari panel. Status sengaja tidak ada
+ * di sini: perpindahan status punya jalurnya sendiri lewat setDonationStatus,
+ * yang juga mengurus stempel waktu verifikasi.
+ */
+export type DonationPatch = Partial<
+  Pick<
+    Donation,
+    | "donor_name"
+    | "whatsapp"
+    | "package_count"
+    | "base_amount"
+    | "unique_suffix"
+    | "total_amount"
+    | "is_anonymous"
+    | "admin_note"
+  >
+>;
 export type RegistrationInput = Omit<Registration, "id" | "created_at" | "checked_in_at">;
 
 export type DonationFilter = { status?: DonationStatus | "semua"; cari?: string };
@@ -45,9 +67,11 @@ export interface DataDriver {
 
   listDonations(filter?: DonationFilter): Promise<Donation[]>;
   getDonationByCode(code: string): Promise<Donation | null>;
+  getDonationById(id: string): Promise<Donation | null>;
   pendingDonationTotals(seasonId: string): Promise<number[]>;
   codeExists(code: string): Promise<boolean>;
   createDonation(input: DonationInput): Promise<Donation>;
+  updateDonation(id: string, patch: DonationPatch): Promise<Donation | null>;
   setDonationStatus(id: string, status: DonationStatus, adminNote: string | null): Promise<Donation | null>;
 
   listEvents(opts?: { hanyaTerbit?: boolean }): Promise<EventItem[]>;

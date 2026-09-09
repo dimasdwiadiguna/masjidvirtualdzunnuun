@@ -90,6 +90,23 @@ export default async function HalamanDiagnosa() {
           : `${daftar.length} season, tetapi belum ada yang ditandai aktif. Halaman donasi tertutup selama itu.`,
       };
     }),
+    periksa("Kolom templat pesan WhatsApp", async () => {
+      // Kolom ini datang lewat migrasi-04. Kalau migrasinya belum dijalankan,
+      // kuncinya tidak ada sama sekali di baris yang dikembalikan Supabase, dan
+      // menyimpan suntingan pesan akan gagal dengan pesan yang menyesatkan.
+      const pengaturan = await (await db()).getSettings();
+      const ada = pengaturan.wa_templat !== undefined && pengaturan.wa_templat !== null;
+      const jumlah = ada ? Object.keys(pengaturan.wa_templat).length : 0;
+      return {
+        nama: "Kolom templat pesan WhatsApp",
+        keadaan: ada ? "baik" : "perhatian",
+        pesan: ada
+          ? jumlah === 0
+            ? "Terbaca. Semua pesan WhatsApp memakai teks bawaan."
+            : `Terbaca. ${jumlah} pesan memakai kata-kata pengurus sendiri.`
+          : "Kolom wa_templat belum ada. Jalankan supabase/migrasi-04-templat-wa-dan-donasi-manual.sql di SQL Editor Supabase. Tanpa itu, menyunting pesan WhatsApp dan mencatat donasi manual akan gagal.",
+      };
+    }),
     periksa("Tabel donations", async () => {
       const jumlah = (await (await db()).listDonations({ status: "semua" })).length;
       return { nama: "Tabel donations", keadaan: "baik", pesan: `Terbaca, berisi ${jumlah} baris.` };
