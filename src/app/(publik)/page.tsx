@@ -1,3 +1,11 @@
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      [elemName: string]: any;
+    }
+  }
+}
+
 import Link from "next/link";
 import CarouselAcara from "@/components/CarouselAcara";
 import BagianInteraksi from "@/components/BagianInteraksi";
@@ -38,8 +46,8 @@ export default async function Beranda() {
         <div className="selubung-hero absolute inset-0" aria-hidden="true" />
         <div className="di-gelap relative flex min-h-[260px] flex-col justify-end sm:min-h-[320px]">
           <div className="kolom-lebar py-6">
-            <p className="teks-hero text-sm font-semibold text-gold">Teman Beriman dan Bertumbuh</p>
-            <h1 className="teks-hero mt-1.5 max-w-[18ch]">Masjid jadi tempat anak muda betah singgah</h1>
+            <p className="teks-hero text-sm font-semibold text-gold">Masjid sebagai Wadah Beriman dan Bertumbuh</p>
+            <h1 className="teks-hero mt-1.5 max-w-[18ch]">Menjadikan Hati untuk Betah Pulang ke Masjid Lagi</h1>
           </div>
         </div>
       </section>
@@ -52,7 +60,7 @@ export default async function Beranda() {
               Ikut donasi
             </Link>
             <p className="mt-2 flex flex-wrap items-center justify-between gap-2 text-sm">
-              <span className="text-ink-soft">1 paket {rupiah(season.package_price)}, satu jamaah dirangkul.</span>
+              <span className="text-ink-soft">Setiap kontribusi {rupiah(season.package_price)} akan melayani 1 jama'ah.</span>
               <Link href={`/season/${season.slug}`} className="font-semibold text-teal-ink underline underline-offset-4">
                 Rincian season
               </Link>
@@ -71,6 +79,22 @@ export default async function Beranda() {
           <CarouselPengumuman daftar={pengumuman} />
         </div>
       ) : null}
+
+      <section className="kolom-lebar mt-8 overflow-hidden">
+        <div className="judul-bagian">
+          <h2>Event terdekat</h2>
+          <Link href="/acara" className="text-sm font-semibold text-teal-ink underline underline-offset-4">
+            Lihat semua
+          </Link>
+        </div>
+        {acara.length > 0 ? (
+          <div className="mt-3">
+            <CarouselAcara daftar={acara} />
+          </div>
+        ) : (
+          <p className="mt-2 text-sm text-ink-soft">Belum ada acara yang dijadwalkan.</p>
+        )}
+      </section>
 
       <section className="kolom-lebar mt-8">
         <div className="judul-bagian">
@@ -92,30 +116,11 @@ export default async function Beranda() {
 
       {sosmed.length > 0 ? (
         <section className="kolom-lebar mt-8">
-          <div className="judul-bagian">
-            <h2>Sorotan sosmed</h2>
-          </div>
           <div className="mt-3">
             <SorotanSosmed daftar={sosmed} />
           </div>
         </section>
       ) : null}
-
-      <section className="kolom-lebar mt-8 overflow-hidden">
-        <div className="judul-bagian">
-          <h2>Acara terdekat</h2>
-          <Link href="/acara" className="text-sm font-semibold text-teal-ink underline underline-offset-4">
-            Semua
-          </Link>
-        </div>
-        {acara.length > 0 ? (
-          <div className="mt-3">
-            <CarouselAcara daftar={acara} />
-          </div>
-        ) : (
-          <p className="mt-2 text-sm text-ink-soft">Belum ada acara yang dijadwalkan.</p>
-        )}
-      </section>
 
       <BagianInteraksi />
 
