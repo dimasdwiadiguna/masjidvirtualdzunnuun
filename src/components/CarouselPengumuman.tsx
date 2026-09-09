@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Announcement } from "@/lib/data/types";
 
-const JEDA_MS = 5000;
+const JEDA_MS = 2000;
 
 /**
  * Carousel pengumuman di beranda.

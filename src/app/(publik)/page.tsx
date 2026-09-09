@@ -39,7 +39,7 @@ export default async function Beranda() {
         <div className="di-gelap relative flex min-h-[260px] flex-col justify-end sm:min-h-[320px]">
           <div className="kolom-lebar py-6">
             <p className="teks-hero text-sm font-semibold text-gold">Masjid sebagai Wadah Beriman dan Bertumbuh</p>
-            <h1 className="teks-hero mt-1.5 max-w-[36ch] mb-2">Jadikan Masjid Kembali Jadi Tempat Pulang untuk Anak Muda dan Semua Orang</h1>
+            <h1 className="teks-hero mt-1.5 max-w-[36ch] mb-2">Masjid Jadi Tempat Pulang Anak Muda dan Semua Orang</h1>
           </div>
         </div>
       </section>
@@ -54,7 +54,7 @@ export default async function Beranda() {
             <p className="mt-2 flex flex-wrap items-center justify-between gap-2 text-sm">
               <span className="text-ink-soft">Setiap kontribusi {rupiah(season.package_price)} akan melayani 1 jamaah.</span>
               <Link href={`/season/${season.slug}`} className="font-semibold text-teal-ink underline underline-offset-4">
-                Apa yang kami lakukan dengan sedekah ini?
+                Rincian penggunaan sedekah
               </Link>
             </p>
           </div>
