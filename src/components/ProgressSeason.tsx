@@ -17,7 +17,7 @@ export default function ProgressSeason({ season, progress, label }: Props) {
   const hari = sisaHari(season.end_date);
 
   const statistik = [
-    { nilai: angka(progress.packages), label: "Jamaah dirangkul" },
+    { nilai: angka(progress.packages), label: "Jamaah terlayani" },
     { nilai: angka(progress.donors), label: "Donasi masuk" },
     { nilai: hari > 0 ? angka(hari) : "0", label: hari > 0 ? "Sisa hari" : "Hari tersisa" },
   ];
@@ -29,6 +29,7 @@ export default function ProgressSeason({ season, progress, label }: Props) {
           {label ? (
             <p className="text-xs font-semibold uppercase tracking-wide text-teal-ink">{label}</p>
           ) : null}
+           <p className="petunjuk mt-0">Sedekah ini digunakan untuk pelaksanaan seluruh kegiatan selama 1 season (3 bulan)</p>
           <p className="mt-1 font-[family-name:var(--font-judul)] text-[clamp(1.7rem,7vw,2.15rem)] font-bold leading-none">
             {rupiah(progress.collected)}
           </p>
@@ -58,7 +59,9 @@ export default function ProgressSeason({ season, progress, label }: Props) {
       </dl>
 
       {progress.collected === 0 ? (
-        <p className="petunjuk">Angka ini hanya menghitung donasi yang sudah dicek pengurus satu per satu.</p>
+        <>
+        <p className="petunjuk">Angka yang ditampilkan adalah sedekah yang sudah dikonfirmasi oleh relawan</p>
+        </>
       ) : null}
     </div>
   );
