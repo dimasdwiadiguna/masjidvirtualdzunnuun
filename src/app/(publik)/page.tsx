@@ -52,7 +52,7 @@ export default async function Beranda() {
               Ikut donasi
             </Link>
             <p className="mt-2 flex flex-wrap items-center justify-between gap-2 text-sm">
-              <span className="text-ink-soft">Setiap kontribusi {rupiah(season.package_price)} akan melayani 1 jama'ah.</span>
+              <span className="text-ink-soft">Setiap kontribusi {rupiah(season.package_price)} akan melayani 1 jamaah.</span>
               <Link href={`/season/${season.slug}`} className="font-semibold text-teal-ink underline underline-offset-4">
                 Rincian season
               </Link>
