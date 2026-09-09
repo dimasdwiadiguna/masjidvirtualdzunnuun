@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { kirimJawabanKuis, type HasilKuis } from "@/app/(publik)/interaksi/actions";
+import { useTahanPengosongan } from "@/lib/form";
 import type { SoalTampil } from "@/lib/kuis";
 
 type Props = {
@@ -34,6 +35,10 @@ export default function Kuis({ soal, benih, waktu, tanda }: Props) {
   const [hasil, aksi] = useActionState<HasilKuis, FormData>(kirimJawabanKuis, {});
   const [jawaban, setJawaban] = useState<Record<number, number>>({});
   const dialog = useRef<HTMLDialogElement>(null);
+  const form = useRef<HTMLFormElement>(null);
+
+  // Jawaban yang sudah ditap tidak boleh hilang saat kiriman ditolak.
+  useTahanPengosongan(form);
 
   const menang = hasil.status === "menang";
 
@@ -48,7 +53,7 @@ export default function Kuis({ soal, benih, waktu, tanda }: Props) {
 
   return (
     <div className="kartu p-4">
-      <form action={aksi}>
+      <form ref={form} action={aksi}>
         <input type="hidden" name="benih" value={benih} />
         <input type="hidden" name="waktu" value={waktu} />
         <input type="hidden" name="tanda" value={tanda} />

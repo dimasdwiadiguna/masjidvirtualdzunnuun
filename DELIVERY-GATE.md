@@ -10,6 +10,8 @@ Diperbarui setelah putaran masukan pengurus: tampilan diarahkan ulang jadi compa
 
 Putaran kelima menambah dua hal: kata-kata pesan WhatsApp bisa disunting pengurus dari satu tempat, dan donasi bisa dicatat serta dibetulkan dari panel. Catatan kliknya ada di Blok 1 butir R-35, bagian "Putaran kelima".
 
+Putaran keenam mengubah dua halaman yang dilihat calon donatur: pilihan paket di `/donasi` jadi empat kartu bergambar, dan kartu donasi di beranda menyebut judul serta foto seasonnya berikut dua gerak. Catatan kliknya di bagian "Putaran keenam".
+
 ---
 
 ## Blok 1: Hard Gate (mutlak)
@@ -203,6 +205,45 @@ Dijalankan pada lebar 360px, mode sentuh, data dibuat dari nol, 26 pemeriksaan, 
 Dua masalah ditemukan lewat pengujian ini dan sudah diperbaiki, dicatat di `DECISIONS.md` D-87: laci yang dibuka lewat `?ubah=` terbuka lagi sendiri setelah disimpan, dan formulir yang dikosongkan React saat kiriman ditolak membuat pilihan "Belum masuk" berbalik diam-diam jadi "Sudah masuk".
 
 Satu hal yang **bukan** masalah app, dicatat supaya tidak dikejar lagi nanti: `fill()` milik Playwright menyisipkan teks di depan isi `<textarea>` React alih-alih menggantinya. Diperiksa dengan mengetik lewat papan ketik seperti pengguna sungguhan, hasilnya benar. Skrip pengujian memakai cara mengetik itu.
+
+**Putaran keenam: pilihan paket bergambar dan kepala kartu donasi**
+
+Dijalankan pada lebar 360px, mode sentuh, dua berkas skrip terpisah, 44 pemeriksaan, semuanya lulus, tanpa satu pun galat konsol dan tanpa peringatan hidrasi.
+
+| Elemen yang diklik | Yang benar-benar terjadi |
+|---|---|
+| Buka `/donasi` | Empat kartu pilihan, "1 paket" terpilih sejak awal, konversi sudah berbunyi "1 paket = Rp 15.000 = 1 jamaah dirangkul" |
+| Hitung sosok di tiap ikon | 1, 5, 10, dan 3 berikut tanda tambah. Ikonnya memang menggambarkan jumlahnya |
+| Tap kartu "10 paket" | Konversi berubah jadi "10 paket = Rp 150.000 = 10 jamaah dirangkul", nilai terkirim ikut jadi 10 |
+| Tap kartu "Berapapun" | Kotak angka muncul dan langsung terfokus. Sebelum ditap, kotak itu tidak ada di halaman |
+| Hitung field bernama `paket` di DOM | Selalu tepat satu, baik pada mode preset maupun mode bebas |
+| Ketik `1.5x0` di kotak bebas | Yang masuk `150`. Titik dan huruf tidak pernah sempat muncul |
+| Kirim dengan kartu "5 paket" | Tersimpan `package_count` 5, nominal Rp 75.535 |
+| Kirim dengan "Berapapun" isi 250 | Tersimpan `package_count` 250, nominal Rp 3.750.887 |
+| Kirim "Berapapun" dalam keadaan kosong | Galat "Jumlah paket antara 1 sampai 2000", dan pilihan "Berapapun" **tidak** balik sendiri ke 1 paket |
+| Tab lalu panah kanan di grid pilihan | Pindah dari "1 paket" ke "5 paket". Satu perhentian Tab untuk seluruh grup |
+| Nama tiap pilihan menurut pohon aksesibilitas | "1 paket Rp 15.000 1 jamaah dirangkul", dan seterusnya |
+| Beranda saat season belum berjudul | Kartu donasi tanpa kepala, label "Donasi berjalan" tetap di tempat lamanya |
+| Isi judul season, tanpa foto header | Judulnya tampil di atas kertas, tanpa kotak gelap pengganti, dan label "Donasi berjalan" hanya muncul sekali di seluruh kartu |
+| Unggah foto header season | Band foto tinggi 96px muncul di atas judul, judulnya tetap di bawah foto dan tidak menimpanya |
+| Atribut foto header | `fetchpriority="low"`, jadi tidak berebut giliran pertama dengan foto hero |
+| Muat beranda dan rekam teks angka rupiah tiap 90ms | Delapan nilai berbeda, naik terus, berhenti tepat di `Rp 7.652.972` yang sama dengan `data-hitung` |
+| Periksa apakah angka aslinya sempat tampil lalu balik ke nol | Tidak pernah |
+| Bar donasi setelah animasi | `matrix(1, 0, 0, 1, 0, 0)`, artinya berhenti di lebar sebenarnya |
+| Nyalakan "reduce motion" lalu muat ulang | Angka langsung `Rp 7.652.972`, bar langsung di posisi akhir |
+| Matikan JavaScript | Angka rupiah tetap `Rp 7.652.972` dan judul season tetap tampil |
+| Buka `/season/season-1` | Judul dan foto header tidak dobel |
+| Buka `/admin` | Tidak ada angka yang berhitung di panel pengurus |
+
+Diuji ulang pada **build produksi**, bukan hanya `next dev`: angka berhitung naik dan berhenti di angka yang benar, kiriman kartu preset tersimpan, galat validasi tetap tampil dan pilihan tidak balik sendiri, beranda tanpa galat konsol, dan **CLS beranda 0**.
+
+Diukur, bukan dikira: pada layar 360x640 tombol "Ikut donasi" di dalam kartu berada di 657px, sedikit di bawah lipatan layar. Layar pertama memuat hero, foto season, judul season, angka rupiah, dan awal bar. Tombol "Ikut donasi" di bilah atas tetap terlihat sepanjang waktu, jadi aksinya tidak pernah tidak terjangkau. Pada 360x780 seluruh kartu berikut tombolnya masuk.
+
+Kontras pasangan baru, dihitung bukan dikira: judul season tinta di atas kertas 16,11; label "Donasi berjalan" teal-ink di kertas 7,42; judul kartu paket 16,11; rupiah kartu paket 6,57; baris jamaah 7,42; ikon `ink-soft` di kertas 6,57; ikon teal di kartu terpilih 4,16 dan garis teal 4,74 (keduanya elemen non-teks, batas 3,0). Semuanya lolos WCAG AA.
+
+Satu temuan lama ikut diperbaiki: kalimat pembuka emas di hero duduk di atas lapisan 0,88, dan pada foto putih polos rasionya cuma 4,07, di bawah ambang AA. Lapisannya dinaikkan ke 0,94, jadi 4,88 (`DECISIONS.md` D-92).
+
+Satu temuan lama yang **belum** diperbaiki dan perlu diketahui: pada build produksi, formulir panel pengurus menyimpan datanya dengan benar tetapi tidak memuat ulang halaman dengan penanda "Perubahan tersimpan". Galat validasinya tetap tampil normal. Diperiksa juga pada commit sebelum putaran ini dan perilakunya sama persis, jadi ini bukan akibat perubahan putaran keenam. Belum dicari akar masalahnya.
 
 Yang belum bisa diklik di lingkungan ini dan perlu dicek pengurus sekali sebelum live: kamera check-in di HP fisik, tampilan pratinjau tautan di dalam aplikasi WhatsApp, dan koneksi ke instance Supabase sungguhan. Ketiganya dicatat terbuka di `DECISIONS.md` bagian J.
 

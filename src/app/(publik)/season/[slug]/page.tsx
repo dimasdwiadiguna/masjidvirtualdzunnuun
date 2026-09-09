@@ -56,7 +56,7 @@ export default async function HalamanSeason({ params }: Props) {
         {season.tagline ? <p className="mt-1.5 text-[0.95rem] text-ink-soft">{season.tagline}</p> : null}
 
         <div className="kartu mt-4 p-4">
-          <ProgressSeason season={season} progress={progress} label="Donasi berjalan" />
+          <ProgressSeason season={season} progress={progress} label="Donasi berjalan" berhitung />
           <p className="petunjuk">1 paket {rupiah(season.package_price)} untuk merangkul satu jamaah.</p>
           <div className="mt-3 flex gap-2">
             <Link href="/donasi" className="tombol-utama flex-1">

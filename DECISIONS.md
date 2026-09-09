@@ -869,6 +869,165 @@ karena yang dimuat ulang adalah alamat yang sedang dibuka berikut penandanya.
 
 ---
 
+## P. Masukan pengurus putaran keenam
+
+Dua masukan, keduanya di halaman yang dilihat calon donatur. Satu di antaranya
+mencabut sebagian BRIEF §4.
+
+### D-88 Empat pilihan paket bergambar, chip 33 dilepas
+
+BRIEF §4 menulis "Chip pilihan cepat: 1 / 5 / 10 / 33 paket + input bebas".
+Pengurus meminta empatnya diganti jadi 1 paket, 5 paket, 10 paket, dan
+Berapapun, masing-masing dengan ikon dan keterangan berapa jamaah yang
+terlayani. Angka 33 dilepas. Ini keputusan pemilik produk, dicatat terbuka
+seperti D-73 dan D-74.
+
+Ikonnya menggambarkan datanya sendiri: sebanyak paket, sebanyak sosok jamaah.
+Satu paket satu sosok besar, lima paket satu baris lima, sepuluh paket dua
+baris lima, dan Berapapun tiga sosok berikut tanda tambah.
+
+Bentuk itu dipilih justru untuk menghindari larangan BRIEF §9 soal deretan ikon
+garis tipis seragam. Empat lambang berbeda, misalnya koin, tangan, hati, dan
+tanda tak hingga, persis akan jadi deretan itu, dan tidak satu pun benar-benar
+menambah arti. Yang dipakai sekarang satu motif dengan jumlah yang berubah:
+bentuk padat tanpa stroke tipis, dan jumlah paketnya terbaca sebelum angkanya
+dibaca. Kalimat kunci `1 paket = 1 jamaah` ikut terulang tanpa perlu ditulis
+ulang.
+
+Lima sosok per baris, bukan sepuluh. Sepuluh sosok dalam satu baris jadi
+sekitar 11 piksel di kartu selebar 136 piksel dan berubah jadi tekstur yang
+harus dihitung satu per satu. Dua baris lima terbaca dua kali lipat massa
+tintanya sekali lihat. Tidak ada satu pun nilai acak di posisinya: posisi yang
+diacak akan berbeda antara gambar server dan gambar peramban, dan itu memicu
+ketidakcocokan saat halaman dihidrasi.
+
+Kotak angka bebas sekarang baru muncul saat "Berapapun" dipilih, lalu difokus.
+Sebelumnya kotak itu selalu terbuka di bawah chip, menggandakan pilihan yang
+sudah ditap dan memunculkan papan ketik angka pada orang yang cukup menekan
+satu kartu.
+
+Tiga keputusan kecil di dalamnya:
+
+- **Radio asli, bukan tombol ber-`aria-pressed`.** Empat pilihan yang saling
+  meniadakan memang radio: navigasi panah, satu perhentian Tab untuk seluruh
+  grup, dan status terpilih yang benar di pohon aksesibilitas didapat gratis.
+- **Hanya satu elemen bernama `paket` di DOM pada satu waktu.** Preset memakai
+  isian tersembunyi, "Berapapun" memakai kotak yang terlihat, dan keduanya
+  saling meniadakan. `FormData.get` mengambil yang pertama, jadi dua elemen
+  bernama sama akan diam-diam mengirim angka yang salah.
+- **Kotak bebas bertipe teks yang disaring, bukan `type="number"`.** Di kotak
+  angka, mengetik "1.5" diterima peramban lalu ditulis ulang penyaring jadi
+  "15". Angka yang berubah sendiri di depan mata orang yang sedang mengetik
+  adalah bentuk kegagalan tersendiri. Di kotak teks, titiknya tidak pernah
+  sempat muncul, dan papan ketik angka tetap didapat dari `inputMode`.
+
+`BATAS_PAKET` pindah ke `src/lib/donasi.ts` supaya batas yang ditulis di layar
+dan batas yang ditegakkan aksi server selalu satu angka. Modul `"use server"`
+hanya boleh mengekspor fungsi async, jadi konstantanya memang tidak bisa
+tinggal di `donasi/actions.ts`.
+
+### D-89 Judul dan foto season naik ke kartu donasi beranda
+
+Judul season yang membentuk niat orang untuk ikut. Sebelumnya beranda hanya
+menulis "Donasi berjalan" dan angka rupiah, jadi pengunjung tahu berapa yang
+terkumpul tetapi tidak tahu untuk apa. Urutan bacaannya sekarang: patungan yang
+mana, sudah sejauh mana, berapa ongkosnya, lalu ikut.
+
+Kepalanya hanya dirender kalau season sudah punya judul. Selama `title` masih
+kosong, kartu tampil persis seperti sebelumnya berikut label "Donasi berjalan"
+di tempat lamanya. Ini permintaan pengurus, dan kebetulan juga menghindari
+judul cadangan "Patungan Oktober sampai Desember 2026" dari D-31 tampil sebagai
+kalimat pengajak di beranda.
+
+**Judulnya di bawah foto, bukan di atasnya.** Rancangan pertama menaruh judul
+di atas foto dengan lapisan gelap, seperti hero. Kontrasnya dihitung, dan
+angkanya yang membatalkan rancangan itu: pada foto putih polos, emas baru lolos
+AA di lapisan 0,95, dan lapisan setebal itu menutupi hampir seluruh foto yang
+justru dipasang supaya terlihat. Dengan judul di atas kertas, fotonya utuh,
+kontras judulnya 16,11 banding 1, dan tidak ada satu pun angka yang bergantung
+pada seterang apa foto yang diunggah pengurus.
+
+Season tanpa foto header tidak mendapat kotak gelap setinggi band. Yang tampil
+judulnya saja di atas kertas. Kotak gelap kosong hanyalah kotak abu-abu berbaju
+teal, dan bagian kosong memang tidak dirender di app ini (D-30).
+
+Dibuat sebagai komponen pembungkus `KartuDonasiBeranda`, bukan prop baru di
+`ProgressSeason`. Komponen itu dipakai tiga halaman dan hanya beranda yang mau
+kepala bergambar; halaman season sudah merender judul dan gambarnya sendiri
+enam baris di atas pemanggilannya, dan panel pengurus tidak perlu keduanya.
+
+Fotonya tidak diberi `priority`. Elemen LCP beranda adalah foto hero yang sudah
+memakai `priority`, dan permintaan ketiga akan berebut giliran pertama di
+jaringan seluler. Yang dipakai `loading="eager"` dengan `fetchPriority="low"`,
+karena band-nya memang ada di dalam layar awal. Tinggi band dipasang pasti,
+jadi CLS beranda tetap nol; diukur pada build produksi, hasilnya 0.
+
+Taglinenya tidak ikut ditampilkan. Diukur di layar 360x640: dua baris tambahan
+mendorong tombol "Ikut donasi" makin jauh dari layar pertama, dan taglinenya
+sudah ada di halaman season.
+
+### D-90 Dua gerak di kartu donasi, dan kenapa yang satu memakai skrip sebaris
+
+Pengurus meminta gerak. Yang dipasang dua, keduanya berjalan sekali saat
+halaman dibuka, bukan saat digulir, jadi larangan animasi scroll di BRIEF §12
+tetap dipatuhi.
+
+**Bar terisi dari nol.** Murni CSS. Yang dianimasikan `scaleX`, bukan `width`:
+`var()` tidak perlu masuk ke dalam `@keyframes`, tidak ada layout per bingkai
+di HP kelas bawah, dan lebar akhirnya tetap ditulis sebagai `width` biasa, jadi
+kalau animasinya tidak pernah jalan barnya tetap berada di posisi yang benar,
+bukan di nol. Ujung membulat tetap aman karena yang membulat relnya, bukan
+isinya. Blok `prefers-reduced-motion` yang sudah ada menetralkannya tanpa
+penjagaan tambahan di komponen.
+
+**Angka rupiah berhitung naik.** Yang harus dijaga satu: HTML dari server tetap
+memuat angka yang sebenarnya, supaya perangkat tanpa JavaScript dan pengambil
+pratinjau tautan WhatsApp tidak pernah membaca "Rp 0". Jadi server merender
+angka aslinya, dan satu skrip sebaris yang jalan saat HTML masih diurai yang
+mengubahnya jadi nol lalu menghitung naik.
+
+`useEffect` ditolak, dan ini bukan soal selera: ia baru jalan setelah cat
+pertama, jadi di HP kelas menengah angka aslinya sempat terlihat lalu melompat
+balik ke nol. Itu terbaca sebagai kerusakan, bukan animasi. Karena skripnya
+mengubah teks sebelum React menghidrasi, elemennya diberi
+`suppressHydrationWarning`, yang memang disediakan React untuk pola ini.
+
+Ini skrip sebaris pertama di app. Ongkosnya disebut apa adanya: pada
+perpindahan halaman di dalam app skrip itu tidak dijalankan ulang, jadi
+angkanya langsung tampil tanpa berhitung. Pengunjung app ini hampir selalu
+datang dari tautan WhatsApp, yaitu muat penuh.
+
+Berhitungnya dinyalakan di beranda dan halaman season, dimatikan di panel
+pengurus: pengurus butuh angka pastinya seketika, bukan pertunjukan.
+
+### D-91 Formulir tidak lagi dikosongkan saat kiriman ditolak, sekarang di semua formulir
+
+D-87 memasang penahan pengosongan di `FormAksi`, formulir panel pengurus.
+Menguji kartu pilihan paket menunjukkan masalah yang sama ada di formulir
+publik: kiriman yang ditolak mengosongkan formulir, radio di dalam kartu yang
+tersorot ikut terhapus, jadi titik pilihannya tidak lagi sesuai dengan kartu
+yang terlihat terpilih.
+
+Penahannya dipindah ke satu kait bersama `useTahanPengosongan` di
+`src/lib/form.ts`, lalu dipasang di kelima formulir: donasi, pendaftaran acara,
+kuis, polling, dan panel pengurus. Aman untuk semuanya karena tidak ada satu
+pun yang mengandalkan dikosongkan: yang berhasil selalu berpindah halaman atau
+berganti tampilan.
+
+### D-92 Lapisan gelap hero dinaikkan dari 0,88 ke 0,94
+
+Ditemukan saat menghitung kontras untuk kepala kartu donasi. `DESIGN.md` §3
+mencatat emas di atas `#043A43` berasio 5,80, dan itu benar untuk warna padat.
+Di hero, emasnya duduk di atas **foto** dengan lapisan 0,88, dan pada foto putih
+polos rasionya cuma 4,07, di bawah ambang AA 4,5 untuk teks 14 piksel. Angka
+0,88 memang pernah dihitung, tetapi untuk teks krem, bukan untuk kalimat
+pembuka yang emas.
+
+Dinaikkan ke 0,94: emas jadi 4,88 dan krem 9,43. Fotonya sedikit lebih gelap di
+bagian bawah, tempat teksnya duduk, dan bagian atas hero tidak berubah.
+
+---
+
 ## I. Yang sengaja tidak dibuat
 
 Sesuai BRIEF §12: tidak ada payment gateway, tidak ada akun pengguna, tidak ada sistem role, tidak ada notifikasi push atau email, tidak ada dashboard analitik, tidak ada dark mode, tidak ada i18n, tidak ada animasi scroll, tidak ada chatbot, dan tidak ada leaderboard donatur.
