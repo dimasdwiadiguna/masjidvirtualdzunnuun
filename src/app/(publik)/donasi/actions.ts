@@ -7,13 +7,12 @@ import { buatKode, pilihSuffix } from "@/lib/kode";
 import { ipDari, lewatBatas } from "@/lib/ratelimit";
 import { normalkanWa } from "@/lib/wa";
 import { KUKI_DONASI, simpanKodeHasil } from "@/lib/kuki-hasil";
+import { BATAS_PAKET } from "@/lib/donasi";
 
 export type HasilFormDonasi = {
   pesan?: string;
   galat?: { nama?: string; whatsapp?: string; paket?: string };
 };
-
-const BATAS_PAKET = 2000;
 
 export async function kirimDonasi(
   _sebelumnya: HasilFormDonasi,

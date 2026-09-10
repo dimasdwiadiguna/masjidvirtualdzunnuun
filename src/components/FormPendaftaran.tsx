@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { kirimPendaftaran, type HasilFormDaftar } from "@/app/(publik)/acara/[slug]/daftar/actions";
+import { useTahanPengosongan } from "@/lib/form";
 import { rupiah } from "@/lib/format";
 
 function TombolKirim({ berbayar }: { berbayar: boolean }) {
@@ -24,11 +25,15 @@ type Props = {
 export default function FormPendaftaran({ slug, berbayar, harga, sisaKuota }: Props) {
   const [hasil, aksi] = useActionState<HasilFormDaftar, FormData>(kirimPendaftaran, {});
   const [jumlah, setJumlah] = useState(1);
+  const form = useRef<HTMLFormElement>(null);
+
+  // Kiriman yang ditolak tidak boleh menghapus isian yang sudah diketik.
+  useTahanPengosongan(form);
 
   const maksimal = sisaKuota === null ? 10 : Math.max(1, Math.min(10, sisaKuota));
 
   return (
-    <form action={aksi} className="mt-5 grid gap-4" noValidate>
+    <form ref={form} action={aksi} className="mt-5 grid gap-4" noValidate>
       <input type="hidden" name="slug" value={slug} />
 
       {hasil.pesan ? (

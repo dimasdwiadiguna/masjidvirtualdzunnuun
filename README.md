@@ -271,6 +271,14 @@ Buka menu **Diagnosa** di panel pengurus. Halaman itu memeriksa sambungan ke dat
 
 Semua di menu **Pengaturan**. Satu QRIS dan satu nomor WhatsApp dipakai untuk semua keperluan. Kalau link Saluran WhatsApp dikosongkan, tombolnya tidak ditampilkan di halaman mana pun, bukan ditampilkan sebagai tombol mati.
 
+### Judul dan foto header season
+
+Keduanya sekarang ikut tampil di **beranda**, tepat di atas angka rupiah, jadi orang tahu untuk apa uangnya dikumpulkan sebelum melihat berapa yang sudah terkumpul.
+
+- **Judulnya yang paling menentukan.** Tulis yang menyebut hal nyata, misalnya `Wudu Layak untuk Jamaah Subuh`, bukan `Season 1`. Selama judulnya masih kosong, beranda tidak menampilkan bagian ini sama sekali dan kartunya tampil seperti biasa.
+- **Foto headernya** muncul sebagai gambar mendatar selebar kartu. Pilih foto yang isinya terbaca walaupun dipotong jadi bentuk memanjang. Kalau belum ada fotonya, judulnya tetap tampil sendirian, tidak ada kotak kosong.
+- Sebaiknya foto ini **berbeda dari Foto Hero** di menu Foto Hero, karena keduanya tampil berdekatan di beranda.
+
 ### Menutup season dan mengisi laporan
 
 1. Menu **Season**, tekan **Ubah** pada season yang selesai.

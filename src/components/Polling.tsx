@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useRef } from "react";
 import { useFormStatus } from "react-dom";
 import { kirimSuaraPolling, type HasilPolling } from "@/app/(publik)/interaksi/actions";
+import { useTahanPengosongan } from "@/lib/form";
 import { angka, persen } from "@/lib/format";
 
 type Props = {
@@ -31,6 +32,10 @@ function TombolKirim() {
  */
 export default function Polling({ pertanyaan, pilihan, hasil, sudahMemilih }: Props) {
   const [balasan, aksi] = useActionState<HasilPolling, FormData>(kirimSuaraPolling, {});
+  const form = useRef<HTMLFormElement>(null);
+
+  // Pilihan yang sudah ditap tidak boleh hilang saat kiriman ditolak.
+  useTahanPengosongan(form);
   const tampilkanHasil = sudahMemilih || Boolean(balasan.sukses);
   const total = hasil.reduce((jumlah, satu) => jumlah + satu, 0);
 
@@ -78,7 +83,7 @@ export default function Polling({ pertanyaan, pilihan, hasil, sudahMemilih }: Pr
           ) : null}
         </>
       ) : (
-        <form action={aksi} className="mt-4">
+        <form ref={form} action={aksi} className="mt-4">
           {balasan.pesan ? (
             <p role="alert" className="mb-3 rounded-[8px] border border-bahaya bg-paper p-3 text-sm text-bahaya">
               {balasan.pesan}

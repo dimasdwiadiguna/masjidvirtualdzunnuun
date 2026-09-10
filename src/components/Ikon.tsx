@@ -119,3 +119,65 @@ export function IkonTikTok({ className }: Props) {
     </svg>
   );
 }
+
+/** Satu sosok jamaah dalam kotak 20x20: kepala bulat dan bahu, tinta padat. */
+const SOSOK =
+  "M10 .8a4.3 4.3 0 1 1 0 8.6 4.3 4.3 0 0 1 0-8.6Zm0 9.6c5 0 8.5 2.9 9.3 8.1a.9.9 0 0 1-.9 1.1H1.6a.9.9 0 0 1-.9-1.1c.8-5.2 4.3-8.1 9.3-8.1Z";
+
+const LEBAR_IKON = 108;
+const TINGGI_IKON = 44;
+const SISI_SOSOK = 20;
+const SELA = 2;
+
+/**
+ * Ikon yang menggambarkan datanya sendiri: sebanyak paket, sebanyak sosok
+ * jamaah. Satu sosok diulang, bukan empat lambang berbeda, jadi keempat kartu
+ * pilihan paket adalah satu gambar yang sama dengan jumlah yang berbeda.
+ *
+ * Lima sosok per baris. Sepuluh sosok dalam satu baris jadi terlalu kecil di
+ * kartu selebar 136px dan berubah jadi tekstur yang harus dihitung satu per
+ * satu; dua baris lima terbaca dua kali lipat massa tintanya sekali lihat.
+ *
+ * Tidak ada nilai acak sama sekali di dalam sini. Posisi yang diacak akan
+ * berbeda antara gambar dari server dan gambar di peramban, dan itu memicu
+ * ketidakcocokan saat React menghidrasi halaman.
+ */
+export function IkonPaket({
+  jumlah,
+  tambah,
+  className,
+}: Props & { jumlah: number; tambah?: boolean }) {
+  const skala = jumlah === 1 ? 2 : 1;
+  const sisi = SISI_SOSOK * skala;
+  const perBaris = Math.min(jumlah, 5);
+  const barisan = Math.ceil(jumlah / 5);
+  const lebarBaris = perBaris * sisi + (perBaris - 1) * SELA;
+  const tinggiSusunan = barisan * sisi + (barisan - 1) * SELA;
+  // Sosok digeser ke kiri kalau ada tanda tambah, supaya keduanya muat.
+  const mulaiX = tambah ? 4 : (LEBAR_IKON - lebarBaris) / 2;
+  const mulaiY = (TINGGI_IKON - tinggiSusunan) / 2;
+
+  return (
+    <svg
+      viewBox={`0 0 ${LEBAR_IKON} ${TINGGI_IKON}`}
+      width={LEBAR_IKON}
+      height={TINGGI_IKON}
+      aria-hidden="true"
+      className={className}
+      fill="currentColor"
+    >
+      {Array.from({ length: jumlah }, (_, urutan) => {
+        const kolom = urutan % 5;
+        const baris = Math.floor(urutan / 5);
+        return (
+          <path
+            key={urutan}
+            d={SOSOK}
+            transform={`translate(${mulaiX + kolom * (sisi + SELA)} ${mulaiY + baris * (sisi + SELA)}) scale(${skala})`}
+          />
+        );
+      })}
+      {tambah ? <path d="M84 15h7v7h7v7h-7v7h-7v-7h-7v-7h7z" /> : null}
+    </svg>
+  );
+}

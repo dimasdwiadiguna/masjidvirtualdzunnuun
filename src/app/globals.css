@@ -411,16 +411,39 @@ h3 {
     background: linear-gradient(
       to top,
       rgba(4, 58, 67, 0.97) 0%,
-      rgba(4, 58, 67, 0.88) 45%,
+      rgba(4, 58, 67, 0.94) 45%,
       rgba(4, 58, 67, 0.62) 80%,
       rgba(4, 58, 67, 0.45) 100%
     );
   }
 
-  /* Teks hero ditaruh di area yang lapisan gelapnya minimal 0,88. Pada foto
-     paling terang sekalipun, kontras teks krem di situ 7,8 banding 1. */
+  /* Teks hero ditaruh di area yang lapisan gelapnya minimal 0,94. Pada foto
+     putih polos sekalipun, di situ teks krem 9,43 banding 1 dan kalimat
+     pembuka yang emas 4,88 banding 1. Angka 0,88 yang dipakai sebelumnya
+     cukup untuk krem tetapi hanya 4,07 untuk emas, di bawah ambang AA. */
   .teks-hero {
     color: var(--color-cream);
+  }
+
+
+  /* Bar donasi terisi dari nol ke angka sebenarnya, sekali saja saat pertama
+     digambar. Yang dianimasikan skala, bukan lebar: lebar akhirnya tetap
+     ditulis sebagai width biasa, jadi kalau animasinya tidak pernah jalan
+     barnya tetap berada di posisi yang benar, bukan di nol. Ujung membulat
+     tetap aman karena yang membulat adalah relnya, bukan isinya. */
+  .bar-terisi {
+    width: var(--capai, 0%);
+    transform-origin: left center;
+    animation: bar-isi 800ms cubic-bezier(0.22, 0.75, 0.3, 1) both;
+  }
+
+  @keyframes bar-isi {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
   }
 }
 

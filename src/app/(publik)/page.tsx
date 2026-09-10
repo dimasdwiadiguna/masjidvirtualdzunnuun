@@ -4,8 +4,8 @@ import BagianInteraksi from "@/components/BagianInteraksi";
 import CarouselPengumuman from "@/components/CarouselPengumuman";
 import SorotanSosmed from "@/components/SorotanSosmed";
 import HeroCarousel from "@/components/HeroCarousel";
+import KartuDonasiBeranda from "@/components/KartuDonasiBeranda";
 import KartuKabar from "@/components/KartuKabar";
-import ProgressSeason from "@/components/ProgressSeason";
 import {
   kabarTerbit,
   pengaturanPublik,
@@ -14,7 +14,6 @@ import {
   progressSeason,
   seasonAktif,
 } from "@/lib/cache";
-import { rupiah } from "@/lib/format";
 import { ringkas } from "@/lib/markdown";
 import { acaraTerdekat, fotoHero } from "@/lib/tampilan";
 
@@ -46,18 +45,7 @@ export default async function Beranda() {
 
       <div className="kolom-lebar -mt-5 relative z-10">
         {season && progress ? (
-          <div className="kartu p-4">
-            <ProgressSeason season={season} progress={progress} label="Sedekah untuk Season Ini" />
-            <Link href="/donasi" className="tombol-utama mt-4 w-full">
-              Ikut sedekah!
-            </Link>
-            <p className="mt-2 flex flex-wrap items-center justify-between gap-2 text-sm">
-              <span className="text-ink-soft">Setiap kontribusi {rupiah(season.package_price)} akan melayani 1 jamaah.</span>
-              <Link href={`/season/${season.slug}`} className="font-semibold text-teal-ink underline underline-offset-4">
-                Rincian penggunaan sedekah
-              </Link>
-            </p>
-          </div>
+          <KartuDonasiBeranda season={season} progress={progress} />
         ) : (
           <div className="kartu p-4">
             <p className="font-semibold">Belum ada season yang berjalan.</p>
