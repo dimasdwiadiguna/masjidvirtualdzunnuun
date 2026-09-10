@@ -3,7 +3,7 @@ import Link from "next/link";
 
 const TAUTAN = [
   { href: "/kabar", label: "Laporan" },
-  { href: "/acara", label: "Acara" },
+  { href: "/acara", label: "Event" },
   { href: "/arsip", label: "Arsip" },
   { href: "/tentang", label: "Tentang" },
 ];
@@ -38,7 +38,7 @@ export default function HeaderSitus() {
           </ul>
         </nav>
         <Link href="/donasi" className="tombol-utama min-h-[38px] px-4 py-2 text-sm">
-          Ikut donasi
+          Ikut sedekah
         </Link>
       </div>
     </header>

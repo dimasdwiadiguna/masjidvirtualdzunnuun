@@ -37,8 +37,8 @@ export default async function Beranda() {
         <div className="selubung-hero absolute inset-0" aria-hidden="true" />
         <div className="di-gelap relative flex min-h-[260px] flex-col justify-end sm:min-h-[320px]">
           <div className="kolom-lebar py-6">
-            <p className="teks-hero text-sm font-semibold text-gold">Teman Beriman dan Bertumbuh</p>
-            <h1 className="teks-hero mt-1.5 max-w-[18ch]">Masjid jadi tempat anak muda betah singgah</h1>
+            <p className="teks-hero text-sm font-semibold text-gold">Masjid sebagai Wadah Beriman dan Bertumbuh</p>
+            <h1 className="teks-hero mt-1.5 max-w-[36ch] mb-2">Masjid Jadi Tempat Pulang Anak Muda dan Semua Orang</h1>
           </div>
         </div>
       </section>
@@ -48,7 +48,7 @@ export default async function Beranda() {
           <KartuDonasiBeranda season={season} progress={progress} />
         ) : (
           <div className="kartu p-4">
-            <p className="font-semibold">Belum ada patungan yang berjalan.</p>
+            <p className="font-semibold">Belum ada season yang berjalan.</p>
             <p className="petunjuk">Kegiatan season berikutnya kami tulis di halaman Laporan Kegiatan.</p>
           </div>
         )}
@@ -60,13 +60,31 @@ export default async function Beranda() {
         </div>
       ) : null}
 
-      <section className="kolom-lebar mt-8">
+      <section className="kolom-lebar mt-8 overflow-hidden">
         <div className="judul-bagian">
-          <h2>Laporan Kegiatan</h2>
-          <Link href="/kabar" className="text-sm font-semibold text-teal-ink underline underline-offset-4">
-            Semua
+          <h2>Event terdekat</h2>
+          <Link href="/acara" className="text-sm font-semibold text-teal-ink underline underline-offset-4">
+            Lihat semua
           </Link>
         </div>
+        <p className="text-sm text-ink-soft">Temukan kajian, workshop, dan event seru di Masjid Fathul Ummah</p>
+        {acara.length > 0 ? (
+          <div className="mt-3">
+            <CarouselAcara daftar={acara} />
+          </div>
+        ) : (
+          <p className="mt-2 text-sm text-ink-soft">Belum ada event yang dijadwalkan.</p>
+        )}
+      </section>
+
+      <section className="kolom-lebar mt-8">
+        <div className="judul-bagian">
+          <h2>Laporan Pelaksanaan</h2>
+          <Link href="/kabar" className="text-sm font-semibold text-teal-ink underline underline-offset-4">
+            Lihat semua
+          </Link>
+        </div>
+        <p className="text-sm text-ink-soft">Laporan atas kegiatan atau aksi yang terlaksana</p>
         {kabar.length > 0 ? (
           <div className="mt-3 grid gap-2">
             {kabar.map((item) => (
@@ -80,30 +98,11 @@ export default async function Beranda() {
 
       {sosmed.length > 0 ? (
         <section className="kolom-lebar mt-8">
-          <div className="judul-bagian">
-            <h2>Sorotan sosmed</h2>
-          </div>
           <div className="mt-3">
             <SorotanSosmed daftar={sosmed} />
           </div>
         </section>
       ) : null}
-
-      <section className="kolom-lebar mt-8 overflow-hidden">
-        <div className="judul-bagian">
-          <h2>Acara terdekat</h2>
-          <Link href="/acara" className="text-sm font-semibold text-teal-ink underline underline-offset-4">
-            Semua
-          </Link>
-        </div>
-        {acara.length > 0 ? (
-          <div className="mt-3">
-            <CarouselAcara daftar={acara} />
-          </div>
-        ) : (
-          <p className="mt-2 text-sm text-ink-soft">Belum ada acara yang dijadwalkan.</p>
-        )}
-      </section>
 
       <BagianInteraksi />
 

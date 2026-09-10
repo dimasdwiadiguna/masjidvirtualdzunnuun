@@ -40,12 +40,12 @@ export default function HeroCarousel({ foto }: { foto: FotoHero[] }) {
           quality={68}
           sizes="100vw"
           aria-hidden={indeks === aktif ? undefined : true}
-          className={`object-cover transition-opacity duration-700 ${indeks === aktif ? "opacity-100" : "opacity-0"}`}
+          className={`object-cover transition-opacity duration-300 ${indeks === aktif ? "opacity-100" : "opacity-0"}`}
         />
       ))}
 
       {foto.length > 1 ? (
-        <div className="absolute right-3 top-3 z-10 flex items-center gap-1.5 rounded-full bg-ink/45 px-1.5">
+        <div className="absolute right-3 top-3 z-10 flex items-center gap-1 rounded-full bg-ink/45 px-1.5">
           {foto.map((item, indeks) => (
             <button
               key={item.url}

@@ -55,7 +55,7 @@ export default function ProgressSeason({ season, progress, label, berhitung }: P
   const hari = sisaHari(season.end_date);
 
   const statistik = [
-    { nilai: angka(progress.packages), label: "Jamaah dirangkul" },
+    { nilai: angka(progress.packages), label: "Jamaah terlayani" },
     { nilai: angka(progress.donors), label: "Donasi masuk" },
     { nilai: hari > 0 ? angka(hari) : "0", label: hari > 0 ? "Sisa hari" : "Hari tersisa" },
   ];
@@ -103,7 +103,9 @@ export default function ProgressSeason({ season, progress, label, berhitung }: P
       </dl>
 
       {progress.collected === 0 ? (
-        <p className="petunjuk">Angka ini hanya menghitung donasi yang sudah dicek pengurus satu per satu.</p>
+        <>
+        <p className="petunjuk">Angka yang ditampilkan adalah sedekah yang sudah dikonfirmasi oleh relawan</p>
+        </>
       ) : null}
     </div>
   );
