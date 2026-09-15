@@ -32,6 +32,9 @@ export default async function AdminLoyal() {
         Dihitung dari tiket yang benar-benar di-check-in, bukan dari yang mendaftar. Satu tiket dihitung satu kehadiran
         walaupun dipakai untuk beberapa orang. Tiap {TARGET} kehadiran berhak hadiah khusus.
       </p>
+      <p className="petunjuk">
+        Kartu dibuka lewat tautan rahasianya, jadi tombol Lihat kartu baru muncul setelah tautannya dibuat sekali.
+      </p>
 
       {ringkasan.length === 0 ? (
         <div className="kartu mt-5 p-4">
@@ -99,6 +102,17 @@ export default async function AdminLoyal() {
                 }
                 aksi={
                   <>
+                    {token ? (
+                      // Tautan yang sama dengan yang dikirim ke jamaah, dibuka
+                      // di tab lain supaya daftar ini tidak ikut berpindah.
+                      // Pengurus sering perlu melihat kartunya lebih dulu,
+                      // misalnya saat jamaah bertanya kurang berapa stempel
+                      // lagi, dan sebelumnya satu-satunya jalan adalah mengirim
+                      // tautannya ke WhatsApp orang itu.
+                      <a href={`/kartu/${token}`} target="_blank" rel="noopener noreferrer" className="tombol-kecil">
+                        Lihat kartu
+                      </a>
+                    ) : null}
                     {alamat ? (
                       <a
                         href={linkWa(

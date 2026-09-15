@@ -138,7 +138,7 @@ Server action mengembalikan kodenya, lalu komponen form memindahkan peramban ke 
 
 ### D-23 Halaman publik selalu dirender segar, dan aksi form tidak memanggil `revalidatePath`
 
-Konsekuensi dari D-21. Halaman publik yang menampilkan angka uang atau isi yang diubah pengurus memakai `dynamic = "force-dynamic"`, jadi setiap kunjungan membaca database. Aksi yang memakai dialog konfirmasi (verifikasi donasi, hapus, aktifkan season, konfirmasi pendaftar) tetap memanggil `revalidatePath` karena tidak punya state pesan yang bisa hilang.
+Konsekuensi dari D-21. Halaman publik yang menampilkan angka uang atau isi yang diubah pengurus memakai `dynamic = "force-dynamic"`, jadi setiap kunjungan membaca database. Aksi yang memakai dialog konfirmasi (verifikasi donasi, hapus, aktifkan season, konfirmasi pendaftar) tetap memanggil `revalidatePath` karena tidak punya state pesan yang bisa hilang. **Bagian ini dicabut oleh D-94:** aksi berdialog tetap memanggil `revalidatePath`, tetapi tidak lagi mengandalkannya untuk menyegarkan layar.
 
 Alasan memilih kesegaran daripada cache: angka donasi adalah angka uang. Lebih baik satu permintaan database per kunjungan daripada jamaah melihat angka yang tertinggal satu menit. Trafik app komunitas ini jauh di bawah batas gratis Supabase dan Vercel. Hasil Lighthouse setelah keputusan ini tetap 98 ke atas.
 
@@ -1025,6 +1025,118 @@ pembuka yang emas.
 
 Dinaikkan ke 0,94: emas jadi 4,88 dan krem 9,43. Fotonya sedikit lebih gelap di
 bagian bawah, tempat teksnya duduk, dan bagian atas hero tidak berubah.
+
+---
+
+### D-93 Donasi bisa dihapus, dan menolak tidak diganti olehnya
+
+Masukan pengurus: daftar donasi butuh tombol hapus, bukan hanya tolak, karena
+ada yang salah transfer dan ada baris coba-coba dari masa pemasangan.
+
+Yang dipilih: menambah tombol **Hapus** di samping **Tolak**, bukan mengubah
+arti **Tolak**. Keduanya menjawab hal yang berbeda dan keduanya tetap dipakai.
+
+- **Tolak** berarti transfernya tidak ketemu. Barisnya bertahan sebagai catatan,
+  donatur bisa dikabari alasannya, dan kalau uangnya masuk belakangan tinggal
+  diverifikasi.
+- **Hapus** berarti barisnya memang tidak seharusnya ada. Baris seperti itu
+  tidak cuma mengotori daftar: nominalnya ikut terbaca saat pengurus mencari
+  nominal untuk mencocokkan transfer berikutnya, dan donasi menunggu dengan
+  nominal kembar ditolak database (D-10).
+
+Penghapusannya benar-benar menghapus baris, bukan menandainya terhapus. Menandai
+berarti baris itu tetap perlu disaring di setiap kueri, dan alasan utama minta
+tombol ini justru supaya barisnya hilang dari pandangan. Akibatnya diterima
+sadar dan ditulis apa adanya di dialog konfirmasi dan di README: tidak ada
+pembatalan, dan menghapus donasi terverifikasi menurunkan angka publik saat itu
+juga. Kalimat terakhir di README menyarankan memilih Tolak saat ragu, karena
+baris yang ditolak masih bisa dihapus nanti sedangkan yang dihapus tidak bisa
+dikembalikan.
+
+Aksinya memakai `pastikanAdmin("admin")` seperti aksi donasi lainnya, jadi
+panitia tetap tidak bisa menyentuhnya (D-73). Dialog konfirmasinya sama dengan
+D-46, tanpa kolom catatan: catatan hanya berguna untuk baris yang bertahan.
+
+### D-94 Aksi berdialog memuat ulang halaman, D-23 dicabut untuk aksi ini
+
+Ditemukan saat menguji D-93. Tombol Hapus bekerja setiap kali di database, tetapi
+daftarnya tidak ikut segar: diukur 6 kali, baris lamanya hilang dari layar hanya
+2 kali. Tombol **Tolak** yang sudah lama ada ternyata bernasib sama, 3 dari 6.
+Jadi ini bukan bawaan tombol baru, melainkan masalah lama yang baru kelihatan.
+
+Gejalanya buruk justru untuk menghapus: datanya sudah hilang, tetapi baris dan
+dialognya masih terpampang, sehingga pengurus mengira aksinya gagal.
+
+D-23 memutuskan aksi berdialog cukup memakai `revalidatePath` karena tidak punya
+state pesan yang bisa hilang. Bagian itu dicabut. `KonfirmasiAksi` sekarang
+menunggu aksinya selesai lalu memuat ulang halaman penuh, alasan yang sama
+dengan D-20, D-21, dan D-22: perpindahan penuh selalu sampai, penyegaran router
+tidak selalu. `revalidatePath` dan `revalidateTag` tetap dipanggil, karena
+halaman publik dan menu lain juga perlu ikut segar.
+
+Diukur ulang setelah perubahan: 6 dari 6 untuk Hapus, 6 dari 6 untuk Tolak.
+Perubahan ini ikut memperbaiki verifikasi donasi, penghapusan acara dan kabar,
+pembatalan pendaftar, dan penggantian season aktif, yang semuanya memakai dialog
+yang sama.
+
+Ongkosnya satu muat ulang penuh di panel pengurus. Diterima: panel ini dipakai
+2 sampai 3 orang, dan salah baca pada aksi yang menghapus uang jauh lebih mahal
+daripada satu kali muat ulang.
+
+### D-95 Poster acara jadi gambar pratinjau tautan WhatsApp
+
+Masukan pengurus: saat halaman acara dibagikan di WhatsApp, gambar kecilnya
+harus posternya, bukan kartu bikinan app.
+
+Sebelumnya semua halaman acara memakai kartu `opengraph-image.tsx`: latar hijau
+tua berisi judul dan waktu. Kartu itu benar tapi tidak dikenali, sedangkan
+poster acaranya sudah beredar duluan di grup sebelah.
+
+Yang dipakai adalah berkas poster itu sendiri, bukan poster yang digambar ulang
+ke dalam kartu 1200x630. Alasannya ukuran berkas: `ImageResponse` hanya
+menghasilkan PNG, dan PNG berisi foto di ukuran itu gampang tembus ratusan
+kilobita sampai lebih dari satu megabita, sedangkan pratinjau WhatsApp berhenti
+muncul kalau gambarnya terlalu besar. Poster yang diunggah sudah JPEG hasil
+pengecilan di perangkat (D-51), jadi justru yang paling ringan.
+
+Kartu lamanya tidak dihapus. Acara tanpa poster tetap memakainya, dan
+peralihannya bersandar pada satu perilaku Next yang perlu ditulis supaya tidak
+dirusak tanpa sengaja: berkas `opengraph-image` hanya dipakai kalau
+`generateMetadata` tidak punya kunci `openGraph.images` sama sekali. Menulis
+kunci itu berisi `undefined` tetap dianggap ada, dan hasilnya halaman acara
+tanpa poster kehilangan gambar pratinjaunya. Karena itu kuncinya disebar
+bersyarat, bukan diisi nilai kosong.
+
+Diuji pada kedua cabang: acara berposter mengeluarkan `og:image` berisi alamat
+posternya, acara tanpa poster tetap mengeluarkan kartu PNG 1200x630 berikut
+ukurannya. Alamat poster yang relatif, yang muncul di pratinjau lokal, ikut
+dilengkapi jadi alamat penuh oleh `metadataBase`.
+
+Yang perlu disadari pengurus dan sudah ditulis di README: WhatsApp menyimpan
+gambar pratinjau di sisinya selama beberapa waktu, jadi poster yang baru diganti
+tidak langsung terlihat pada tautan yang sudah pernah ditempel.
+
+### D-96 Kartu loyalitas bisa dibuka pengurus, tanpa mengubah cara tautannya lahir
+
+Masukan pengurus: daftar jamaah loyal butuh tombol untuk melihat kartunya, bukan
+hanya membagikan tautannya. Sebelumnya satu-satunya cara melihat kartu seseorang
+adalah mengirim tautannya ke WhatsApp orang itu lalu membuka tautan yang sama
+dari percakapan sendiri.
+
+Tombol **Lihat kartu** membuka `/kartu/[token]` di tab lain, jadi daftar yang
+sedang dibuka tidak ikut berpindah, dan yang dilihat pengurus persis sama dengan
+yang dilihat jamaahnya.
+
+Yang sengaja tidak dilakukan: membuat halaman pratinjau khusus pengurus yang
+menerima nomor WhatsApp. Itu akan menggandakan kode kartunya, dan membuat nomor
+utuh muncul di alamat halaman, yang dilarang BRIEF §7.
+
+Akibatnya tombol ini baru muncul setelah tautannya dibuat sekali, karena kartu
+memang hanya bisa dialamati lewat tokennya. D-76 tetap berlaku: membuka daftar
+tidak membuat token, token lahir saat pengurus menekan tombolnya. Urutan itu
+dijelaskan satu baris di bawah judul halaman supaya tidak terbaca sebagai tombol
+yang hilang. Menekan **Ganti tautan** menghanguskan tautan lama, dan tombol
+**Lihat kartu** ikut memakai tautan yang baru.
 
 ---
 

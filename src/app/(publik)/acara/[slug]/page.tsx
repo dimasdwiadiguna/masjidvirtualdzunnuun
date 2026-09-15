@@ -21,7 +21,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: acara.title,
     description: acara.description ? ringkas(acara.description) : deskripsi,
-    openGraph: { title: acara.title, description: deskripsi, type: "website" },
+    openGraph: {
+      title: acara.title,
+      description: deskripsi,
+      type: "website",
+      // Poster acara yang jadi gambar pratinjau saat tautannya ditempel di
+      // WhatsApp. Posternya sendiri yang dipakai, bukan kartu bikinan, karena
+      // poster itulah yang sudah dikenali jamaah dari grup sebelah.
+      //
+      // Kalau posternya belum diunggah, kunci "images" sengaja tidak ditulis
+      // sama sekali supaya Next jatuh ke kartu bawaan dari opengraph-image.tsx.
+      // Menulisnya berisi undefined tidak sama: Next hanya memeriksa ada
+      // tidaknya kuncinya, jadi pratinjaunya akan kosong tanpa gambar apa pun.
+      ...(acara.poster_url ? { images: [{ url: acara.poster_url, alt: `Poster ${acara.title}` }] } : {}),
+    },
   };
 }
 
