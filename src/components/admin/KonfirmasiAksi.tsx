@@ -31,6 +31,14 @@ function TombolKonfirmasi({ label, nadaBahaya }: { label: string; nadaBahaya?: b
  * Verifikasi donasi tidak boleh jadi satu tap yang langsung mengeksekusi, jadi
  * tombolnya membuka dialog konfirmasi lebih dulu. Dialog memakai elemen dialog
  * bawaan peramban supaya bisa ditutup dengan Escape.
+ *
+ * Setelah aksinya selesai, halaman dimuat ulang penuh. Sebelumnya dialog ini
+ * hanya mengandalkan revalidatePath di dalam server action, dan saat diukur
+ * daftarnya cuma ikut segar 2 dari 6 kali untuk tombol Hapus dan 3 dari 6 kali
+ * untuk tombol Tolak: datanya sudah berubah di database, tetapi baris lamanya
+ * masih terpampang berikut dialognya. Untuk aksi yang menghapus, itu bacaan
+ * yang menyesatkan. Alasannya sama dengan D-21: perpindahan penuh selalu
+ * sampai, penyegaran router tidak selalu.
  */
 export default function KonfirmasiAksi({
   aksi,
@@ -44,6 +52,13 @@ export default function KonfirmasiAksi({
 }: Props) {
   const dialog = useRef<HTMLDialogElement>(null);
   const [terbuka, setTerbuka] = useState(false);
+
+  async function jalankan(formData: FormData): Promise<void> {
+    await aksi(formData);
+    // Sengaja di luar try/finally: kalau aksinya mengalihkan halaman sendiri,
+    // misalnya sesi pengurus sudah habis, pengalihan itu yang harus menang.
+    window.location.reload();
+  }
 
   useEffect(() => {
     const elemen = dialog.current;
@@ -67,7 +82,7 @@ export default function KonfirmasiAksi({
         onClose={() => setTerbuka(false)}
         className="w-[min(92vw,420px)] rounded-[12px] border border-garis bg-paper p-0 text-ink backdrop:bg-ink/50"
       >
-        <form action={aksi} className="grid gap-3 p-4">
+        <form action={jalankan} className="grid gap-3 p-4">
           {Object.entries(tersembunyi).map(([nama, nilai]) => (
             <input key={nama} type="hidden" name={nama} value={nilai} />
           ))}

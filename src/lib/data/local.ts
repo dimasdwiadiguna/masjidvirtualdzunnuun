@@ -274,6 +274,13 @@ export function createLocalDriver(): DataDriver {
         return isi.donations[idx];
       });
     },
+    async deleteDonation(id) {
+      return berurutan(async () => {
+        const isi = await bacaMentah();
+        isi.donations = isi.donations.filter((d) => d.id !== id);
+        await tulisMentah(isi);
+      });
+    },
 
     async listEvents(opts = {}) {
       return berurutan(async () => {

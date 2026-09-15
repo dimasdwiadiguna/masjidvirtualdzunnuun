@@ -73,6 +73,12 @@ export interface DataDriver {
   createDonation(input: DonationInput): Promise<Donation>;
   updateDonation(id: string, patch: DonationPatch): Promise<Donation | null>;
   setDonationStatus(id: string, status: DonationStatus, adminNote: string | null): Promise<Donation | null>;
+  /**
+   * Menghapus donasi sepenuhnya. Berbeda dengan menolak: menolak menyimpan
+   * barisnya sebagai catatan bahwa transfernya tidak ketemu, menghapus dipakai
+   * untuk baris yang memang tidak seharusnya ada.
+   */
+  deleteDonation(id: string): Promise<void>;
 
   listEvents(opts?: { hanyaTerbit?: boolean }): Promise<EventItem[]>;
   getEventBySlug(slug: string): Promise<EventItem | null>;

@@ -217,6 +217,10 @@ export function createSupabaseDriver(): DataDriver {
       lempar("Gagal memperbarui donasi", error);
       return (data as Donation) ?? null;
     },
+    async deleteDonation(id) {
+      const { error } = await sb.from("donations").delete().eq("id", id);
+      lempar("Gagal menghapus donasi", error);
+    },
 
     async listEvents(opts = {}) {
       let q = sb.from("events").select("*").order("starts_at", { ascending: true });

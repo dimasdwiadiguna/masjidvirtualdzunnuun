@@ -11,7 +11,7 @@ import { db } from "@/lib/data";
 import { rupiah, samarkanWa, tanggalPendek } from "@/lib/format";
 import { pesanDonasi, templatDari } from "@/lib/pesan-wa";
 import { linkWa } from "@/lib/wa";
-import { tolakDonasi, verifikasiDonasi } from "./actions";
+import { hapusDonasi, tolakDonasi, verifikasiDonasi } from "./actions";
 import type { DonationStatus } from "@/lib/data/types";
 
 export const metadata: Metadata = { title: "Donasi", robots: { index: false } };
@@ -269,6 +269,17 @@ export default async function AdminDonasi({ searchParams }: Props) {
                         nadaBahaya
                       />
                     ) : null}
+                    <KonfirmasiAksi
+                      aksi={hapusDonasi}
+                      tersembunyi={{ id: item.id }}
+                      labelPemicu="Hapus"
+                      judul={`Hapus donasi ${item.code}`}
+                      penjelasan={`Baris ${item.donor_name} sebesar ${rupiah(item.total_amount)} hilang dari daftar untuk selamanya${
+                        item.status === "verified" ? ", dan progress di halaman publik ikut turun" : ""
+                      }. Pakai ini untuk salah catat, salah transfer, atau kiriman coba-coba. Kalau transfernya hanya belum ketemu, pilih Tolak supaya catatannya tetap ada.`}
+                      labelKonfirmasi="Ya, hapus permanen"
+                      nadaBahaya
+                    />
                   </>
                 }
               />

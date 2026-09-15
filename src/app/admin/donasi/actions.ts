@@ -38,6 +38,25 @@ export async function tolakDonasi(formData: FormData): Promise<void> {
   await ubahStatus(formData, "rejected");
 }
 
+/**
+ * Menghapus donasi sepenuhnya.
+ *
+ * Menolak dan menghapus menjawab dua hal yang berbeda. Menolak dipakai saat
+ * transfernya tidak ketemu: barisnya tetap ada sebagai catatan, dan donatur
+ * bisa dikabari alasannya. Menghapus dipakai untuk baris yang memang tidak
+ * seharusnya ada — salah catat pengurus, kiriman coba-coba, atau donatur yang
+ * salah mengisi lalu mengisi ulang. Meninggalkan baris seperti itu di daftar
+ * membuat pencarian nominal jadi meleset saat mencocokkan transfer berikutnya.
+ */
+export async function hapusDonasi(formData: FormData): Promise<void> {
+  await pastikanAdmin("admin");
+  const id = String(formData.get("id") ?? "");
+  if (!id) return;
+  await (await db()).deleteDonation(id);
+  // Menghapus donasi terverifikasi menurunkan progress publik.
+  segarkan();
+}
+
 type Isian = {
   nama: string;
   wa: string;

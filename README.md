@@ -123,6 +123,17 @@ Donatur sering mentransfer tidak persis: dibulatkan ke atas, atau salah ketik sa
 
 Statusnya tidak ikut berubah di formulir itu. Verifikasi dan penolakan tetap lewat tombolnya sendiri. Kalau donasinya sudah terverifikasi, angka di halaman publik ikut menyesuaikan begitu perubahannya tersimpan.
 
+### Menghapus donasi
+
+**Tolak** dan **Hapus** menjawab dua hal yang berbeda, dan salah pilih bikin catatan jadi tidak jujur.
+
+- **Tolak** dipakai kalau transfernya belum atau tidak ketemu. Barisnya tetap ada sebagai catatan, dan Anda masih bisa mengabari donaturnya lewat **Kirim alasan**. Kalau uangnya ternyata masuk belakangan, tinggal tekan **Verifikasi**.
+- **Hapus** dipakai kalau barisnya memang tidak seharusnya ada: salah catat Anda sendiri, orang yang salah transfer lalu mengisi ulang dengan nominal baru, atau kiriman coba-coba saat app baru dipasang. Barisnya hilang untuk selamanya dan tidak bisa dikembalikan.
+
+Caranya: buka baris donasinya, tekan **Hapus**, lalu **Ya, hapus permanen** di kotak konfirmasi. Kalau donasi itu sudah terverifikasi, angka rupiah di beranda dan halaman season ikut turun saat itu juga.
+
+Ragu antara dua tombol itu? Pilih **Tolak**. Baris yang ditolak bisa dihapus kapan saja nanti, tetapi baris yang dihapus tidak bisa dikembalikan.
+
 ### Menulis Kabar Aksi
 
 Kabar Aksi adalah alasan orang membuka app ini lagi. Satu kabar pendek yang rutin lebih baik daripada satu laporan panjang setahun sekali.
@@ -173,8 +184,9 @@ Kalau belum ada satu pun pengumuman, bagian itu tidak muncul sama sekali di bera
 2. Acara gratis: biarkan kotak **Acara berbayar** tidak tercentang. Pendaftar langsung mendapat tiket.
 3. Acara berbayar: centang kotaknya dan isi harga per orang. Pendaftar mendapat nominal unik dan tombol konfirmasi WhatsApp, sama seperti alur donasi. Konfirmasi pembayarannya di menu **Pendaftar**.
 4. **Kuota** boleh dikosongkan kalau tanpa batas. Kalau diisi, tombol daftar menutup sendiri begitu penuh, dan pengunjung melihat tulisan `Kuota penuh`.
-5. Centang **Terbitkan acara ini** supaya muncul di halaman publik. Tanpa itu, acara hanya terlihat oleh pengurus.
-6. Menu **Pendaftar** menampilkan daftar per acara, tombol **Ekspor CSV** untuk dibuka di Excel, dan tombol WhatsApp per orang.
+5. **Unggah posternya.** Selain tampil di halaman acara, poster itu juga yang muncul sebagai gambar pratinjau saat tautan acara ditempel di grup WhatsApp. Acara tanpa poster tetap punya pratinjau, tetapi berupa kartu polos berisi judul dan waktunya saja.
+6. Centang **Terbitkan acara ini** supaya muncul di halaman publik. Tanpa itu, acara hanya terlihat oleh pengurus.
+7. Menu **Pendaftar** menampilkan daftar per acara, tombol **Ekspor CSV** untuk dibuka di Excel, dan tombol WhatsApp per orang.
 
 ### Mengirim kabar lewat WhatsApp
 
@@ -213,9 +225,11 @@ Membuka dan menyalin pesannya bisa dilakukan panitia. Mengubah kata-katanya hany
 Tiap 10 kali hadir acara, jamaah berhak hadiah khusus. Hitungannya jalan sendiri, tanpa jamaah perlu punya akun atau password.
 
 1. Menu **Jamaah Loyal** menampilkan siapa saja yang pernah hadir dan berapa kali. Yang sudah tembus kelipatan 10 diberi tanda.
-2. Tekan **Buat tautan kartu** sekali per orang. Setelah itu tombolnya berubah jadi **Kirim kartu**, dan WhatsApp terbuka dengan pesan berisi tautan kartunya.
-3. Jamaah membuka tautan itu dan melihat kartu berisi 10 kotak stempel. Isinya bertambah sendiri tiap dia check-in lagi.
-4. Kalau tautannya terlanjur tersebar ke orang lain, tekan **Ganti tautan**. Tautan lama langsung tidak bisa dibuka.
+2. Tekan **Buat tautan kartu** sekali per orang. Setelah itu muncul dua tombol: **Lihat kartu** dan **Kirim kartu**.
+3. **Lihat kartu** membuka kartu orang itu di tab baru, persis seperti yang dilihat jamaahnya. Pakai ini kalau ada yang bertanya di tempat kurang berapa stempel lagi, tanpa perlu mengirim tautannya dulu.
+4. **Kirim kartu** membuka WhatsApp dengan pesan berisi tautan kartunya.
+5. Jamaah membuka tautan itu dan melihat kartu berisi 10 kotak stempel. Isinya bertambah sendiri tiap dia check-in lagi.
+6. Kalau tautannya terlanjur tersebar ke orang lain, tekan **Ganti tautan**. Tautan lama langsung tidak bisa dibuka, termasuk lewat tombol **Lihat kartu**.
 
 Yang dihitung adalah tiket yang benar-benar Anda check-in, bukan yang sekadar mendaftar. Satu tiket dihitung satu kehadiran walaupun dipakai untuk beberapa orang, karena yang punya nomor itu yang hadir. Tiket yang Anda batalkan setelah check-in ikut dikurangi lagi.
 
@@ -262,6 +276,8 @@ Hasilnya muncul besar: nama, jumlah orang, dan status. Kalau tiket sudah pernah 
 ### Membagikan halaman ke WhatsApp
 
 Tombol **Bagikan** di halaman acara, laporan, pengumuman, dan season membuka lembar bagikan bawaan HP. Dari situ pilih WhatsApp, lalu pilih kontak atau grupnya seperti biasa.
+
+Gambar kecil yang muncul di bawah tautan diambil dari poster acaranya. Kalau posternya baru saja Anda ganti, WhatsApp bisa masih menampilkan yang lama karena gambar pratinjau disimpan di sisi WhatsApp selama beberapa waktu. Tempel ulang tautannya beberapa saat kemudian.
 
 ### Kalau app menampilkan pesan galat
 
