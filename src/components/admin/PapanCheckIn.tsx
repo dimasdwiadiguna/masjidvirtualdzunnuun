@@ -46,7 +46,8 @@ function Hasil({ hasil }: { hasil: HasilScan }) {
       </p>
       {hasil.nama ? (
         <p className="mt-2 text-lg">
-          {hasil.nama}, {hasil.jumlah} orang
+          {hasil.nama}
+          {hasil.jumlah && hasil.jumlah > 1 ? `, ${hasil.jumlah} orang` : ""}
         </p>
       ) : null}
       {hasil.acara ? <p className="text-ink-soft">{hasil.acara}</p> : null}

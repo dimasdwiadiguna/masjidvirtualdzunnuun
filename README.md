@@ -188,6 +188,15 @@ Kalau belum ada satu pun pengumuman, bagian itu tidak muncul sama sekali di bera
 6. Centang **Terbitkan acara ini** supaya muncul di halaman publik. Tanpa itu, acara hanya terlihat oleh pengurus.
 7. Menu **Pendaftar** menampilkan daftar per acara, tombol **Ekspor CSV** untuk dibuka di Excel, dan tombol WhatsApp per orang.
 
+**Satu pendaftaran berarti satu orang.** Formulir publik hanya menanyakan nama dan nomor WhatsApp; isian "datang berapa orang" sudah dilepas. Yang datang bersama mendaftar sendiri-sendiri, sehingga tiap orang punya kode, punya QR, dan kehadirannya terhitung sendiri di Jamaah Loyal. Rombongan dalam satu nama masih bisa dicatat, tetapi hanya oleh panitia lewat menu **Check-in**.
+
+**Membatalkan dan menghapus pendaftar itu dua hal berbeda.**
+
+- **Batalkan** dipakai kalau orangnya memang pernah mendaftar lalu berhalangan. Barisnya bertahan sebagai catatan, tempatnya dilepas kembali ke kuota, dan tiketnya tidak bisa dipakai check-in.
+- **Hapus** dipakai untuk baris yang memang tidak seharusnya ada: salah ketik, kiriman coba-coba, atau satu orang yang mendaftar dua kali. Barisnya hilang dari daftar dan dari ekspor CSV, dan **tidak bisa dikembalikan**. Menghapus tiket yang sudah check-in ikut menghapus satu stempel kehadirannya di Jamaah Loyal. Tombol ini hanya ada untuk pengurus inti, tidak untuk panitia.
+
+Kalau ragu, pilih Batalkan. Baris yang dibatalkan masih bisa dihapus nanti, sedangkan yang dihapus tidak bisa dikembalikan.
+
 ### Mengirim kabar lewat WhatsApp
 
 **Jamaah tidak punya halaman status.** Sejak halaman status dihapus, satu-satunya cara mereka tahu donasinya diterima atau tiketnya sudah jadi adalah pesan WhatsApp yang **Anda** kirim. Ini pekerjaan harian, bukan tambahan.
@@ -271,7 +280,14 @@ Menu **Check-in** punya dua cara yang sama sahnya:
 - **Ketik kode tiket**, misalnya `DZN-9F2M`. Cara ini selalu jalan di HP apa pun.
 - **Pindai QR** lewat kamera. QR-nya ada di pesan WhatsApp yang Anda kirim ke peserta. Sebagian HP, termasuk iPhone, belum mendukung pemindaian bawaan peramban. Kalau begitu, pakai cara ketik kode, hasilnya sama.
 
-Hasilnya muncul besar: nama, jumlah orang, dan status. Kalau tiket sudah pernah dipakai, muncul peringatan berikut waktu check-in sebelumnya, bukan tanda merah menakutkan.
+Hasilnya muncul besar: nama dan status. Kalau tiket sudah pernah dipakai, muncul peringatan berikut waktu check-in sebelumnya, bukan tanda merah menakutkan.
+
+**Yang datang tanpa mendaftar** dicatat di bagian **Datang tanpa mendaftar** di bawah halaman yang sama. Pilih acaranya, ketik namanya, tekan **Catat hadir**. Tiketnya dibuat dan langsung ditandai hadir dalam satu langkah, jadi tidak perlu dipindai lagi, dan barisnya langsung muncul di menu Pendaftar berikut ekspor CSV-nya.
+
+- **Nomor WhatsApp boleh dikosongkan.** Kalau diisi, kehadiran itu ikut menambah stempel di Jamaah Loyal. Tanpa nomor, kehadirannya tetap tercatat di daftar pendaftar, hanya tidak dapat stempel.
+- **Datang berapa orang** diisi lebih dari satu hanya kalau serombongan datang bersama dan dicatat dalam satu nama.
+- Untuk acara berbayar, nominalnya dicatat penuh sesuai harga kali jumlah orang dan langsung dianggap lunas dibayar di tempat. Pastikan uangnya memang sudah diterima sebelum menekan tombolnya.
+- Kuota yang sudah penuh tidak menghalangi pencatatan: yang berdiri di pintu yang tahu apakah masih ada tempat. Kalau kuotanya jadi terlampaui, layarnya menyebutkan itu.
 
 ### Membagikan halaman ke WhatsApp
 
@@ -286,6 +302,15 @@ Buka menu **Diagnosa** di panel pengurus. Halaman itu memeriksa sambungan ke dat
 ### Mengganti QRIS, nomor WhatsApp, dan link sosial
 
 Semua di menu **Pengaturan**. Satu QRIS dan satu nomor WhatsApp dipakai untuk semua keperluan. Kalau link Saluran WhatsApp dikosongkan, tombolnya tidak ditampilkan di halaman mana pun, bukan ditampilkan sebagai tombol mati.
+
+### Bar kuning di atas navigasi bawah
+
+Di HP, bar kuning tipis yang menempel tepat di atas menu bawah bergantian menampilkan dua hal, tiap enam setengah detik sekali:
+
+1. **Ikuti kegiatan kami**, berikut ikon Instagram dan TikTok. Ikon yang alamatnya belum diisi di menu Pengaturan tidak ditampilkan.
+2. **Hitung mundur ke acara terdekat**, lengkap sampai detik, dan bisa ditap untuk membuka halaman acaranya. Yang dipakai adalah acara terbit paling dekat yang belum selesai. Begitu acaranya lewat, bar pindah sendiri ke acara berikutnya.
+
+Anda tidak perlu mengatur apa pun: isinya mengikuti menu Pengaturan dan menu Acara. Kalau alamat sosial belum diisi **dan** tidak ada acara mendatang, barnya tidak muncul sama sekali.
 
 ### Judul dan foto header season
 

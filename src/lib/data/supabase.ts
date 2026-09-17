@@ -502,6 +502,10 @@ export function createSupabaseDriver(): DataDriver {
       lempar("Gagal menandai kehadiran", error);
       return (data as Registration) ?? null;
     },
+    async deleteRegistration(id) {
+      const { error } = await sb.from("registrations").delete().eq("id", id);
+      lempar("Gagal menghapus pendaftar", error);
+    },
 
     async listUpdates(opts = {}) {
       let q = sb.from("updates").select("*").order("published_at", { ascending: false });

@@ -617,6 +617,13 @@ export function createLocalDriver(): DataDriver {
         return isi.registrations[idx];
       });
     },
+    async deleteRegistration(id) {
+      return berurutan(async () => {
+        const isi = await bacaMentah();
+        isi.registrations = isi.registrations.filter((r) => r.id !== id);
+        await tulisMentah(isi);
+      });
+    },
 
     async listUpdates(opts = {}) {
       return berurutan(async () => {

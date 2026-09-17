@@ -95,6 +95,12 @@ export interface DataDriver {
   createRegistration(input: RegistrationInput): Promise<Registration>;
   setRegistrationStatus(id: string, status: RegistrationStatus): Promise<Registration | null>;
   markCheckedIn(id: string): Promise<Registration | null>;
+  /**
+   * Menghapus pendaftar sepenuhnya. Berbeda dengan membatalkan: membatalkan
+   * menyimpan barisnya sebagai catatan bahwa tempatnya dilepas, menghapus
+   * dipakai untuk baris yang memang tidak seharusnya ada.
+   */
+  deleteRegistration(id: string): Promise<void>;
 
   listUpdates(opts?: { seasonId?: string; hanyaTerbit?: boolean; limit?: number }): Promise<Update[]>;
   getUpdateById(id: string): Promise<Update | null>;

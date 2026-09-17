@@ -13,8 +13,15 @@ import { KUKI_TIKET, simpanKodeHasil } from "@/lib/kuki-hasil";
 
 export type HasilFormDaftar = {
   pesan?: string;
-  galat?: { nama?: string; whatsapp?: string; jumlah?: string };
+  galat?: { nama?: string; whatsapp?: string };
 };
+
+/**
+ * Satu pendaftaran berarti satu orang. Kolom quantity tetap ada di database
+ * karena tiket yang dicatat panitia di pintu boleh berisi rombongan, tetapi
+ * formulir publik tidak lagi menanyakannya (D-99).
+ */
+const SATU_ORANG = 1;
 
 export async function kirimPendaftaran(
   _sebelumnya: HasilFormDaftar,
@@ -27,15 +34,11 @@ export async function kirimPendaftaran(
 
   const nama = String(formData.get("nama") ?? "").trim();
   const waMentah = String(formData.get("whatsapp") ?? "").trim();
-  const jumlah = Number(String(formData.get("jumlah") ?? "1").trim());
 
   const galat: HasilFormDaftar["galat"] = {};
   if (nama.length < 2 || nama.length > 60) galat.nama = "Tulis nama Anda, minimal 2 huruf.";
   const wa = normalkanWa(waMentah);
   if (!wa) galat.whatsapp = "Nomor WhatsApp belum benar. Contoh: 081234567890.";
-  if (!Number.isInteger(jumlah) || jumlah < 1 || jumlah > 10) {
-    galat.jumlah = "Jumlah orang antara 1 sampai 10. Untuk rombongan lebih besar, hubungi pengurus.";
-  }
   if (Object.keys(galat).length > 0) return { galat };
 
   if (acara.registration_deadline && sudahLewat(acara.registration_deadline)) {
@@ -46,13 +49,8 @@ export async function kirimPendaftaran(
   }
 
   const kuota = await data.eventCapacity(acara.id, acara.capacity);
-  if (kuota.remaining !== null && kuota.remaining < jumlah) {
-    return {
-      pesan:
-        kuota.remaining <= 0
-          ? "Kuota acara ini sudah penuh."
-          : `Sisa tempat tinggal ${kuota.remaining}. Kurangi jumlah orangnya.`,
-    };
+  if (kuota.remaining !== null && kuota.remaining < SATU_ORANG) {
+    return { pesan: "Kuota acara ini sudah penuh." };
   }
 
   const ip = ipDari(await headers());
@@ -73,7 +71,7 @@ export async function kirimPendaftaran(
       event_id: acara.id,
       name: nama,
       whatsapp: wa as string,
-      quantity: jumlah,
+      quantity: SATU_ORANG,
       code: kode,
       total_amount: 0,
       unique_suffix: 0,
@@ -84,18 +82,21 @@ export async function kirimPendaftaran(
     redirect("/acara/selesai");
   }
 
-  const nominalDasar = acara.price * jumlah;
+  const nominalDasar = acara.price * SATU_ORANG;
   const terpakai = new Set(await data.pendingRegistrationTotals(acara.id));
   const suffix = pilihSuffix(nominalDasar, terpakai);
   if (suffix === null) {
-    return { pesan: "Nominal untuk jumlah ini sedang penuh dipakai pendaftar lain. Coba jumlah orang yang berbeda." };
+    return {
+      pesan:
+        "Angka pembeda untuk acara ini sedang habis dipakai pendaftar lain yang belum bayar. Coba lagi beberapa saat, atau hubungi pengurus lewat WhatsApp.",
+    };
   }
 
   const berbayar = await data.createRegistration({
     event_id: acara.id,
     name: nama,
     whatsapp: wa as string,
-    quantity: jumlah,
+    quantity: SATU_ORANG,
     code: kode,
     total_amount: nominalDasar + suffix,
     unique_suffix: suffix,
