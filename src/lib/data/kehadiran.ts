@@ -11,6 +11,9 @@ import type { Kehadiran } from "./types";
  * Dihitung dari status, bukan dari checked_in_at. Bedanya nyata: tiket yang
  * dibatalkan pengurus setelah check-in tetap menyimpan checked_in_at, dan tiket
  * seperti itu tidak boleh ikut menambah stempel.
+ *
+ * Tiket tanpa nomor WhatsApp dilewati sama sekali, lihat alasannya di badan
+ * fungsi.
  */
 export type BarisKehadiran = { whatsapp: string; name: string; checked_in_at: string | null };
 
@@ -18,6 +21,12 @@ export function kumpulkanKehadiran(baris: BarisKehadiran[]): Kehadiran[] {
   const peta = new Map<string, Kehadiran>();
 
   for (const satu of baris) {
+    // Tiket yang dicatat panitia di pintu boleh tanpa nomor WhatsApp. Baris
+    // seperti itu tidak punya pemilik yang bisa dikenali, jadi kalau ikut
+    // dikumpulkan semuanya akan menumpuk jadi satu jamaah palsu yang stempel
+    // kehadirannya paling banyak. Kehadirannya tetap tercatat di tiketnya.
+    if (!satu.whatsapp.trim()) continue;
+
     const kini = peta.get(satu.whatsapp);
     if (!kini) {
       peta.set(satu.whatsapp, {

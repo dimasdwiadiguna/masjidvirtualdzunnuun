@@ -52,7 +52,6 @@ export default async function AcaraSelesai() {
     `Assalamualaikum, saya ${tiket.name}.`,
     `Saya sudah transfer untuk acara ${acara.title}.`,
     `Kode tiket: ${tiket.code}`,
-    `Jumlah orang: ${tiket.quantity}`,
     `Nominal: ${rupiah(tiket.total_amount)}`,
   ].join("\n");
 
@@ -82,7 +81,7 @@ export default async function AcaraSelesai() {
             />
           </div>
         )}
-        <p className="petunjuk">{tiket.quantity} orang</p>
+        <p className="petunjuk">Satu tiket untuk satu orang</p>
       </div>
 
       {berbayar ? (

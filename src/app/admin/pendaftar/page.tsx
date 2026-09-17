@@ -3,11 +3,12 @@ import BarisTabel from "@/components/admin/BarisTabel";
 import KonfirmasiAksi from "@/components/admin/KonfirmasiAksi";
 import TabelAdmin from "@/components/admin/TabelAdmin";
 import { IkonUnduh, IkonWhatsApp } from "@/components/Ikon";
+import { peranSekarang } from "@/lib/admin";
 import { db } from "@/lib/data";
 import { rupiah, tanggalDanJam, tanggalPendek } from "@/lib/format";
 import { pesanTiket, templatDari } from "@/lib/pesan-wa";
 import { linkWa } from "@/lib/wa";
-import { batalkanPendaftar, konfirmasiPendaftar } from "./actions";
+import { batalkanPendaftar, hapusPendaftar, konfirmasiPendaftar } from "./actions";
 import type { RegistrationStatus } from "@/lib/data/types";
 
 export const metadata: Metadata = { title: "Pendaftar", robots: { index: false } };
@@ -32,7 +33,13 @@ type Props = { searchParams: Promise<{ acara?: string }> };
 export default async function AdminPendaftar({ searchParams }: Props) {
   const { acara: acaraId } = await searchParams;
   const data = await db();
-  const [semuaAcara, pengaturan] = await Promise.all([data.listEvents(), data.getSettings()]);
+  const [semuaAcara, pengaturan, peran] = await Promise.all([
+    data.listEvents(),
+    data.getSettings(),
+    peranSekarang(),
+  ]);
+  // Menghapus pendaftar hanya untuk superadmin, sejalan dengan aksinya.
+  const bolehHapus = peran === "admin";
   // Kata-kata pesannya diambil sekali untuk seluruh tabel, bukan per baris.
   const templat = templatDari(pengaturan);
   const terpilih = acaraId ? await data.getEventById(acaraId) : (semuaAcara[0] ?? null);
@@ -141,7 +148,9 @@ export default async function AdminPendaftar({ searchParams }: Props) {
                           <>
                             <td>
                               <span className="font-semibold">{orang.name}</span>
-                              <span className="block text-xs text-ink-soft">{orang.quantity} orang</span>
+                              {orang.quantity > 1 ? (
+                                <span className="block text-xs text-ink-soft">{orang.quantity} orang</span>
+                              ) : null}
                               <span className="block text-xs text-ink-soft sm:hidden">
                                 <span className="kode-besar text-xs">{orang.code}</span>
                               </span>
@@ -196,8 +205,23 @@ export default async function AdminPendaftar({ searchParams }: Props) {
                                 tersembunyi={{ id: orang.id }}
                                 labelPemicu="Batalkan"
                                 judul={`Batalkan pendaftaran ${orang.name}`}
-                                penjelasan="Tempatnya dilepas kembali ke kuota, dan tiketnya tidak bisa dipakai check-in."
+                                penjelasan="Tempatnya dilepas kembali ke kuota, dan tiketnya tidak bisa dipakai check-in. Barisnya tetap ada sebagai catatan."
                                 labelKonfirmasi="Ya, batalkan"
+                                nadaBahaya
+                              />
+                            ) : null}
+                            {bolehHapus ? (
+                              <KonfirmasiAksi
+                                aksi={hapusPendaftar}
+                                tersembunyi={{ id: orang.id }}
+                                labelPemicu="Hapus"
+                                judul={`Hapus pendaftar ${orang.name}`}
+                                penjelasan={`Baris ${orang.code} hilang dari daftar dan dari ekspor CSV, dan tidak bisa dikembalikan.${
+                                  orang.status === "checked_in"
+                                    ? " Tiket ini sudah check-in, jadi satu stempel kehadirannya di Jamaah Loyal ikut hilang."
+                                    : ""
+                                } Kalau orangnya memang pernah mendaftar lalu berhalangan, pilih Batalkan supaya catatannya tetap ada.`}
+                                labelKonfirmasi="Ya, hapus"
                                 nadaBahaya
                               />
                             ) : null}

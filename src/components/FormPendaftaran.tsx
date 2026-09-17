@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useRef, useState } from "react";
+import { useActionState, useRef } from "react";
 import { useFormStatus } from "react-dom";
 import { kirimPendaftaran, type HasilFormDaftar } from "@/app/(publik)/acara/[slug]/daftar/actions";
 import { useTahanPengosongan } from "@/lib/form";
@@ -19,18 +19,19 @@ type Props = {
   slug: string;
   berbayar: boolean;
   harga: number;
-  sisaKuota: number | null;
 };
 
-export default function FormPendaftaran({ slug, berbayar, harga, sisaKuota }: Props) {
+/**
+ * Isian jumlah orang sudah tidak ada. Satu pendaftaran berarti satu orang, dan
+ * yang datang berombongan mendaftar sendiri-sendiri. Alasannya di DECISIONS
+ * D-99: tinggal dua isian, dan kehadiran jadi bisa dihitung per nomor.
+ */
+export default function FormPendaftaran({ slug, berbayar, harga }: Props) {
   const [hasil, aksi] = useActionState<HasilFormDaftar, FormData>(kirimPendaftaran, {});
-  const [jumlah, setJumlah] = useState(1);
   const form = useRef<HTMLFormElement>(null);
 
   // Kiriman yang ditolak tidak boleh menghapus isian yang sudah diketik.
   useTahanPengosongan(form);
-
-  const maksimal = sisaKuota === null ? 10 : Math.max(1, Math.min(10, sisaKuota));
 
   return (
     <form ref={form} action={aksi} className="mt-5 grid gap-4" noValidate>
@@ -88,34 +89,11 @@ export default function FormPendaftaran({ slug, berbayar, harga, sisaKuota }: Pr
         ) : null}
       </div>
 
-      <div>
-        <label className="label-isian" htmlFor="jumlah">
-          Datang berapa orang
-        </label>
-        <input
-          id="jumlah"
-          name="jumlah"
-          type="number"
-          inputMode="numeric"
-          min={1}
-          max={maksimal}
-          required
-          value={jumlah}
-          onChange={(event) => setJumlah(Number(event.target.value))}
-          className="isian"
-          aria-describedby="hitung-bayar"
-        />
-        {hasil.galat?.jumlah ? (
-          <p role="alert" className="galat-isian">
-            {hasil.galat.jumlah}
-          </p>
-        ) : null}
-        <p id="hitung-bayar" aria-live="polite" className="mt-2 rounded-[8px] bg-teal/10 px-3 py-2 text-sm font-semibold">
-          {berbayar
-            ? `${jumlah > 0 ? jumlah : 0} orang = ${rupiah(Math.max(0, jumlah) * harga)} sebelum angka pembeda`
-            : "Acara ini gratis. Tiket langsung jadi."}
-        </p>
-      </div>
+      <p className="rounded-[8px] bg-teal/10 px-3 py-2 text-sm font-semibold">
+        {berbayar
+          ? `Satu tiket untuk satu orang, ${rupiah(harga)} sebelum angka pembeda. Yang datang bersama mendaftar sendiri-sendiri supaya tiketnya masing-masing.`
+          : "Acara ini gratis. Satu tiket untuk satu orang, dan tiketnya langsung jadi."}
+      </p>
 
       <TombolKirim berbayar={berbayar} />
     </form>

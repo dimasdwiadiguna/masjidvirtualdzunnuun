@@ -27,6 +27,20 @@ export async function acaraTerdekat(batas?: number): Promise<AcaraDenganKuota[]>
   return denganKuota(batas ? akan.slice(0, batas) : akan);
 }
 
+/**
+ * Satu acara terbit terdekat yang belum selesai, tanpa hitungan kuota.
+ *
+ * Dipakai bar yang menempel di atas navigasi bawah, dan bar itu ikut dirender
+ * di setiap halaman publik. Kuotanya tidak ditampilkan di sana, jadi kuerinya
+ * tidak perlu dijalankan: bacaan daftar acaranya sendiri sudah dibagi lewat
+ * cache bertanda yang sama dengan halaman acara (D-58).
+ */
+export async function acaraTerdekatTanpaKuota(): Promise<EventItem | null> {
+  const semua = await acaraTerbit();
+  const sekarang = Date.now();
+  return semua.find((acara) => new Date(acara.ends_at ?? acara.starts_at).getTime() >= sekarang) ?? null;
+}
+
 export async function semuaAcaraTerbit(): Promise<AcaraDenganKuota[]> {
   return denganKuota(await acaraTerbit());
 }

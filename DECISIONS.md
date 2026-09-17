@@ -1138,6 +1138,150 @@ dijelaskan satu baris di bawah judul halaman supaya tidak terbaca sebagai tombol
 yang hilang. Menekan **Ganti tautan** menghanguskan tautan lama, dan tombol
 **Lihat kartu** ikut memakai tautan yang baru.
 
+### D-97 Pendaftar bisa dihapus, dan membatalkan tidak diganti olehnya
+
+Masukan pengurus: daftar pendaftar butuh tombol hapus, seperti yang sudah ada di
+daftar donasi.
+
+Dua tombol yang terlihat mirip ini menjawab dua hal yang berbeda, dan keduanya
+dipertahankan dengan alasan yang sama seperti D-93:
+
+- **Batalkan** berarti orangnya memang pernah mendaftar lalu berhalangan.
+  Barisnya bertahan sebagai catatan, tempatnya dilepas kembali ke kuota, dan
+  kalau dia jadi datang tinggal dikonfirmasi ulang.
+- **Hapus** berarti barisnya memang tidak seharusnya ada. Baris seperti itu
+  bukan cuma mengotori daftar: nominalnya ikut terbaca saat mencocokkan transfer
+  tiket berbayar berikutnya, dan pendaftaran menunggu dengan nominal kembar
+  ditolak database (D-10).
+
+Penghapusannya benar-benar menghapus baris, bukan menandainya terhapus, dengan
+pertimbangan yang sama seperti pada donasi. Akibatnya ditulis apa adanya di
+dialog konfirmasi: tidak ada pembatalan, dan menghapus tiket yang sudah check-in
+ikut menghilangkan satu stempel kehadirannya di Jamaah Loyal. Kalimat itu hanya
+muncul pada baris yang statusnya memang sudah check-in, supaya peringatannya
+tidak jadi kalimat yang selalu ada lalu berhenti dibaca.
+
+Berbeda dengan aksi pendaftar lainnya, tombol ini memakai `pastikanAdmin("admin")`
+dan tidak dirender sama sekali untuk panitia (D-73). Panitia memegang menu ini
+untuk mengonfirmasi dan membatalkan, dan itu memang pekerjaannya; menghapus
+catatan kehadiran bukan keputusan yang perlu diambil sambil berdiri di pintu.
+
+Dialog konfirmasinya sama dengan D-46, dan penyegaran layarnya ikut D-94. Diuji
+3 kali berturut-turut lewat peramban: barisnya hilang dari layar 3 dari 3, dan
+menekan Escape menutup dialog tanpa menghapus apa pun.
+
+### D-98 Panitia bisa mencatat sendiri yang datang tanpa mendaftar
+
+Masukan pengurus: panitia perlu menambah peserta secara manual saat check-in.
+
+Yang terjadi di lapangan: orang datang ke acara tanpa pernah membuka app.
+Sebelum ini panitia harus meninggalkan halaman Check-in, membuka menu Pendaftar,
+dan di sana pun tidak ada formulir untuk membuat pendaftar baru, jadi orangnya
+sama sekali tidak tercatat dan angka hadir di akhir acara selalu kurang.
+
+Bagian **Datang tanpa mendaftar** ditaruh di halaman Check-in, bukan di menu
+Pendaftar, karena di situlah panitia sedang berdiri. Satu tombol menyelesaikan
+dua hal: tiketnya dibuat lalu langsung ditandai hadir, karena orangnya memang
+sudah ada di depan meja. Kodenya tetap dibuat seperti pendaftaran biasa supaya
+barisnya sama persis dengan yang lain di menu Pendaftar dan di ekspor CSV.
+
+Tiga keputusan di dalamnya:
+
+1. **Nomor WhatsApp boleh kosong.** Menahan orang di pintu sampai nomornya
+   selesai diketik hanya akan membuat antrean, dan panitia akan mengarang nomor
+   supaya formulirnya mau lewat. Alasannya sama dengan donasi tunai di D-86.
+   Konsekuensinya diurus di `kumpulkanKehadiran`: baris tanpa nomor dilewati
+   sama sekali, karena kalau ikut dikumpulkan semuanya menumpuk jadi satu
+   "jamaah" palsu yang stempelnya paling banyak. Kehadirannya tetap tercatat di
+   tiketnya, hanya tidak dapat stempel, dan itu ditulis di bawah isiannya.
+2. **Kuota yang penuh tidak menolak kiriman.** Yang berdiri di pintu yang tahu
+   apakah masih ada tempat. Kelebihannya tidak disembunyikan: layarnya
+   menyebutkan bahwa kuota acara jadi penuh atau terlampaui, berikut akibatnya
+   bahwa pendaftaran online ikut tertutup.
+3. **Acara berbayar dicatat lunas.** Nominalnya diisi penuh sebesar harga kali
+   jumlah orang, dengan angka pembeda nol karena tidak ada transfer yang harus
+   dicocokkan, sama seperti D-86. Formulir menyebutkan itu apa adanya supaya
+   panitia memastikan uangnya memang sudah diterima.
+
+Setelah berhasil, nama, nomor, dan jumlah dikosongkan sedangkan acaranya tetap
+terpilih: orang berikutnya di antrean datang ke acara yang sama. Kiriman yang
+ditolak tetap mempertahankan isian (D-91).
+
+Aksinya memakai `pastikanAdmin()` tanpa peran khusus, jadi panitia ikut boleh.
+Ini memang pekerjaan panitia.
+
+### D-99 Isian "datang berapa orang" dilepas dari formulir pendaftaran publik
+
+Masukan pengurus. Satu pendaftaran sekarang berarti satu orang.
+
+Isian itu punya ongkos yang tidak sebanding: formulirnya jadi tiga isian di
+layar HP, jumlahnya sering diisi asal karena tidak ada konsekuensi yang terasa,
+dan satu tiket untuk lima orang cuma menghasilkan satu kode dan satu QR untuk
+dibagi berlima di pintu masuk. Aturan kehadiran di D-75 sudah lebih dulu memilih
+menghitung satu tiket sebagai satu kehadiran, karena yang punya nomor itu yang
+hadir; melepas isian ini membuat formulirnya sejalan dengan aturan itu, bukan
+bertolak belakang.
+
+Kolom `quantity` tidak dihapus dari database. Pendaftaran publik selalu mengisi
+satu, dan kolomnya masih dipakai panitia untuk mencatat rombongan yang datang
+langsung (D-98). Menghapus kolomnya berarti migrasi yang menyentuh baris-baris
+lama tanpa menambah apa pun.
+
+Tampilan menyesuaikan: baris "1 orang" tidak lagi ditulis di panel pengurus dan
+di layar check-in, karena angka yang selalu sama bukan kabar. Yang lebih dari
+satu tetap ditulis. Halaman tiket menggantinya dengan kalimat yang menjelaskan
+aturannya, dan teks konfirmasi WhatsApp tidak lagi menyebut jumlah orang.
+
+Templat pesan WhatsApp di menu Pesan sengaja tidak diubah. Isinya sudah jadi
+milik pengurus sejak D-85, dan isian `{jumlah}` di dalamnya tetap terisi benar.
+Pengurus yang ingin menghapus barisnya bisa mengubahnya sendiri dari panel.
+
+Batas kuota tetap berjalan seperti sebelumnya, hanya pembandingnya kini selalu
+satu. Pesan saat angka pembeda habis ikut ditulis ulang, karena saran lamanya
+adalah mengubah jumlah orang, dan isian itu sudah tidak ada.
+
+### D-100 Bar sticky jadi beberapa kartu yang bergantian
+
+Masukan pengurus: bar di atas navigasi bawah jangan cuma ajakan sosial media,
+tapi bergantian dengan hitung mundur ke kegiatan terdekat.
+
+Bar ini satu-satunya tempat yang selalu terlihat di semua halaman tanpa harus
+menggulir, dan sebelumnya isinya tidak pernah berubah. Sekarang isinya dua
+kartu yang bergantian tiap 6,5 detik: ajakan mengikuti Instagram dan TikTok
+seperti sebelumnya, dan hitung mundur ke acara terbit terdekat yang belum
+selesai, lengkap sampai detik dan bisa ditap untuk membuka halaman acaranya.
+
+Keputusan di dalamnya:
+
+- **Digeser mendatar, bukan ditukar di tempat.** Gerak menyamping menjelaskan
+  bahwa ada lebih dari satu kartu di dalam bar yang sama, sedangkan pergantian
+  yang memudar terbaca seperti isi yang berubah sendiri. Kilau gradasi menyapu
+  sekali tiap pergantian, cukup untuk menarik mata tanpa jadi lampu disko di bar
+  setinggi 38 piksel. Tinggi barnya tidak berubah, jadi padding yang memesan
+  ruangnya di tata letak juga tidak berubah dan tidak ada pergeseran tata letak
+  baru.
+- **Gerak minimal tetap mendapat semua isinya.** Yang dilepas hanya gesernya dan
+  kilaunya; kartunya tetap berganti, seketika. Ini sengaja berbeda dengan
+  carousel hero (D-54) yang berhenti berganti sama sekali: di sana tiap foto
+  setara, sedangkan di sini hitung mundur membawa kabar yang tidak ada di kartu
+  lain, dan menghentikannya berarti menyembunyikan kabar itu dari orang yang
+  memilih gerak minimal.
+- **Angka hitung mundurnya dihitung di perangkat, dan tidak ikut dirender di
+  server.** Jam server dan jam HP tidak pernah sama persis, dan angka yang
+  berbeda antara keduanya membuat React mengeluh saat menyambung halaman.
+- **Pembaca layar tidak dibacakan angka yang berganti tiap detik.** Angkanya
+  `aria-hidden`, dan nama tautannya diambil dari judul acara berikut waktu
+  mulainya yang tidak berubah. Kartu yang sedang tidak tampil diberi `inert`,
+  jadi tidak ikut kena tab maupun ditelusuri pembaca layar walaupun elemennya
+  tetap ada di halaman.
+- **Kartu yang datanya kosong tidak dirender**, mengikuti D-30. Tanpa alamat
+  sosial dan tanpa acara mendatang, barnya hilang sama sekali, bukan jadi bar
+  kosong. Kalau hanya satu kartu yang ada, pergantiannya tidak dijalankan.
+
+Diuji lewat peramban di lebar 360px, dua kali: dengan gerak biasa dan dengan
+`prefers-reduced-motion: reduce`. Kedua kartu muncul bergantian pada keduanya,
+angkanya turun tiap detik, dan tidak ada galat konsol.
+
 ---
 
 ## I. Yang sengaja tidak dibuat

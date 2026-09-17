@@ -247,6 +247,36 @@ Satu temuan lama yang **belum** diperbaiki dan perlu diketahui: pada build produ
 
 Yang belum bisa diklik di lingkungan ini dan perlu dicek pengurus sekali sebelum live: kamera check-in di HP fisik, tampilan pratinjau tautan di dalam aplikasi WhatsApp, dan koneksi ke instance Supabase sungguhan. Ketiganya dicatat terbuka di `DECISIONS.md` bagian J.
 
+**Putaran ketujuh: hapus pendaftar, catat hadir manual, formulir tanpa jumlah orang, bar berganti**
+
+Dijalankan pada build produksi di lebar 360px dan 390px, mode sentuh, pada data yang dibuat dari nol: dua acara (satu gratis berkuota 50, satu berbayar Rp 25.000 tanpa kuota). Tidak ada satu pun galat halaman maupun galat konsol, kecuali satu permintaan 404 ke `/_vercel/insights/script.js` yang memang hanya ada di Vercel.
+
+| Elemen yang diklik | Yang benar-benar terjadi |
+|---|---|
+| Buka `/acara/kajian-ahad-pagi/daftar` | Formulir berisi tepat dua isian: Nama dan Nomor WhatsApp. Isian jumlah orang tidak ada lagi (dicek: `#jumlah` nol elemen) |
+| Kirim formulir acara gratis | Pindah ke `/acara/selesai`, judul "Tiket Anda sudah jadi", kode dan QR tampil, keterangan "Satu tiket untuk satu orang" |
+| Buka formulir acara berbayar | Blok hijau berbunyi "Satu tiket untuk satu orang, Rp 25.000 sebelum angka pembeda" |
+| Kirim formulir acara berbayar | Tiket `DZN-H4C2` terbit dengan nominal berikut angka pembedanya |
+| Bar kuning di beranda, direkam tiap detik selama 16 detik | Bergantian dua kartu: "Ikuti kegiatan kami" lalu "Menuju Kajian Ahad Pagi 2 hari 02:55:55", dan angkanya turun tiap detik |
+| Transform track bar direkam tiap 100ms | Tujuh nilai berbeda antara 0 dan -350px, jadi gesernya memang berjalan, bukan lompat |
+| Elemen kilau direkam tiap 100ms | Menyapu dari -234px ke +450px sekali tiap pergantian |
+| Ulangi dengan `prefers-reduced-motion: reduce` | Kedua kartu tetap bergantian dan angkanya tetap turun, tanpa geser dan tanpa kilau |
+| Periksa kartu yang tidak tampil | Bertanda `inert`, jadi tidak ikut kena tab maupun ditelusuri pembaca layar |
+| Masuk sebagai panitia, buka `/admin/scan` | Bagian "Datang tanpa mendaftar" ada di bawah papan check-in, pilihan acaranya dua, yang belum lewat di grup atas |
+| Isi nama dan nomor, tekan "Catat hadir" | Kotak hijau: "Umar Walk In tercatat hadir", kode `DZN-XE7W`. Nama dan nomor dikosongkan, acaranya tetap terpilih |
+| Kirim dengan nama "X" dan nomor "123" | Ditolak dengan "Nama peserta perlu diisi, minimal 2 huruf", dan isian yang sudah diketik tidak hilang |
+| Kirim tanpa nomor WhatsApp, jumlah 3 | Tercatat hadir, kode `DZN-7T5A`, tanpa keluhan |
+| Ketik kode tiket manual di papan check-in | "Tiket ini sudah dipakai check-in", berikut waktu hadirnya, bukan galat merah |
+| Buka `/admin/loyal` | Hanya tiket bernomor yang muncul sebagai jamaah. Dua tiket tanpa nomor tidak membentuk satu baris jamaah palsu |
+| Ekspor CSV pendaftar | 200, tiga baris, tiket manual ikut lengkap berikut status `checked_in` dan kolom nomor yang kosong pada yang memang tanpa nomor |
+| Buka `/admin/pendaftar` sebagai panitia | Tombol Hapus nol buah |
+| Buka `/admin/pendaftar` sebagai pengurus inti | Tombol Hapus satu per baris, enam baris enam tombol |
+| Tekan Hapus pada tiket yang sudah check-in | Dialog menyebut kodenya, menyebut penghapusannya tidak bisa dikembalikan, menyebut satu stempel Jamaah Loyal ikut hilang, dan menyarankan Batalkan kalau ragu |
+| Konfirmasi hapus, tiga kali berturut-turut | Barisnya hilang dari layar 3 dari 3, kode yang hilang persis kode yang dipilih |
+| Tekan Hapus lalu Escape | Dialog tertutup, tidak ada baris yang hilang |
+
+`tsc --noEmit` bersih, `next lint` bersih, `next build` berhasil.
+
 ---
 
 ## Blok 2: Purpose-Gate (teknik boleh, alasan wajib tertulis)

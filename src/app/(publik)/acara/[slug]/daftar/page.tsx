@@ -49,12 +49,7 @@ export default async function HalamanDaftar({ params }: Props) {
       <p className="text-sm text-ink-soft">Pendaftaran acara</p>
       <h1 className="mt-1">{acara.title}</h1>
       <p className="mt-1 text-sm text-ink-soft">{tanggalDanJam(acara.starts_at)}</p>
-      <FormPendaftaran
-        slug={acara.slug}
-        berbayar={acara.is_paid}
-        harga={acara.price}
-        sisaKuota={kuota.remaining}
-      />
+      <FormPendaftaran slug={acara.slug} berbayar={acara.is_paid} harga={acara.price} />
     </div>
   );
 }
