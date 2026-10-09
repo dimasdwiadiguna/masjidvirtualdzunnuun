@@ -119,19 +119,19 @@ export interface DataDriver {
   hitungKehadiran(whatsapp: string): Promise<number>;
   ringkasanKehadiran(): Promise<Kehadiran[]>;
   /**
-   * Memastikan satu nomor WhatsApp punya kartu: token tautan dan nomor jamaah.
+   * Memastikan satu nomor WhatsApp punya kartu: token tautan dan kode jamaah.
    * Dipanggil saat check-in, jadi tiap jamaah yang pernah hadir selalu punya
-   * nomor tanpa pengurus perlu membuatnya satu per satu.
+   * kode tanpa pengurus perlu membuatnya satu per satu.
    */
   pastikanKartuJamaah(whatsapp: string): Promise<KartuJamaah>;
   /**
    * Membuat token kartu baru untuk satu nomor. Token lama ikut dihapus, tetapi
-   * nomor jamaahnya dipertahankan: nomor itu identitas yang dihafal orangnya,
+   * kode jamaahnya dipertahankan: kode itu identitas yang dihafal orangnya,
    * bukan rahasia yang perlu diganti.
    */
   buatTautanKartu(whatsapp: string): Promise<KartuJamaah>;
   kartuLewatToken(token: string): Promise<KartuJamaah | null>;
-  kartuLewatNomor(nomor: string): Promise<KartuJamaah | null>;
+  kartuLewatKode(kode: string): Promise<KartuJamaah | null>;
   /** Semua kartu yang sudah ada, dipetakan dari nomor WhatsApp. Satu kueri. */
   semuaKartuJamaah(): Promise<Map<string, KartuJamaah>>;
 

@@ -2,7 +2,7 @@ import "server-only";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { SEED_SETTINGS } from "./seed";
 import { hariIniJakarta, hitungSuara, kumpulkanKehadiran } from "./kehadiran";
-import { buatTokenKartu, pilihNomorJamaah } from "@/lib/kode";
+import { buatTokenKartu, pilihKodeJamaah } from "@/lib/kode";
 import type {
   AnnouncementInput,
   SocialPostInput,
@@ -54,17 +54,17 @@ export function createSupabaseDriver(): DataDriver {
   const sb = klien();
 
   /**
-   * Nomor jamaah yang belum dipakai siapa pun.
+   * Kode jamaah yang belum dipakai siapa pun.
    *
-   * Nomornya dipilih dari daftar yang sudah terpakai, bukan dicoba satu-satu
+   * Kodenya dipilih dari daftar yang sudah terpakai, bukan dicoba satu-satu
    * sampai database menolak. Barisnya sedikit, satu kolom, jadi satu kueri
    * lebih murah daripada beberapa kali tabrakan. Indeks unik di database tetap
    * yang menjadi penjaga terakhir kalau dua pengurus menekan tombol bersamaan.
    */
-  async function nomorBelumTerpakai(): Promise<string> {
-    const { data, error } = await sb.from("loyalty_links").select("nomor").not("nomor", "is", null);
-    lempar("Gagal membaca nomor jamaah", error);
-    return pilihNomorJamaah(new Set((data ?? []).map((satu) => String((satu as { nomor: string }).nomor))));
+  async function kodeBelumTerpakai(): Promise<string> {
+    const { data, error } = await sb.from("loyalty_links").select("kode").not("kode", "is", null);
+    lempar("Gagal membaca kode jamaah", error);
+    return pilihKodeJamaah(new Set((data ?? []).map((satu) => String((satu as { kode: string }).kode))));
   }
 
   return {
@@ -394,46 +394,46 @@ export function createSupabaseDriver(): DataDriver {
     async pastikanKartuJamaah(whatsapp) {
       const { data, error } = await sb
         .from("loyalty_links")
-        .select("token, whatsapp, nomor")
+        .select("token, whatsapp, kode")
         .eq("whatsapp", whatsapp)
         .maybeSingle();
       lempar("Gagal membaca kartu jamaah", error);
       const ada = data as KartuJamaah | null;
-      if (ada?.nomor) return ada;
+      if (ada?.kode) return ada;
 
-      // Baris yang dibuat sebelum nomor jamaah ada tinggal dilengkapi nomornya,
+      // Baris yang dibuat sebelum kode jamaah ada tinggal dilengkapi kodenya,
       // tokennya dibiarkan supaya tautan yang sudah beredar tetap hidup.
-      const nomor = await nomorBelumTerpakai();
+      const kode = await kodeBelumTerpakai();
       if (ada) {
         const { data: perbarui, error: galatPerbarui } = await sb
           .from("loyalty_links")
-          .update({ nomor })
+          .update({ kode })
           .eq("token", ada.token)
-          .select("token, whatsapp, nomor")
+          .select("token, whatsapp, kode")
           .single();
-        lempar("Gagal memberi nomor jamaah", galatPerbarui);
+        lempar("Gagal memberi kode jamaah", galatPerbarui);
         return perbarui as KartuJamaah;
       }
 
       const { data: baru, error: galatBaru } = await sb
         .from("loyalty_links")
-        .insert({ token: buatTokenKartu(), whatsapp, nomor })
-        .select("token, whatsapp, nomor")
+        .insert({ token: buatTokenKartu(), whatsapp, kode })
+        .select("token, whatsapp, kode")
         .single();
       lempar("Gagal membuat kartu jamaah", galatBaru);
       return baru as KartuJamaah;
     },
     async buatTautanKartu(whatsapp) {
-      // Nomor jamaah dibaca lebih dulu supaya ikut terbawa ke baris baru. Nomor
+      // Kode jamaah dibaca lebih dulu supaya ikut terbawa ke baris baru. Kode
       // itu dihafal orangnya dan dicetak di pengumuman, jadi tidak boleh ikut
       // berubah saat tautan rahasianya dicabut.
       const { data: lama, error: galatBaca } = await sb
         .from("loyalty_links")
-        .select("nomor")
+        .select("kode")
         .eq("whatsapp", whatsapp)
         .maybeSingle();
       lempar("Gagal membaca kartu jamaah", galatBaca);
-      const nomor = (lama as { nomor: string | null } | null)?.nomor ?? (await nomorBelumTerpakai());
+      const kode = (lama as { kode: string | null } | null)?.kode ?? (await kodeBelumTerpakai());
 
       // Token lama dihapus supaya tautan yang sudah beredar bisa dianggap
       // hangus dengan menekan tombolnya sekali lagi.
@@ -441,8 +441,8 @@ export function createSupabaseDriver(): DataDriver {
       lempar("Gagal menghapus tautan kartu lama", galatHapus);
       const { data, error } = await sb
         .from("loyalty_links")
-        .insert({ token: buatTokenKartu(), whatsapp, nomor })
-        .select("token, whatsapp, nomor")
+        .insert({ token: buatTokenKartu(), whatsapp, kode })
+        .select("token, whatsapp, kode")
         .single();
       lempar("Gagal membuat tautan kartu", error);
       return data as KartuJamaah;
@@ -450,24 +450,24 @@ export function createSupabaseDriver(): DataDriver {
     async kartuLewatToken(token) {
       const { data, error } = await sb
         .from("loyalty_links")
-        .select("token, whatsapp, nomor")
+        .select("token, whatsapp, kode")
         .eq("token", token)
         .maybeSingle();
       lempar("Gagal membaca tautan kartu", error);
       return (data as KartuJamaah) ?? null;
     },
-    async kartuLewatNomor(nomor) {
+    async kartuLewatKode(kode) {
       const { data, error } = await sb
         .from("loyalty_links")
-        .select("token, whatsapp, nomor")
-        .eq("nomor", nomor)
+        .select("token, whatsapp, kode")
+        .eq("kode", kode)
         .maybeSingle();
       lempar("Gagal membaca kartu jamaah", error);
       return (data as KartuJamaah) ?? null;
     },
 
     async semuaKartuJamaah() {
-      const { data, error } = await sb.from("loyalty_links").select("token, whatsapp, nomor");
+      const { data, error } = await sb.from("loyalty_links").select("token, whatsapp, kode");
       lempar("Gagal membaca kartu jamaah", error);
       return new Map((data ?? []).map((satu) => [satu.whatsapp as string, satu as KartuJamaah]));
     },

@@ -24,7 +24,7 @@ Bagian 1 sampai 4 untuk yang memasang app. Bagian 5 ditulis untuk pengurus yang 
    - `supabase/migrasi-02-pengumuman.sql` — tabel pengumuman. Tanpa ini, menu Pengumuman belum berfungsi.
    - `supabase/migrasi-03-loyalty-sosmed-kuis.sql` — kartu loyalitas, post sosmed, kuis, dan polling. Tanpa ini, keempat menu itu belum berfungsi.
    - `supabase/migrasi-04-templat-wa-dan-donasi-manual.sql` — kolom templat pesan WhatsApp, dan pelonggaran batas angka unik supaya donasi bisa dicatat manual. Tanpa ini, menyunting pesan WhatsApp dan mencatat donasi manual akan gagal.
-   - `supabase/migrasi-05-nomor-jamaah.sql` — nomor jamaah 4 angka untuk alamat `/jamaah/[nomor]`. Tanpa ini, check-in tetap jalan tetapi nomor jamaah tidak pernah terbit.
+   - `supabase/migrasi-05-kode-jamaah.sql` — kode jamaah 5 karakter untuk alamat `/jamaah/[kode]`. Tanpa ini, check-in tetap jalan tetapi kode jamaah tidak pernah terbit.
 4. Buka **Project Settings, API**, catat dua nilai ini:
    - Project URL, misalnya `https://abcdefgh.supabase.co`
    - `service_role` key (bukan `anon` key)
@@ -225,16 +225,18 @@ Membuka dan menyalin pesannya bisa dilakukan panitia. Mengubah kata-katanya hany
 
 Tiap 10 kali hadir acara, jamaah berhak hadiah khusus. Hitungannya jalan sendiri, tanpa jamaah perlu punya akun atau password.
 
-Tiap jamaah punya **nomor jamaah**: 4 angka yang terbit sendiri saat orangnya pertama kali di-check-in. Kartunya dibuka dengan mengetik `alamat-app-anda/jamaah/3239`. Nomor itu dibuat supaya bisa dibacakan di depan pintu dan dihafal orangnya, jadi boleh ditulis di pengumuman atau disebut lewat telepon.
+Tiap jamaah punya **kode jamaah**: 5 karakter berbentuk dua huruf lalu tiga angka, misalnya `KM472`, yang terbit sendiri saat orangnya pertama kali di-check-in. Kartunya dibuka dengan mengetik `alamat-app-anda/jamaah/KM472`. Huruf besar kecil tidak masalah. Kode itu dibuat supaya bisa dibacakan di depan pintu dan dihafal orangnya, jadi boleh ditulis di pengumuman atau disebut lewat telepon. Huruf I, L, O dan angka 0, 1 tidak pernah dipakai supaya tidak tertukar saat dieja.
 
-1. Menu **Jamaah Loyal** menampilkan siapa saja yang pernah hadir, berapa kali, dan nomor jamaahnya. Yang sudah tembus kelipatan 10 diberi tanda.
+1. Menu **Jamaah Loyal** menampilkan siapa saja yang pernah hadir, berapa kali, dan kode jamaahnya. Yang sudah tembus kelipatan 10 diberi tanda.
 2. **Lihat kartu** membuka kartu orang itu di tab baru, persis seperti yang dilihat jamaahnya. Pakai ini kalau ada yang bertanya di tempat kurang berapa stempel lagi.
 3. **Kirim kartu** membuka WhatsApp dengan pesan berisi tautan panjang kartunya.
-4. Jamaah membuka kartu berisi 10 kotak stempel, berikut nomor dan alamat pendeknya supaya dia bisa kembali walaupun pesan WhatsApp-nya sudah hilang. Isinya bertambah sendiri tiap dia check-in lagi.
-5. Kalau tautan panjangnya terlanjur tersebar ke orang lain, tekan **Ganti tautan**. Tautan lama langsung mati. **Nomor jamaahnya tidak ikut berubah**, karena nomor itu memang untuk dihafal, bukan rahasia.
-6. Jamaah yang sudah hadir sebelum nomor ini ada akan tertulis `belum ada` pada kolom Nomor. Tekan **Terbitkan kartu** sekali, nomornya langsung terbit dan tautan lamanya tetap hidup.
+4. Jamaah membuka kartu berisi 10 kotak stempel, berikut kode dan alamat pendeknya supaya dia bisa kembali walaupun pesan WhatsApp-nya sudah hilang. Isinya bertambah sendiri tiap dia check-in lagi.
+5. Kalau tautan panjangnya terlanjur tersebar ke orang lain, tekan **Ganti tautan**. Tautan lama langsung mati. **Kode jamaahnya tidak ikut berubah**, karena kode itu memang untuk dihafal, bukan rahasia.
+6. Jamaah yang sudah hadir sebelum kode ini ada akan tertulis `belum ada` pada kolom Kode. Tekan **Terbitkan kode untuk N jamaah** di kotak atas daftar untuk menerbitkan semuanya sekali tekan, atau **Terbitkan kode** di barisnya sendiri untuk satu orang. Tautan panjang yang sudah pernah Anda kirim tetap hidup.
 
-**Nomor 4 angka memang bisa ditebak, dan itu disengaja.** Yang dijaga adalah isi kartunya: hanya nama depan, jumlah kehadiran, dan jumlah menang kuis. Nomor WhatsApp tidak pernah ikut tampil. Kalau ada yang mencoba menebak nomor beramai-ramai dari satu jaringan, pencarian nomor dijeda sendiri sekitar sepuluh menit, sedangkan tautan panjang dari WhatsApp tetap bisa dibuka.
+**Seberapa aman kodenya.** Bentuk dua huruf tiga angka punya 270.848 kemungkinan. Menebak satu kode yang benar butuh ribuan percobaan, dan kalau ada yang mencoba beramai-ramai dari satu jaringan, pencarian kode dijeda sendiri sekitar sepuluh menit setelah 30 kali salah. Dengan jeda itu, satu jaringan butuh lebih dari dua bulan untuk mencoba semua kemungkinan.
+
+Itu membuat coba-coba tidak ada hasilnya, tetapi bukan berarti mustahil. Jadi isi kartunya tetap dijaga tipis: hanya nama depan, jumlah kehadiran, dan jumlah menang kuis. **Nomor WhatsApp tidak pernah ikut tampil di kartu.** Jangan menaruh apa pun yang benar-benar pribadi di halaman kartu.
 
 Yang dihitung adalah tiket yang benar-benar Anda check-in, bukan yang sekadar mendaftar. Satu tiket dihitung satu kehadiran walaupun dipakai untuk beberapa orang, karena yang punya nomor itu yang hadir. Tiket yang Anda batalkan setelah check-in ikut dikurangi lagi.
 

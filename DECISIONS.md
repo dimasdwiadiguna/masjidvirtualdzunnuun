@@ -1227,6 +1227,9 @@ tidak ikut rusak seperti yang dikhawatirkan D-67.
 
 ### D-102 Nomor jamaah 4 angka, dan kenapa tetap dipakai walaupun bisa ditebak
 
+**Dicabut oleh D-107.** Bentuknya sekarang 5 karakter, dan alasan di bawah ini
+disimpan karena D-107 berdiri di atasnya.
+
 Masukan pengurus: tiap jamaah loyal diberi kode unik, dan `/jamaah/3239`
 membuka kartunya.
 
@@ -1330,6 +1333,90 @@ jalur kamera benar-benar dilepas saat dimatikan.
 Yang tetap belum lunas dan masih perlu dicek pengurus sekali di HP fisik:
 lampu kilat, ganti kamera, bunyi, dan getaran. Keempatnya bergantung pada
 perangkat yang tidak ada padanannya di kamera palsu.
+
+---
+
+### D-107 Nomor 4 angka diganti kode 5 karakter, D-102 dicabut
+
+Masukan pengurus setelah membaca peringatan di D-102: nomor 4 angka terlalu
+rapat, beri 5 karakter berisi 2 huruf dan 3 angka.
+
+Diterima, dan angkanya diperiksa lebih dulu daripada dipercaya begitu saja.
+Dengan alfabet tanpa huruf rancu, ruangnya 23 pangkat 2 kali 8 pangkat 3, yaitu
+**270.848**, tiga puluh kali lipat dari 9.000. Yang berubah untuk penyerang
+bukan hanya ruangnya, melainkan kerapatannya: dengan 200 jamaah terdaftar,
+rata-rata tebakan untuk sekali kena naik dari **45** jadi **1.354**. Coba-coba
+iseng jadi tidak ada hasilnya.
+
+Yang perlu dikatakan apa adanya, dan sudah ditulis di README: **270.848 bukan
+angka yang bisa disebut mustahil disapu.** Dengan pembatas 30 salah per sepuluh
+menit per IP, satu IP butuh 63 hari untuk mencoba semuanya, tetapi 500 IP
+menyelesaikannya dalam hitungan jam. Jadi yang menahan penyapuan tetap
+pembatas per IP ditambah isi kartu yang memang tipis, bukan panjang kodenya
+sendiri. Kalau suatu saat kartunya memuat sesuatu yang lebih pribadi, yang
+harus berubah lebih dulu adalah isi kartunya, bukan panjang kodenya.
+
+Kalau pengurus ingin lebih panjang, yang perlu diubah cuma `pilihKodeJamaah()`
+dan `BENTUK_KODE_JAMAAH` di `src/lib/kode.ts`. Menambah satu angka saja
+membuat ruangnya jadi 2,1 juta.
+
+### D-108 Bentuk kode dibuat tetap, dan huruf rancu tetap dibuang
+
+Permintaannya "5 karakter (2 alfabet 3 numerik) secara acak". Yang diacak
+adalah isinya, bukan posisinya: kodenya selalu dua huruf lalu tiga angka,
+misalnya `KM472`.
+
+Alasannya satu, dan sama dengan alasan kode ini ada: kode dibacakan di depan
+pintu dan diketik ulang di bilah alamat. "Dua huruf, tiga angka" bisa dihafal
+dan dieja; lima karakter campur yang urutannya berubah-ubah tidak. Bentuk tetap
+juga membuat salah ketik ditolak sebelum menyentuh database.
+
+Huruf I, L, O dan angka 0, 1 tetap dibuang, alasannya sama dengan D-11 pada
+kode tiket. Ongkosnya nyata dan diterima sadar: memakai seluruh abjad dan
+angka akan memberi 676.000, dua setengah kali lebih besar. Tetapi kode yang
+salah dieja lewat telepon membuat jamaah membuka kartu orang lain atau tidak
+membuka apa pun, dan itu kegagalan yang lebih sering terjadi daripada
+penyapuan.
+
+Kode juga dirapikan jadi huruf besar sebelum dicari, karena papan ketik HP
+Android sering mengirim huruf kecil di bilah alamat. `/jamaah/km472` dan
+`/jamaah/KM472` membuka kartu yang sama.
+
+### D-109 Nomor lama tidak dipindahkan, dan ada tombol terbitkan massal
+
+Bentuk kodenya berubah, jadi nomor 4 angka yang sempat terbit tidak bisa
+dibawa. Memindahkannya pun tidak masuk akal: membiarkan nomor lama hidup
+berarti membiarkan alamat yang rapat itu tetap terbuka, padahal justru itu
+yang sedang diperbaiki.
+
+Migrasinya karena itu membuang kolom `nomor` berikut indeksnya. Berkasnya tetap
+bernama `migrasi-05`, sekarang `migrasi-05-kode-jamaah.sql`, bukan ditambah
+jadi migrasi 06. Alasannya migrasi 05 belum pernah dirilis, dan menambah berkas
+kedua berarti pengurus menjalankan dua migrasi untuk satu perubahan yang sama.
+Berkasnya ditulis supaya aman dijalankan baik oleh yang sudah sempat
+menjalankan versi pertamanya maupun yang belum.
+
+Supaya pengurus tidak menekan tombol sebanyak jumlah jamaah, daftar Jamaah
+Loyal sekarang punya kotak di atasnya yang menerbitkan kode untuk semua yang
+belum punya, sekali tekan. Kotak itu hilang sendiri begitu semua sudah berkode.
+Penerbitannya berurutan, bukan berbarengan, supaya dua kode tidak sama-sama
+memilih dari daftar terpakai yang belum sempat tersimpan.
+
+### D-110 Tombol aksi tanpa dialog ikut memuat ulang halaman, D-94 diperluas
+
+Ditemukan saat menguji tombol terbitkan massal: kodenya selalu tertulis di
+database, tetapi daftarnya tidak ikut segar, jadi tombolnya terbaca seperti
+tidak bereaksi. Gejala dan sebabnya persis D-94, yang waktu itu hanya
+memperbaiki tombol yang punya dialog konfirmasi.
+
+Tombol yang tidak butuh dialog sekarang punya pembungkusnya sendiri,
+`TombolAksi`, yang menunggu aksinya selesai lalu memuat ulang halaman penuh.
+Dipakai tombol terbitkan kode, satuan maupun massal.
+
+Pelajarannya ditulis di sini supaya tidak ditemukan ketiga kalinya: di app ini,
+`revalidatePath` di dalam server action tidak cukup untuk menyegarkan layar.
+Setiap aksi pengurus yang hasilnya dilihat di halaman yang sama perlu memuat
+ulang penuh.
 
 ---
 

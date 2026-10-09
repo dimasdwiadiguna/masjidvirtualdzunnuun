@@ -27,7 +27,7 @@ export default async function KartuKehadiran({ kartu }: { kartu: KartuJamaah }) 
   // Kartu yang pas penuh ditampilkan penuh, bukan kembali kosong.
   const stempel = hadir > 0 && terisi === 0 ? TARGET_STEMPEL : terisi;
   const kurang = TARGET_STEMPEL - stempel;
-  const alamatPendek = kartu.nomor ? `${alamatSitus()}/jamaah/${kartu.nomor}` : null;
+  const alamatPendek = kartu.kode ? `${alamatSitus()}/jamaah/${kartu.kode}` : null;
 
   return (
     <div className="kolom-isi py-6">
@@ -59,12 +59,12 @@ export default async function KartuKehadiran({ kartu }: { kartu: KartuJamaah }) 
         </p>
       </div>
 
-      {kartu.nomor ? (
+      {kartu.kode ? (
         <div className="kartu mt-4 p-4">
-          <h2 className="text-base">Nomor jamaah Anda</h2>
-          <p className="kode-besar mt-2 text-[clamp(1.6rem,9vw,2.2rem)]">{kartu.nomor}</p>
+          <h2 className="text-base">Kode jamaah Anda</h2>
+          <p className="kode-besar mt-2 text-[clamp(1.6rem,9vw,2.2rem)]">{kartu.kode}</p>
           <p className="petunjuk">
-            Hafalkan nomor ini. Kalau tautan kartunya hilang dari percakapan, kartu yang sama tetap bisa dibuka
+            Hafalkan kode ini. Kalau tautan kartunya hilang dari percakapan, kartu yang sama tetap bisa dibuka
             dengan mengetik alamat di bawah.
           </p>
           <p className="mt-2 break-all font-semibold">{alamatPendek}</p>

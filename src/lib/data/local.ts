@@ -3,7 +3,7 @@ import { randomUUID } from "crypto";
 import { mkdir, readFile, rename, writeFile } from "fs/promises";
 import path from "path";
 import { SEED_SEASON, SEED_SETTINGS } from "./seed";
-import { buatTokenKartu, pilihNomorJamaah } from "@/lib/kode";
+import { buatTokenKartu, pilihKodeJamaah } from "@/lib/kode";
 import { hariIniJakarta, hitungSuara, kumpulkanKehadiran } from "./kehadiran";
 import type {
   DataDriver,
@@ -85,11 +85,11 @@ let antrian: Promise<unknown> = Promise.resolve();
 
 /** Baris penyimpanan dipotong jadi bentuk yang dipakai halaman kartu. */
 function kartuDari(baris: LoyaltyLink): KartuJamaah {
-  return { whatsapp: baris.whatsapp, token: baris.token, nomor: baris.nomor ?? null };
+  return { whatsapp: baris.whatsapp, token: baris.token, kode: baris.kode ?? null };
 }
 
-function nomorTerpakai(isi: Isi): Set<string> {
-  return new Set((isi.loyaltyLinks ?? []).map((satu) => satu.nomor).filter((nomor): nomor is string => Boolean(nomor)));
+function kodeTerpakai(isi: Isi): Set<string> {
+  return new Set((isi.loyaltyLinks ?? []).map((satu) => satu.kode).filter((kode): kode is string => Boolean(kode)));
 }
 
 function berurutan<T>(kerja: () => Promise<T>): Promise<T> {
@@ -482,13 +482,13 @@ export function createLocalDriver(): DataDriver {
         const isi = await bacaMentah();
         isi.loyaltyLinks = isi.loyaltyLinks ?? [];
         const ada = isi.loyaltyLinks.find((satu) => satu.whatsapp === whatsapp);
-        if (ada?.nomor) return kartuDari(ada);
+        if (ada?.kode) return kartuDari(ada);
 
-        const nomor = pilihNomorJamaah(nomorTerpakai(isi));
+        const kode = pilihKodeJamaah(kodeTerpakai(isi));
         if (ada) {
-          // Baris lama tinggal dilengkapi nomornya, tokennya dibiarkan supaya
+          // Baris lama tinggal dilengkapi kodenya, tokennya dibiarkan supaya
           // tautan yang sudah beredar tetap hidup.
-          ada.nomor = nomor;
+          ada.kode = kode;
           await tulisMentah(isi);
           return kartuDari(ada);
         }
@@ -496,7 +496,7 @@ export function createLocalDriver(): DataDriver {
         const baru: LoyaltyLink = {
           token: buatTokenKartu(),
           whatsapp,
-          nomor,
+          kode,
           created_at: new Date().toISOString(),
         };
         isi.loyaltyLinks.push(baru);
@@ -508,15 +508,15 @@ export function createLocalDriver(): DataDriver {
       return berurutan(async () => {
         const isi = await bacaMentah();
         isi.loyaltyLinks = isi.loyaltyLinks ?? [];
-        // Nomor jamaah ikut terbawa ke baris baru: nomor itu identitas yang
+        // Kode jamaah ikut terbawa ke baris baru: kode itu identitas yang
         // dihafal orangnya, bukan rahasia yang perlu diganti.
         const lama = isi.loyaltyLinks.find((satu) => satu.whatsapp === whatsapp);
         isi.loyaltyLinks = isi.loyaltyLinks.filter((satu) => satu.whatsapp !== whatsapp);
-        const nomor = lama?.nomor ?? pilihNomorJamaah(nomorTerpakai(isi));
+        const kode = lama?.kode ?? pilihKodeJamaah(kodeTerpakai(isi));
         const baru: LoyaltyLink = {
           token: buatTokenKartu(),
           whatsapp,
-          nomor,
+          kode,
           created_at: new Date().toISOString(),
         };
         isi.loyaltyLinks.push(baru);
@@ -531,10 +531,10 @@ export function createLocalDriver(): DataDriver {
         return satu ? kartuDari(satu) : null;
       });
     },
-    async kartuLewatNomor(nomor) {
+    async kartuLewatKode(kode) {
       return berurutan(async () => {
         const isi = await bacaMentah();
-        const satu = (isi.loyaltyLinks ?? []).find((baris) => baris.nomor === nomor);
+        const satu = (isi.loyaltyLinks ?? []).find((baris) => baris.kode === kode);
         return satu ? kartuDari(satu) : null;
       });
     },

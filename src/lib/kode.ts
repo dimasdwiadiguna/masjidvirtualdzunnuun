@@ -40,27 +40,33 @@ export function buatTokenKartu(): string {
   return hasil;
 }
 
-export const BENTUK_NOMOR_JAMAAH = /^[1-9][0-9]{3,4}$/;
+/** Alfabet kode jamaah, dipecah supaya bentuknya bisa dijaga per posisi. */
+const HURUF_JAMAAH = "ABCDEFGHJKMNPQRSTUVWXYZ";
+const ANGKA_JAMAAH = "23456789";
+
+export const BENTUK_KODE_JAMAAH = new RegExp(`^[${HURUF_JAMAAH}]{2}[${ANGKA_JAMAAH}]{3}$`);
 
 /**
- * Nomor jamaah: 4 angka, 1000 sampai 9999.
+ * Kode jamaah: dua huruf lalu tiga angka, misalnya `KM472`.
  *
- * Angka, bukan huruf, karena nomor ini dibacakan di depan pintu dan diketik
- * ulang jamaah di bilah alamat. Tidak pernah diawali nol supaya tidak hilang
- * saat ditulis ulang di kertas atau di papan pengumuman.
+ * Bentuknya dibuat tetap, bukan lima karakter campur acak, karena kode ini
+ * dibacakan di depan pintu dan diketik ulang jamaah di bilah alamat. Orang
+ * mengingat "dua huruf, tiga angka" jauh lebih mudah daripada urutan yang
+ * berubah-ubah, dan bentuk tetap juga membuat salah ketik bisa ditolak
+ * sebelum menyentuh database.
  *
- * Ruang 4 angka cukup untuk 9.000 orang. Kalau sampai padat, nomornya melebar
- * ke 5 angka daripada pengalokasiannya gagal.
+ * Huruf I, L, O dan angka 0, 1 dibuang, alasannya sama dengan D-11 pada kode
+ * tiket: kode ini dieja lewat telepon dan ditulis ulang di kertas. Ongkosnya
+ * ruang tebakan jadi 23 pangkat 2 kali 8 pangkat 3, yaitu 270.848, bukan
+ * 676.000 kalau seluruh abjad dipakai. Selisih itu diterima sadar: yang
+ * menahan penyapuan adalah pembatas per IP, bukan panjang kodenya sendiri.
  */
-export function pilihNomorJamaah(terpakai: Set<string>): string {
-  for (const [bawah, atas] of [
-    [1000, 10000],
-    [10000, 100000],
-  ]) {
-    for (let percobaan = 0; percobaan < 300; percobaan += 1) {
-      const kandidat = String(randomInt(bawah, atas));
-      if (!terpakai.has(kandidat)) return kandidat;
-    }
+export function pilihKodeJamaah(terpakai: Set<string>): string {
+  for (let percobaan = 0; percobaan < 500; percobaan += 1) {
+    let kandidat = "";
+    for (let i = 0; i < 2; i += 1) kandidat += HURUF_JAMAAH[randomInt(HURUF_JAMAAH.length)];
+    for (let i = 0; i < 3; i += 1) kandidat += ANGKA_JAMAAH[randomInt(ANGKA_JAMAAH.length)];
+    if (!terpakai.has(kandidat)) return kandidat;
   }
-  throw new Error("Nomor jamaah sudah habis. Hubungi yang memasang app ini.");
+  throw new Error("Kode jamaah sulit dicarikan yang kosong. Hubungi yang memasang app ini.");
 }
