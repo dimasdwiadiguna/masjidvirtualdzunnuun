@@ -9,9 +9,10 @@ import QRCode from "qrcode";
  * menebak kode mana yang benar-benar ada, dan tidak ada nama atau nominal
  * yang bisa bocor lewat sini.
  *
- * Isi QR tetap kode telanjang, bukan alamat halaman. PapanCheckIn menulis
- * hasil pindaian langsung ke kolom kode, jadi mengisinya dengan URL akan
- * merusak check-in lewat kamera.
+ * Isi QR tetap kode telanjang, bukan alamat halaman, supaya tidak ada nama
+ * atau nominal yang ikut terbawa saat QR-nya diteruskan ke orang lain.
+ * Check-in sendiri tidak lagi bergantung pada itu: PapanCheckIn mencari pola
+ * kode di dalam teks apa pun yang terbaca kameranya.
  */
 const BENTUK_KODE = /^DZN-[23456789ABCDEFGHJKMNPQRSTUVWXYZ]{4}$/;
 

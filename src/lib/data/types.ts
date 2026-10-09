@@ -127,7 +127,19 @@ export type Announcement = {
 export type LoyaltyLink = {
   token: string;
   whatsapp: string;
+  /**
+   * Nomor jamaah pendek, 4 angka, yang dipakai alamat /jamaah/[nomor]. Boleh
+   * kosong hanya untuk baris yang dibuat sebelum nomor ini ada.
+   */
+  nomor: string | null;
   created_at: string;
+};
+
+/** Satu kartu kehadiran berikut dua cara mengalamatinya. */
+export type KartuJamaah = {
+  whatsapp: string;
+  token: string;
+  nomor: string | null;
 };
 
 /** Satu baris ringkasan kehadiran per nomor WhatsApp. */

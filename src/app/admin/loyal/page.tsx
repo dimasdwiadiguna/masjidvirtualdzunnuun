@@ -8,7 +8,7 @@ import { samarkanWa, tanggalPendek } from "@/lib/format";
 import { pesanKartu, templatDari } from "@/lib/pesan-wa";
 import { alamatSitus } from "@/lib/situs";
 import { linkWa } from "@/lib/wa";
-import { buatTautanKartu } from "./actions";
+import { buatTautanKartu, terbitkanKartu } from "./actions";
 
 export const metadata: Metadata = { title: "Jamaah Loyal", robots: { index: false } };
 export const dynamic = "force-dynamic";
@@ -21,9 +21,11 @@ export default async function AdminLoyal() {
   // Kata-kata pesannya diambil sekali untuk seluruh tabel, bukan per baris.
   const templat = templatDari(pengaturan);
 
-  // Tautan yang sudah pernah dibuat, diambil sekali. Membuka halaman ini tidak
-  // membuat token baru: token lahir saat pengurus menekan tombolnya.
-  const tautan = await data.semuaTautanKartu();
+  // Kartu yang sudah pernah dibuat, diambil sekali. Membuka halaman ini tidak
+  // membuat kartu baru: kartu lahir saat jamaahnya pertama kali di-check-in,
+  // dan tombol di tiap baris hanya untuk jamaah yang hadir sebelum nomor
+  // jamaah ada.
+  const kartu = await data.semuaKartuJamaah();
 
   return (
     <div className="mx-auto w-full max-w-[900px] px-4 py-6">
@@ -33,7 +35,9 @@ export default async function AdminLoyal() {
         walaupun dipakai untuk beberapa orang. Tiap {TARGET} kehadiran berhak hadiah khusus.
       </p>
       <p className="petunjuk">
-        Kartu dibuka lewat tautan rahasianya, jadi tombol Lihat kartu baru muncul setelah tautannya dibuat sekali.
+        Tiap jamaah punya nomor 4 angka. Kartunya bisa dibuka dengan menyebut nomornya saja, lewat alamat{" "}
+        <span className="font-semibold">{alamatSitus().replace(/^https?:\/\//, "")}/jamaah/3239</span>. Nomor terbit
+        sendiri saat orangnya pertama kali di-check-in.
       </p>
 
       {ringkasan.length === 0 ? (
@@ -48,7 +52,10 @@ export default async function AdminLoyal() {
           kepala={
             <tr>
               <th scope="col">Jamaah</th>
-              <th scope="col">Hadir</th>
+              <th scope="col">Nomor</th>
+              <th scope="col" className="hidden sm:table-cell">
+                Hadir
+              </th>
               <th scope="col" className="hidden sm:table-cell">
                 Terakhir
               </th>
@@ -59,7 +66,9 @@ export default async function AdminLoyal() {
           }
         >
           {ringkasan.map((satu) => {
-            const token = tautan.get(satu.whatsapp);
+            const punya = kartu.get(satu.whatsapp);
+            const token = punya?.token;
+            const nomorJamaah = punya?.nomor ?? null;
             const alamat = token ? `${alamatSitus()}/kartu/${token}` : "";
             const stempel = satu.hadir % TARGET;
             const penuh = satu.hadir > 0 && stempel === 0;
@@ -73,43 +82,59 @@ export default async function AdminLoyal() {
             return (
               <BarisTabel
                 key={satu.whatsapp}
-                kolom={4}
+                kolom={5}
                 judulBaris={satu.nama}
                 ringkas={
                   <>
                     <td>
                       <span className="font-semibold">{satu.nama}</span>
                       <span className="block text-xs text-ink-soft">{samarkanWa(satu.whatsapp)}</span>
+                      <span className="block text-xs text-ink-soft sm:hidden">
+                        {satu.hadir} kali hadir{penuh ? " · berhak hadiah" : ""}
+                      </span>
                     </td>
                     <td>
+                      {nomorJamaah ? (
+                        <span className="kode-besar text-sm">{nomorJamaah}</span>
+                      ) : (
+                        <span className="text-xs text-ink-soft">belum ada</span>
+                      )}
+                    </td>
+                  </>
+                }
+                tambahan={
+                  <>
+                    <td className="hidden sm:table-cell">
                       <span className={`label-status ${penuh ? "status-baik" : "status-diam"}`}>
                         {satu.hadir}
                         {penuh ? " · berhak hadiah" : ""}
                       </span>
                     </td>
+                    <td className="hidden whitespace-nowrap sm:table-cell">
+                      {satu.terakhir ? tanggalPendek(satu.terakhir) : "-"}
+                    </td>
                   </>
-                }
-                tambahan={
-                  <td className="hidden whitespace-nowrap sm:table-cell">
-                    {satu.terakhir ? tanggalPendek(satu.terakhir) : "-"}
-                  </td>
                 }
                 rincian={
                   <>
                     <p>{satu.terakhir ? `Terakhir hadir ${tanggalPendek(satu.terakhir)}` : "Belum ada tanggal"}</p>
                     <p>{penuh ? "Kartu penuh, berhak hadiah" : `Kurang ${TARGET - stempel} lagi`}</p>
+                    {nomorJamaah ? <p>Alamat kartu: /jamaah/{nomorJamaah}</p> : null}
                   </>
                 }
                 aksi={
                   <>
-                    {token ? (
-                      // Tautan yang sama dengan yang dikirim ke jamaah, dibuka
-                      // di tab lain supaya daftar ini tidak ikut berpindah.
-                      // Pengurus sering perlu melihat kartunya lebih dulu,
-                      // misalnya saat jamaah bertanya kurang berapa stempel
-                      // lagi, dan sebelumnya satu-satunya jalan adalah mengirim
-                      // tautannya ke WhatsApp orang itu.
-                      <a href={`/kartu/${token}`} target="_blank" rel="noopener noreferrer" className="tombol-kecil">
+                    {nomorJamaah || token ? (
+                      // Dibuka di tab lain supaya daftar ini tidak ikut
+                      // berpindah. Alamat pendek yang dipakai kalau nomornya
+                      // sudah ada, jadi yang dilihat pengurus persis alamat
+                      // yang dia bacakan ke jamaahnya.
+                      <a
+                        href={nomorJamaah ? `/jamaah/${nomorJamaah}` : `/kartu/${token}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="tombol-kecil"
+                      >
                         Lihat kartu
                       </a>
                     ) : null}
@@ -127,23 +152,27 @@ export default async function AdminLoyal() {
                         {penuh ? "Kabari hadiah" : "Kirim kartu"}
                       </a>
                     ) : null}
+                    {nomorJamaah ? null : (
+                      // Jamaah yang hadir sebelum nomor jamaah ada. Aksinya
+                      // melengkapi nomornya tanpa menyentuh token, jadi tautan
+                      // yang sudah pernah dikirim ke orang itu tetap hidup.
+                      <form action={terbitkanKartu}>
+                        <input type="hidden" name="whatsapp" value={satu.whatsapp} />
+                        <button type="submit" className="tombol-kecil">
+                          Terbitkan kartu
+                        </button>
+                      </form>
+                    )}
                     {alamat ? (
                       <KonfirmasiAksi
                         aksi={buatTautanKartu}
                         tersembunyi={{ whatsapp: satu.whatsapp }}
                         labelPemicu="Ganti tautan"
                         judul={`Ganti tautan kartu ${satu.nama}`}
-                        penjelasan="Tautan lama langsung tidak bisa dibuka lagi. Pakai ini kalau tautannya terlanjur tersebar ke orang lain."
+                        penjelasan="Tautan panjang yang lama langsung tidak bisa dibuka lagi. Pakai ini kalau tautannya terlanjur tersebar ke orang lain. Nomor jamaahnya tidak ikut berubah, karena nomor itu memang untuk dihafal orangnya."
                         labelKonfirmasi="Ya, ganti tautannya"
                       />
-                    ) : (
-                      <form action={buatTautanKartu}>
-                        <input type="hidden" name="whatsapp" value={satu.whatsapp} />
-                        <button type="submit" className="tombol-kecil">
-                          Buat tautan kartu
-                        </button>
-                      </form>
-                    )}
+                    ) : null}
                   </>
                 }
               />

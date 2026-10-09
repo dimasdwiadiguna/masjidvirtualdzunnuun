@@ -3,7 +3,7 @@ import { randomUUID } from "crypto";
 import { mkdir, readFile, rename, writeFile } from "fs/promises";
 import path from "path";
 import { SEED_SEASON, SEED_SETTINGS } from "./seed";
-import { buatTokenKartu } from "@/lib/kode";
+import { buatTokenKartu, pilihNomorJamaah } from "@/lib/kode";
 import { hariIniJakarta, hitungSuara, kumpulkanKehadiran } from "./kehadiran";
 import type {
   DataDriver,
@@ -25,6 +25,7 @@ import type {
   EventCapacityInfo,
   EventItem,
   Announcement,
+  KartuJamaah,
   LoyaltyLink,
   QuizWinner,
   SocialPost,
@@ -81,6 +82,15 @@ function isiAwal(): Isi {
  * hilang saat pratinjau.
  */
 let antrian: Promise<unknown> = Promise.resolve();
+
+/** Baris penyimpanan dipotong jadi bentuk yang dipakai halaman kartu. */
+function kartuDari(baris: LoyaltyLink): KartuJamaah {
+  return { whatsapp: baris.whatsapp, token: baris.token, nomor: baris.nomor ?? null };
+}
+
+function nomorTerpakai(isi: Isi): Set<string> {
+  return new Set((isi.loyaltyLinks ?? []).map((satu) => satu.nomor).filter((nomor): nomor is string => Boolean(nomor)));
+}
 
 function berurutan<T>(kerja: () => Promise<T>): Promise<T> {
   const hasil = antrian.then(kerja, kerja);
@@ -467,27 +477,72 @@ export function createLocalDriver(): DataDriver {
         );
       });
     },
+    async pastikanKartuJamaah(whatsapp) {
+      return berurutan(async () => {
+        const isi = await bacaMentah();
+        isi.loyaltyLinks = isi.loyaltyLinks ?? [];
+        const ada = isi.loyaltyLinks.find((satu) => satu.whatsapp === whatsapp);
+        if (ada?.nomor) return kartuDari(ada);
+
+        const nomor = pilihNomorJamaah(nomorTerpakai(isi));
+        if (ada) {
+          // Baris lama tinggal dilengkapi nomornya, tokennya dibiarkan supaya
+          // tautan yang sudah beredar tetap hidup.
+          ada.nomor = nomor;
+          await tulisMentah(isi);
+          return kartuDari(ada);
+        }
+
+        const baru: LoyaltyLink = {
+          token: buatTokenKartu(),
+          whatsapp,
+          nomor,
+          created_at: new Date().toISOString(),
+        };
+        isi.loyaltyLinks.push(baru);
+        await tulisMentah(isi);
+        return kartuDari(baru);
+      });
+    },
     async buatTautanKartu(whatsapp) {
       return berurutan(async () => {
         const isi = await bacaMentah();
-        isi.loyaltyLinks = (isi.loyaltyLinks ?? []).filter((satu) => satu.whatsapp !== whatsapp);
-        const token = buatTokenKartu();
-        isi.loyaltyLinks.push({ token, whatsapp, created_at: new Date().toISOString() });
+        isi.loyaltyLinks = isi.loyaltyLinks ?? [];
+        // Nomor jamaah ikut terbawa ke baris baru: nomor itu identitas yang
+        // dihafal orangnya, bukan rahasia yang perlu diganti.
+        const lama = isi.loyaltyLinks.find((satu) => satu.whatsapp === whatsapp);
+        isi.loyaltyLinks = isi.loyaltyLinks.filter((satu) => satu.whatsapp !== whatsapp);
+        const nomor = lama?.nomor ?? pilihNomorJamaah(nomorTerpakai(isi));
+        const baru: LoyaltyLink = {
+          token: buatTokenKartu(),
+          whatsapp,
+          nomor,
+          created_at: new Date().toISOString(),
+        };
+        isi.loyaltyLinks.push(baru);
         await tulisMentah(isi);
-        return token;
+        return kartuDari(baru);
       });
     },
     async kartuLewatToken(token) {
       return berurutan(async () => {
         const isi = await bacaMentah();
-        return (isi.loyaltyLinks ?? []).find((satu) => satu.token === token)?.whatsapp ?? null;
+        const satu = (isi.loyaltyLinks ?? []).find((baris) => baris.token === token);
+        return satu ? kartuDari(satu) : null;
+      });
+    },
+    async kartuLewatNomor(nomor) {
+      return berurutan(async () => {
+        const isi = await bacaMentah();
+        const satu = (isi.loyaltyLinks ?? []).find((baris) => baris.nomor === nomor);
+        return satu ? kartuDari(satu) : null;
       });
     },
 
-    async semuaTautanKartu() {
+    async semuaKartuJamaah() {
       return berurutan(async () => {
         const isi = await bacaMentah();
-        return new Map((isi.loyaltyLinks ?? []).map((satu) => [satu.whatsapp, satu.token]));
+        return new Map((isi.loyaltyLinks ?? []).map((satu) => [satu.whatsapp, kartuDari(satu)]));
       });
     },
 

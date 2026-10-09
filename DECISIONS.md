@@ -40,7 +40,7 @@ Konsekuensi: kalau pengurus punya ikon versi kotak sendiri, ganti berkas di `pub
 
 ### D-06 Versi yang dipakai
 
-Next.js 15.5.25 (App Router), React 19.2.3, TypeScript 5.7, Tailwind CSS 4.3, `@supabase/supabase-js` 2.115, `qrcode` 1.5.4. Semuanya muat di Vercel free tier. Tidak ada library UI, tidak ada library kalender, tidak ada library markdown, tidak ada library animasi.
+Next.js 15.5.25 (App Router), React 19.2.3, TypeScript 5.7, Tailwind CSS 4.3, `@supabase/supabase-js` 2.115, `qrcode` 1.5.4, dan `jsqr` 1.4 yang diunduh hanya saat dibutuhkan (D-97). Semuanya muat di Vercel free tier. Tidak ada library UI, tidak ada library kalender, tidak ada library markdown, tidak ada library animasi.
 
 ### D-07 Satu antarmuka data dengan dua driver
 
@@ -442,6 +442,11 @@ Isi QR tetap kode telanjang `DZN-XXXX`, bukan alamat halaman. Ini wajib:
 mengisinya dengan URL akan merusak check-in. Diuji dengan membaca ulang PNG
 yang dihasilkan memakai pembaca QR terpisah, lalu memasukkan nilai hasil
 bacaannya ke check-in sungguhan sampai berhasil.
+
+**Kalimat "wajib" itu dilunakkan D-101:** `PapanCheckIn` sekarang mencari pola
+`DZN-XXXX` di dalam teks apa pun yang terbaca, jadi QR berisi URL pun tidak
+lagi merusak check-in. Isi QR tetap dibiarkan kode telanjang karena alasan
+privasi di paragraf sebelumnya, tetapi check-in tidak lagi bergantung padanya.
 
 ### D-68 "Kabar Aksi" jadi "Laporan Kegiatan", alamatnya tetap
 
@@ -1140,6 +1145,194 @@ yang hilang. Menekan **Ganti tautan** menghanguskan tautan lama, dan tombol
 
 ---
 
+### D-97 Check-in kamera dapat pembaca cadangan, dan `jsqr` jadi library ketiga
+
+BRIEF §5 meminta `BarcodeDetector` dipakai kalau tersedia, dan menyebut sendiri
+bahwa Safari iOS belum mendukungnya. Sampai sekarang jalur kamera memang hanya
+punya `BarcodeDetector`: di iPhone dan Firefox tombolnya menyerah dengan pesan
+"peramban ini belum bisa memindai", dan jalur kamera praktis tidak ada.
+
+Sekarang ada dua mesin. `BarcodeDetector` tetap yang pertama dicoba, karena
+memakai pemercepat perangkat dan tidak menambah satu bita pun ke halaman.
+Kalau tidak ada, `jsqr` diunduh **saat tombol kamera ditekan**, bukan saat
+halaman dibuka.
+
+Ini library ketiga di app ini setelah `qrcode` dan `@supabase/supabase-js`, dan
+ongkosnya perlu disebut apa adanya: 130 KB dalam satu potongan terpisah. Yang
+membuatnya diterima: potongan itu hanya diunduh di `/admin/scan`, hanya pada
+peramban tanpa pembaca bawaan, dan hanya setelah tombol ditekan. Halaman publik
+tidak berubah sama sekali, dan pengurus yang memakai Chrome Android tidak
+pernah mengunduhnya. Menulis pembaca QR sendiri bukan pilihan: salah baca satu
+modul berarti orang ditolak di depan pintu.
+
+### D-98 Kamera tidak dimatikan setelah satu tiket
+
+Sebelumnya satu bacaan langsung mematikan kamera. Di pintu masuk orangnya
+datang berurutan, jadi panitia harus menekan "Nyalakan kamera" untuk tiap
+orang, dan izin kamera sempat ditanya ulang di sebagian peramban.
+
+Sekarang loop pindai terus jalan sampai pengurus menekan "Matikan kamera".
+Yang menjaga supaya satu tiket tidak terkirim belasan kali: kode yang sama
+diabaikan selama 5 detik, dan loop berhenti membaca selama kiriman ke server
+belum dijawab. Diuji dengan kamera palsu Chromium yang terus menayangkan QR
+yang sama: bacaan pertama "Silakan masuk", bacaan kedua setelah jedanya lewat
+"Tiket ini sudah dipakai check-in", dan `checked_in_at` tidak bergeser.
+
+Loop juga berhenti sendiri saat tab disembunyikan, supaya baterai HP panitia
+tidak terkuras saat dia berpindah aplikasi.
+
+### D-99 Hasil pindaian berbunyi dan bergetar
+
+Panitia memegang HP sambil menyapa orang dan menerima uang, jadi hasil yang
+hanya tampil di layar sering terlewat. Tiap bacaan sekarang mengeluarkan nada
+pendek dan getaran: nada tinggi untuk kode tiket yang terbaca, nada rendah
+untuk QR yang bukan tiket.
+
+Nada dibuat dengan `OscillatorNode`, bukan berkas audio, supaya tidak ada yang
+perlu diunduh. `AudioContext` dibuat di dalam tap tombol "Nyalakan kamera",
+satu-satunya saat peramban mengizinkannya berbunyi. Perangkat yang menolak
+berbunyi atau bergetar tetap menampilkan hasilnya di layar seperti biasa.
+
+### D-100 Lampu kilat, ganti kamera, dan pesan https
+
+Tiga hal yang semuanya datang dari pemakaian di pintu masuk:
+
+**Lampu kilat.** Acara ba'da Isya berlangsung di pintu yang gelap, dan QR di
+layar HP yang redup sulit terbaca. Tombolnya hanya muncul kalau jalur kamera
+melaporkan `torch` di `getCapabilities()`, jadi tidak ada tombol mati di HP
+yang tidak punya.
+
+**Ganti kamera.** HP dengan beberapa kamera belakang sering memilih lensa
+ultra-lebar lewat `facingMode: environment`, dan lensa itu tidak bisa fokus
+sedekat jarak pindai. Tombolnya berputar antar kamera yang terdaftar, dan hanya
+muncul kalau memang ada lebih dari satu.
+
+**Pesan https.** `getUserMedia` hanya ada di halaman aman. Pengurus yang
+membuka panel lewat alamat IP di jaringan lokal sebelumnya hanya melihat tombol
+yang seperti tidak bereaksi. Sekarang `window.isSecureContext` diperiksa lebih
+dulu dan pesannya menyebut sebabnya. Pesan izin kamera juga dibedakan dari
+pesan kamera gagal dibuka, karena jalan keluarnya berbeda.
+
+### D-101 QR yang bukan tiket ditolak di perangkat
+
+Isi QR tiket adalah kode telanjang (D-67). Tetapi panitia akan sesekali
+mengarahkan kamera ke QR lain: QRIS di dinding, stiker promo, kartu nama.
+Dulu isi QR apa pun langsung dikirim ke server sebagai kode tiket.
+
+Sekarang kode `DZN-XXXX` dicari di dalam teks apa pun yang terbaca. Kalau tidak
+ada, bacaannya ditolak di perangkat dengan satu baris penjelasan, tanpa
+menghubungi server sama sekali. Bonusnya: QR yang berisi alamat halaman tiket
+ikut terbaca, jadi kalau suatu saat isi QR diubah jadi URL, check-in kamera
+tidak ikut rusak seperti yang dikhawatirkan D-67.
+
+### D-102 Nomor jamaah 4 angka, dan kenapa tetap dipakai walaupun bisa ditebak
+
+Masukan pengurus: tiap jamaah loyal diberi kode unik, dan `/jamaah/3239`
+membuka kartunya.
+
+Yang dibuat: kolom `nomor` pada `loyalty_links`, berisi 4 angka 1000–9999,
+dijaga indeks unik. Angka, bukan huruf, karena nomor ini dibacakan di depan
+pintu dan diketik ulang di bilah alamat. Tidak pernah diawali nol supaya tidak
+hilang saat ditulis ulang di kertas. Kalau ruang 4 angka suatu saat padat,
+nomornya melebar sendiri ke 5 angka daripada pengalokasiannya gagal.
+
+**Nomor 4 angka memang bisa disapu habis**, dan itu bertabrakan dengan alasan
+D-76 memilih token 16 karakter. Yang dilakukan bukan menolak permintaan ini,
+melainkan memindahkan yang dijaga:
+
+1. Kartunya tidak memuat apa pun yang rahasia. Nama depan, jumlah kehadiran,
+   jumlah menang kuis. Nomor WhatsApp tidak pernah keluar, sesuai BRIEF §7.
+2. Nomor yang salah dibatasi per IP, nomor yang benar tidak. Jamaah boleh
+   membuka kartunya sendiri sesering apa pun.
+3. Batas itu dibuat tinggi, 30 kali salah per sepuluh menit, dengan alasan yang
+   sama seperti D-16: satu IP seluler di Indonesia bisa dipakai banyak jamaah,
+   jadi batas ketat akan mengunci orang yang cuma salah ketik.
+4. Yang terkena batas tetap punya jalan keluar, karena `/kartu/[token]` tidak
+   lewat pembatas ini.
+
+Kalau pengurus menilai nama depan dan jumlah kehadiran tetap tidak boleh bisa
+disapu, yang perlu diubah cuma satu: panjangkan nomornya di
+`pilihNomorJamaah()`. Alamatnya tidak berubah bentuk.
+
+### D-103 Kartu terbit saat check-in, bukan saat pengurus menekan tombol
+
+Permintaannya "tiap jamaah loyal" punya kode. Kalau kodenya baru terbit saat
+pengurus menekan tombol per orang, daftar jamaah loyal akan selalu punya baris
+tanpa kode.
+
+Jadi kartu sekarang terbit di dalam `cekIn`: begitu satu tiket di-check-in,
+nomor WhatsApp itu dipastikan punya token dan nomor jamaah. D-76 tetap
+dipatuhi, karena yang dilarang di sana adalah permintaan baca yang menulis, dan
+check-in memang sudah operasi tulis. Membuka daftar Jamaah Loyal tetap tidak
+menulis apa pun.
+
+Penerbitan kartu dibungkus `try`: kehadirannya sudah tersimpan, dan panitia
+sedang berdiri di pintu. Gagal menerbitkan kartu tidak boleh membuat check-in
+yang sudah tercatat tampil seperti gagal. Kartunya masih bisa diterbitkan
+belakangan dari menu Jamaah Loyal.
+
+Tombol lama "Buat tautan kartu" berganti nama jadi **Terbitkan kartu** dan
+sekarang hanya muncul untuk jamaah yang hadir sebelum nomor ini ada. Aksinya
+juga berbeda: `pastikanKartuJamaah` melengkapi nomornya **tanpa** menyentuh
+token, supaya tautan yang sudah pernah dikirim ke orang itu tidak mati gara-gara
+pengurus menerbitkan nomornya. Mengganti token tetap lewat tombolnya sendiri.
+
+### D-104 Nomor jamaah tidak ikut berganti saat tautannya dicabut
+
+Token dan nomor menjawab dua hal yang berbeda, jadi "Ganti tautan" hanya
+mengganti token. `buatTautanKartu` membaca nomor lama lebih dulu dan
+membawanya ke baris baru.
+
+Alasannya: nomor jamaah untuk dihafal orangnya dan boleh ditulis di pengumuman,
+sedangkan token adalah tautan rahasia yang memang perlu bisa dihanguskan.
+Mengganti nomor tiap kali tautan dicabut akan menghapus satu-satunya hal yang
+membuat nomor itu berguna. Penjelasan di dialog konfirmasi menyebutkan ini apa
+adanya, supaya pengurus tidak menyangka mengganti tautan berarti mengganti
+identitas orangnya.
+
+Konsekuensi yang perlu disadari: nomor jamaah tidak bisa dicabut lewat panel.
+Kalau suatu saat itu dibutuhkan, yang perlu ditambah satu tombol yang menulis
+`nomor` baru pada baris yang sama.
+
+### D-105 Isi kartu jadi satu berkas untuk dua alamat
+
+`/kartu/[token]` dan `/jamaah/[nomor]` menuju kartu yang sama, jadi isinya
+ditaruh di `src/components/KartuKehadiran.tsx` dan dipakai keduanya. Tanpa itu,
+dua halaman yang sama akan lekas berbeda bunyi, dan pengurus yang menekan
+"Lihat kartu" tidak lagi melihat yang dilihat jamaahnya.
+
+Yang berbeda cuma layar "tidak ditemukan", dan itu disengaja: tautan panjang
+yang gagal berarti pengurus sudah menggantinya, sedangkan nomor yang gagal
+biasanya salah ketik. Dua sebab itu butuh dua jalan keluar yang berbeda.
+
+Kartu juga sekarang menampilkan nomor jamaah dan alamat pendeknya berikut
+tombol salin, supaya jamaah yang kehilangan pesan WhatsApp-nya tetap bisa
+kembali tanpa menghubungi pengurus.
+
+### D-106 Kamera check-in akhirnya bisa diuji, dengan kamera palsu Chromium
+
+Bagian J dokumen ini sejak awal menulis bahwa kamera check-in belum pernah
+dijalankan dan perlu dicek pengurus sendiri. Sebagiannya sekarang lunas.
+
+Chromium bisa dijalankan dengan kamera palsu yang menayangkan berkas video
+(`--use-file-for-fake-video-capture`). Berkas Y4M-nya dibuat langsung dari
+matriks QR milik library `qrcode`, jadi yang ditayangkan ke kamera adalah QR
+tiket yang sungguhan, bukan gambar karangan. Kebetulan yang menguntungkan:
+Chromium di Linux tidak punya `BarcodeDetector`, jadi yang teruji justru jalur
+pembaca cadangan, yaitu jalur yang dipakai Safari iOS dan Firefox.
+
+Yang terbukti jalan tanpa seorang pun mengetik apa pun: QR terbaca dari aliran
+kamera, tiket berubah jadi `checked_in` di database, kartu jamaahnya terbit
+dengan nomor 4 angka, kode yang sama tidak terkirim dua kali, loop tetap jalan
+setelah hasil pertama, QR yang bukan tiket ditolak tanpa menyentuh data, dan
+jalur kamera benar-benar dilepas saat dimatikan.
+
+Yang tetap belum lunas dan masih perlu dicek pengurus sekali di HP fisik:
+lampu kilat, ganti kamera, bunyi, dan getaran. Keempatnya bergantung pada
+perangkat yang tidak ada padanannya di kamera palsu.
+
+---
+
 ## I. Yang sengaja tidak dibuat
 
 Sesuai BRIEF §12: tidak ada payment gateway, tidak ada akun pengguna, tidak ada sistem role, tidak ada notifikasi push atau email, tidak ada dashboard analitik, tidak ada dark mode, tidak ada i18n, tidak ada animasi scroll, tidak ada chatbot, dan tidak ada leaderboard donatur.
@@ -1152,7 +1345,7 @@ Alur pembayaran manual lewat QRIS statis dan WhatsApp dipertahankan apa adanya k
 
 Ditulis terbuka supaya pengurus tahu apa yang masih perlu dicek sendiri sebelum 25 September 2026.
 
-1. **Alur di HP sungguhan.** Semua alur dijalankan pada peramban Chromium dengan lebar 360px dan mode sentuh, bukan pada HP Android fisik. Perilaku kamera check-in di HP kelas menengah dan tombol unduh di peramban bawaan HP perlu dicoba sekali oleh pengurus.
+1. **Alur di HP sungguhan.** Semua alur dijalankan pada peramban Chromium dengan lebar 360px dan mode sentuh, bukan pada HP Android fisik. Pembacaan QR lewat kamera sendiri sudah diuji sungguhan dengan kamera palsu Chromium (D-106), jadi yang tersisa di sini adalah hal-hal yang menempel pada perangkat: lampu kilat, pemilihan lensa, bunyi, getaran, dan tombol unduh di peramban bawaan HP. Semuanya perlu dicoba sekali oleh pengurus.
 2. **Pratinjau tautan di WhatsApp sungguhan.** Gambar pratinjau sudah diperiksa benar-benar dihasilkan (empat halaman, PNG 1200x630, semuanya 200 OK), tetapi tampilannya di dalam aplikasi WhatsApp hanya bisa diuji setelah app punya alamat publik. Uji ini menunggu deploy.
 3. **Supabase sungguhan.** Skema, RLS, dan bucket ditulis lengkap dan siap dijalankan, tetapi belum pernah dieksekusi pada instance Supabase karena sesi ini tidak punya project Supabase. Yang diuji penuh adalah driver lokal yang memakai antarmuka data yang sama persis.
 4. **QRIS asli.** Pengujian memakai gambar contoh bertuliskan `CONTOH QRIS UNTUK UJI COBA`, bukan QRIS masjid.

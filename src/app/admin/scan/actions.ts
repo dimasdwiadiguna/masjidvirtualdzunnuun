@@ -33,5 +33,18 @@ export async function cekIn(_sebelumnya: HasilScan, formData: FormData): Promise
   }
 
   await data.markCheckedIn(tiket.id);
+
+  // Kehadiran pertama sekaligus menerbitkan kartu orang itu: token tautannya
+  // dan nomor jamaah 4 angka. Ditaruh di sini, bukan saat pengurus membuka
+  // daftar Jamaah Loyal, supaya permintaan baca tidak pernah menulis (D-76).
+  // Gagal menerbitkan kartu tidak boleh menggagalkan check-in yang sudah
+  // tercatat: panitia sedang berdiri di pintu, dan kartunya masih bisa dibuat
+  // belakangan dari menu Jamaah Loyal.
+  try {
+    await data.pastikanKartuJamaah(tiket.whatsapp);
+  } catch {
+    // Sengaja dibiarkan. Kehadirannya yang penting, dan itu sudah tersimpan.
+  }
+
   return { keadaan: "berhasil", ...dasar };
 }
