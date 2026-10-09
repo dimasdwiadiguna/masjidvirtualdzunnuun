@@ -39,3 +39,34 @@ export function buatTokenKartu(): string {
   for (let i = 0; i < 16; i += 1) hasil += ALFABET[randomInt(ALFABET.length)];
   return hasil;
 }
+
+/** Alfabet kode jamaah, dipecah supaya bentuknya bisa dijaga per posisi. */
+const HURUF_JAMAAH = "ABCDEFGHJKMNPQRSTUVWXYZ";
+const ANGKA_JAMAAH = "23456789";
+
+export const BENTUK_KODE_JAMAAH = new RegExp(`^[${HURUF_JAMAAH}]{2}[${ANGKA_JAMAAH}]{3}$`);
+
+/**
+ * Kode jamaah: dua huruf lalu tiga angka, misalnya `KM472`.
+ *
+ * Bentuknya dibuat tetap, bukan lima karakter campur acak, karena kode ini
+ * dibacakan di depan pintu dan diketik ulang jamaah di bilah alamat. Orang
+ * mengingat "dua huruf, tiga angka" jauh lebih mudah daripada urutan yang
+ * berubah-ubah, dan bentuk tetap juga membuat salah ketik bisa ditolak
+ * sebelum menyentuh database.
+ *
+ * Huruf I, L, O dan angka 0, 1 dibuang, alasannya sama dengan D-11 pada kode
+ * tiket: kode ini dieja lewat telepon dan ditulis ulang di kertas. Ongkosnya
+ * ruang tebakan jadi 23 pangkat 2 kali 8 pangkat 3, yaitu 270.848, bukan
+ * 676.000 kalau seluruh abjad dipakai. Selisih itu diterima sadar: yang
+ * menahan penyapuan adalah pembatas per IP, bukan panjang kodenya sendiri.
+ */
+export function pilihKodeJamaah(terpakai: Set<string>): string {
+  for (let percobaan = 0; percobaan < 500; percobaan += 1) {
+    let kandidat = "";
+    for (let i = 0; i < 2; i += 1) kandidat += HURUF_JAMAAH[randomInt(HURUF_JAMAAH.length)];
+    for (let i = 0; i < 3; i += 1) kandidat += ANGKA_JAMAAH[randomInt(ANGKA_JAMAAH.length)];
+    if (!terpakai.has(kandidat)) return kandidat;
+  }
+  throw new Error("Kode jamaah sulit dicarikan yang kosong. Hubungi yang memasang app ini.");
+}

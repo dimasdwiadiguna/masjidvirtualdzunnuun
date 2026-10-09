@@ -24,6 +24,7 @@ Bagian 1 sampai 4 untuk yang memasang app. Bagian 5 ditulis untuk pengurus yang 
    - `supabase/migrasi-02-pengumuman.sql` — tabel pengumuman. Tanpa ini, menu Pengumuman belum berfungsi.
    - `supabase/migrasi-03-loyalty-sosmed-kuis.sql` — kartu loyalitas, post sosmed, kuis, dan polling. Tanpa ini, keempat menu itu belum berfungsi.
    - `supabase/migrasi-04-templat-wa-dan-donasi-manual.sql` — kolom templat pesan WhatsApp, dan pelonggaran batas angka unik supaya donasi bisa dicatat manual. Tanpa ini, menyunting pesan WhatsApp dan mencatat donasi manual akan gagal.
+   - `supabase/migrasi-05-kode-jamaah.sql` — kode jamaah 5 karakter untuk alamat `/jamaah/[kode]`. Tanpa ini, check-in tetap jalan tetapi kode jamaah tidak pernah terbit.
 4. Buka **Project Settings, API**, catat dua nilai ini:
    - Project URL, misalnya `https://abcdefgh.supabase.co`
    - `service_role` key (bukan `anon` key)
@@ -233,12 +234,18 @@ Membuka dan menyalin pesannya bisa dilakukan panitia. Mengubah kata-katanya hany
 
 Tiap 10 kali hadir acara, jamaah berhak hadiah khusus. Hitungannya jalan sendiri, tanpa jamaah perlu punya akun atau password.
 
-1. Menu **Jamaah Loyal** menampilkan siapa saja yang pernah hadir dan berapa kali. Yang sudah tembus kelipatan 10 diberi tanda.
-2. Tekan **Buat tautan kartu** sekali per orang. Setelah itu muncul dua tombol: **Lihat kartu** dan **Kirim kartu**.
-3. **Lihat kartu** membuka kartu orang itu di tab baru, persis seperti yang dilihat jamaahnya. Pakai ini kalau ada yang bertanya di tempat kurang berapa stempel lagi, tanpa perlu mengirim tautannya dulu.
-4. **Kirim kartu** membuka WhatsApp dengan pesan berisi tautan kartunya.
-5. Jamaah membuka tautan itu dan melihat kartu berisi 10 kotak stempel. Isinya bertambah sendiri tiap dia check-in lagi.
-6. Kalau tautannya terlanjur tersebar ke orang lain, tekan **Ganti tautan**. Tautan lama langsung tidak bisa dibuka, termasuk lewat tombol **Lihat kartu**.
+Tiap jamaah punya **kode jamaah**: 5 karakter berbentuk dua huruf lalu tiga angka, misalnya `KM472`, yang terbit sendiri saat orangnya pertama kali di-check-in. Kartunya dibuka dengan mengetik `alamat-app-anda/jamaah/KM472`. Huruf besar kecil tidak masalah. Kode itu dibuat supaya bisa dibacakan di depan pintu dan dihafal orangnya, jadi boleh ditulis di pengumuman atau disebut lewat telepon. Huruf I, L, O dan angka 0, 1 tidak pernah dipakai supaya tidak tertukar saat dieja.
+
+1. Menu **Jamaah Loyal** menampilkan siapa saja yang pernah hadir, berapa kali, dan kode jamaahnya. Yang sudah tembus kelipatan 10 diberi tanda.
+2. **Lihat kartu** membuka kartu orang itu di tab baru, persis seperti yang dilihat jamaahnya. Pakai ini kalau ada yang bertanya di tempat kurang berapa stempel lagi.
+3. **Kirim kartu** membuka WhatsApp dengan pesan berisi tautan panjang kartunya.
+4. Jamaah membuka kartu berisi 10 kotak stempel, berikut kode dan alamat pendeknya supaya dia bisa kembali walaupun pesan WhatsApp-nya sudah hilang. Isinya bertambah sendiri tiap dia check-in lagi.
+5. Kalau tautan panjangnya terlanjur tersebar ke orang lain, tekan **Ganti tautan**. Tautan lama langsung mati. **Kode jamaahnya tidak ikut berubah**, karena kode itu memang untuk dihafal, bukan rahasia.
+6. Jamaah yang sudah hadir sebelum kode ini ada akan tertulis `belum ada` pada kolom Kode. Tekan **Terbitkan kode untuk N jamaah** di kotak atas daftar untuk menerbitkan semuanya sekali tekan, atau **Terbitkan kode** di barisnya sendiri untuk satu orang. Tautan panjang yang sudah pernah Anda kirim tetap hidup.
+
+**Seberapa aman kodenya.** Bentuk dua huruf tiga angka punya 270.848 kemungkinan. Menebak satu kode yang benar butuh ribuan percobaan, dan kalau ada yang mencoba beramai-ramai dari satu jaringan, pencarian kode dijeda sendiri sekitar sepuluh menit setelah 30 kali salah. Dengan jeda itu, satu jaringan butuh lebih dari dua bulan untuk mencoba semua kemungkinan.
+
+Itu membuat coba-coba tidak ada hasilnya, tetapi bukan berarti mustahil. Jadi isi kartunya tetap dijaga tipis: hanya nama depan, jumlah kehadiran, dan jumlah menang kuis. **Nomor WhatsApp tidak pernah ikut tampil di kartu.** Jangan menaruh apa pun yang benar-benar pribadi di halaman kartu.
 
 Yang dihitung adalah tiket yang benar-benar Anda check-in, bukan yang sekadar mendaftar. Satu tiket dihitung satu kehadiran walaupun dipakai untuk beberapa orang, karena yang punya nomor itu yang hadir. Tiket yang Anda batalkan setelah check-in ikut dikurangi lagi.
 
@@ -278,7 +285,7 @@ Mengubah pertanyaan atau pilihannya memulai perhitungan dari nol, supaya jawaban
 Menu **Check-in** punya dua cara yang sama sahnya:
 
 - **Ketik kode tiket**, misalnya `DZN-9F2M`. Cara ini selalu jalan di HP apa pun.
-- **Pindai QR** lewat kamera. QR-nya ada di pesan WhatsApp yang Anda kirim ke peserta. Sebagian HP, termasuk iPhone, belum mendukung pemindaian bawaan peramban. Kalau begitu, pakai cara ketik kode, hasilnya sama.
+- **Pindai QR** lewat kamera. QR-nya ada di pesan WhatsApp yang Anda kirim ke peserta.
 
 Hasilnya muncul besar: nama dan status. Kalau tiket sudah pernah dipakai, muncul peringatan berikut waktu check-in sebelumnya, bukan tanda merah menakutkan.
 
@@ -288,6 +295,18 @@ Hasilnya muncul besar: nama dan status. Kalau tiket sudah pernah dipakai, muncul
 - **Datang berapa orang** diisi lebih dari satu hanya kalau serombongan datang bersama dan dicatat dalam satu nama.
 - Untuk acara berbayar, nominalnya dicatat penuh sesuai harga kali jumlah orang dan langsung dianggap lunas dibayar di tempat. Pastikan uangnya memang sudah diterima sebelum menekan tombolnya.
 - Kuota yang sudah penuh tidak menghalangi pencatatan: yang berdiri di pintu yang tahu apakah masih ada tempat. Kalau kuotanya jadi terlampaui, layarnya menyebutkan itu.
+
+**Cara memakai kameranya:**
+
+1. Tekan **Nyalakan kamera**, lalu beri izin kamera saat peramban bertanya. Izin itu hanya ditanya sekali per HP.
+2. Arahkan QR peserta ke dalam kotak emas, sekitar sejengkal dari kamera. Tiap bacaan **berbunyi pendek dan HP bergetar**, jadi Anda tidak perlu menatap layar sambil menyapa orang. Bunyi tinggi berarti terbaca, bunyi rendah berarti QR itu bukan tiket Dzun Nuun.
+3. **Kamera tetap menyala** setelah satu tiket tercatat. Orang berikutnya langsung maju, tanpa menekan tombol apa pun lagi.
+4. QR yang sama tidak terkirim dua kali walaupun terus di depan kamera. Kalau rombongan yang sama perlu dicek ulang, tunggu beberapa detik atau pakai kolom kode.
+5. Gelap di depan pintu? Tekan **Nyalakan lampu**. Tombol ini hanya muncul kalau HP-nya mendukung.
+6. HP dengan beberapa kamera belakang kadang memilih lensa yang sulit fokus dekat. Tekan **Ganti kamera** sampai QR terbaca tajam.
+7. Selesai, tekan **Matikan kamera** supaya baterai tidak terkuras.
+
+Kamera hanya bisa dipakai kalau panel dibuka lewat alamat `https`. Kalau dibuka lewat alamat IP di jaringan lokal, peramban menolak dan app menjelaskannya. Kalau kameranya tetap tidak mau, kolom ketik kode selalu bisa dipakai dan hasilnya sama persis.
 
 ### Membagikan halaman ke WhatsApp
 

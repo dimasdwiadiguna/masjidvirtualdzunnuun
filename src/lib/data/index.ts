@@ -5,6 +5,7 @@ import type {
   EventCapacityInfo,
   EventItem,
   Announcement,
+  KartuJamaah,
   Kehadiran,
   SocialPost,
   HeroPhoto,
@@ -123,11 +124,22 @@ export interface DataDriver {
   /** Berapa kali nomor ini hadir, dihitung dari tiket berstatus checked_in. */
   hitungKehadiran(whatsapp: string): Promise<number>;
   ringkasanKehadiran(): Promise<Kehadiran[]>;
-  /** Membuat token kartu baru untuk satu nomor. Token lama ikut dihapus. */
-  buatTautanKartu(whatsapp: string): Promise<string>;
-  kartuLewatToken(token: string): Promise<string | null>;
-  /** Semua token yang sudah ada, dipetakan dari nomor. Satu kueri, bukan per baris. */
-  semuaTautanKartu(): Promise<Map<string, string>>;
+  /**
+   * Memastikan satu nomor WhatsApp punya kartu: token tautan dan kode jamaah.
+   * Dipanggil saat check-in, jadi tiap jamaah yang pernah hadir selalu punya
+   * kode tanpa pengurus perlu membuatnya satu per satu.
+   */
+  pastikanKartuJamaah(whatsapp: string): Promise<KartuJamaah>;
+  /**
+   * Membuat token kartu baru untuk satu nomor. Token lama ikut dihapus, tetapi
+   * kode jamaahnya dipertahankan: kode itu identitas yang dihafal orangnya,
+   * bukan rahasia yang perlu diganti.
+   */
+  buatTautanKartu(whatsapp: string): Promise<KartuJamaah>;
+  kartuLewatToken(token: string): Promise<KartuJamaah | null>;
+  kartuLewatKode(kode: string): Promise<KartuJamaah | null>;
+  /** Semua kartu yang sudah ada, dipetakan dari nomor WhatsApp. Satu kueri. */
+  semuaKartuJamaah(): Promise<Map<string, KartuJamaah>>;
 
   hitungPemenangHariIni(): Promise<number>;
   hitungKemenangan(whatsapp: string): Promise<number>;

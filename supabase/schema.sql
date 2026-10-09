@@ -151,12 +151,18 @@ create index if not exists announcements_urutan on announcements (is_active, sor
 
 -- Tautan kartu loyalitas. Token acak, bukan nomor WhatsApp yang disandikan,
 -- supaya nomor tidak pernah muncul di alamat halaman publik.
+-- Kolom kode adalah kode jamaah 5 karakter (dua huruf lalu tiga angka) untuk
+-- alamat /jamaah/[kode]: pendek, bisa dibacakan di depan pintu, dan tidak
+-- berubah walaupun tokennya dicabut.
 create table if not exists loyalty_links (
   token text primary key,
   whatsapp text not null,
+  kode text,
   created_at timestamptz not null default now()
 );
 create index if not exists loyalty_links_whatsapp on loyalty_links (whatsapp);
+create unique index if not exists loyalty_links_kode
+  on loyalty_links (kode) where kode is not null;
 
 -- Post Instagram dan TikTok yang dipilih pengurus untuk ditampilkan.
 create table if not exists social_posts (

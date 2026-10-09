@@ -2,7 +2,7 @@ import "server-only";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { SEED_SETTINGS } from "./seed";
 import { hariIniJakarta, hitungSuara, kumpulkanKehadiran } from "./kehadiran";
-import { buatTokenKartu } from "@/lib/kode";
+import { buatTokenKartu, pilihKodeJamaah } from "@/lib/kode";
 import type {
   AnnouncementInput,
   SocialPostInput,
@@ -19,6 +19,7 @@ import type {
 } from "./index";
 import type {
   Announcement,
+  KartuJamaah,
   SocialPost,
   Donation,
   EventCapacityInfo,
@@ -51,6 +52,20 @@ function lempar(pesan: string, error: { message: string } | null): void {
 
 export function createSupabaseDriver(): DataDriver {
   const sb = klien();
+
+  /**
+   * Kode jamaah yang belum dipakai siapa pun.
+   *
+   * Kodenya dipilih dari daftar yang sudah terpakai, bukan dicoba satu-satu
+   * sampai database menolak. Barisnya sedikit, satu kolom, jadi satu kueri
+   * lebih murah daripada beberapa kali tabrakan. Indeks unik di database tetap
+   * yang menjadi penjaga terakhir kalau dua pengurus menekan tombol bersamaan.
+   */
+  async function kodeBelumTerpakai(): Promise<string> {
+    const { data, error } = await sb.from("loyalty_links").select("kode").not("kode", "is", null);
+    lempar("Gagal membaca kode jamaah", error);
+    return pilihKodeJamaah(new Set((data ?? []).map((satu) => String((satu as { kode: string }).kode))));
+  }
 
   return {
     async getSettings(): Promise<Settings> {
@@ -376,30 +391,85 @@ export function createSupabaseDriver(): DataDriver {
         (data ?? []) as { whatsapp: string; name: string; checked_in_at: string | null }[],
       );
     },
+    async pastikanKartuJamaah(whatsapp) {
+      const { data, error } = await sb
+        .from("loyalty_links")
+        .select("token, whatsapp, kode")
+        .eq("whatsapp", whatsapp)
+        .maybeSingle();
+      lempar("Gagal membaca kartu jamaah", error);
+      const ada = data as KartuJamaah | null;
+      if (ada?.kode) return ada;
+
+      // Baris yang dibuat sebelum kode jamaah ada tinggal dilengkapi kodenya,
+      // tokennya dibiarkan supaya tautan yang sudah beredar tetap hidup.
+      const kode = await kodeBelumTerpakai();
+      if (ada) {
+        const { data: perbarui, error: galatPerbarui } = await sb
+          .from("loyalty_links")
+          .update({ kode })
+          .eq("token", ada.token)
+          .select("token, whatsapp, kode")
+          .single();
+        lempar("Gagal memberi kode jamaah", galatPerbarui);
+        return perbarui as KartuJamaah;
+      }
+
+      const { data: baru, error: galatBaru } = await sb
+        .from("loyalty_links")
+        .insert({ token: buatTokenKartu(), whatsapp, kode })
+        .select("token, whatsapp, kode")
+        .single();
+      lempar("Gagal membuat kartu jamaah", galatBaru);
+      return baru as KartuJamaah;
+    },
     async buatTautanKartu(whatsapp) {
+      // Kode jamaah dibaca lebih dulu supaya ikut terbawa ke baris baru. Kode
+      // itu dihafal orangnya dan dicetak di pengumuman, jadi tidak boleh ikut
+      // berubah saat tautan rahasianya dicabut.
+      const { data: lama, error: galatBaca } = await sb
+        .from("loyalty_links")
+        .select("kode")
+        .eq("whatsapp", whatsapp)
+        .maybeSingle();
+      lempar("Gagal membaca kartu jamaah", galatBaca);
+      const kode = (lama as { kode: string | null } | null)?.kode ?? (await kodeBelumTerpakai());
+
       // Token lama dihapus supaya tautan yang sudah beredar bisa dianggap
       // hangus dengan menekan tombolnya sekali lagi.
       const { error: galatHapus } = await sb.from("loyalty_links").delete().eq("whatsapp", whatsapp);
       lempar("Gagal menghapus tautan kartu lama", galatHapus);
-      const token = buatTokenKartu();
-      const { error } = await sb.from("loyalty_links").insert({ token, whatsapp });
+      const { data, error } = await sb
+        .from("loyalty_links")
+        .insert({ token: buatTokenKartu(), whatsapp, kode })
+        .select("token, whatsapp, kode")
+        .single();
       lempar("Gagal membuat tautan kartu", error);
-      return token;
+      return data as KartuJamaah;
     },
     async kartuLewatToken(token) {
       const { data, error } = await sb
         .from("loyalty_links")
-        .select("whatsapp")
+        .select("token, whatsapp, kode")
         .eq("token", token)
         .maybeSingle();
       lempar("Gagal membaca tautan kartu", error);
-      return (data as { whatsapp: string } | null)?.whatsapp ?? null;
+      return (data as KartuJamaah) ?? null;
+    },
+    async kartuLewatKode(kode) {
+      const { data, error } = await sb
+        .from("loyalty_links")
+        .select("token, whatsapp, kode")
+        .eq("kode", kode)
+        .maybeSingle();
+      lempar("Gagal membaca kartu jamaah", error);
+      return (data as KartuJamaah) ?? null;
     },
 
-    async semuaTautanKartu() {
-      const { data, error } = await sb.from("loyalty_links").select("token, whatsapp");
-      lempar("Gagal membaca tautan kartu", error);
-      return new Map((data ?? []).map((satu) => [satu.whatsapp as string, satu.token as string]));
+    async semuaKartuJamaah() {
+      const { data, error } = await sb.from("loyalty_links").select("token, whatsapp, kode");
+      lempar("Gagal membaca kartu jamaah", error);
+      return new Map((data ?? []).map((satu) => [satu.whatsapp as string, satu as KartuJamaah]));
     },
 
     async hitungPemenangHariIni() {
